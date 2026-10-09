@@ -80,7 +80,7 @@ apiClient.interceptors.response.use(
     } else if (status === 400 || status === 422) {
       normalizedMessage = error.response.data?.message || 'Please check the highlighted fields.';
     } else if (status >= 500) {
-      normalizedMessage = error.response.data?.message || 'Employee could not be saved. Please try again.';
+      normalizedMessage = error.response?.data?.message || 'Server error or database connection issue. Please verify database connectivity.';
     } else {
       normalizedMessage = error.response.data?.message || error.message;
     }

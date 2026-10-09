@@ -6,9 +6,11 @@ const dns = require('dns');
 // On Windows, local DNS resolvers often refuse SRV records for Atlas clusters.
 // Pre-configure public DNS resolvers to ensure reliable Atlas connection.
 try {
-  const currentServers = dns.getServers();
-  if (!currentServers || currentServers.length === 0 || currentServers.some(s => s.startsWith('127.') || s === '::1')) {
-    dns.setServers(['8.8.8.8', '1.1.1.1']);
+  if (process.platform === 'win32') {
+    const currentServers = dns.getServers();
+    if (!currentServers || currentServers.length === 0 || currentServers.some(s => s.startsWith('127.') || s === '::1')) {
+      dns.setServers(['8.8.8.8', '1.1.1.1']);
+    }
   }
 } catch (_) {}
 
