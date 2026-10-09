@@ -44,7 +44,8 @@ import {
   CheckCircle2,
   Clock,
   Truck,
-  AlertTriangle
+  AlertTriangle,
+  ShieldAlert
 } from 'lucide-react';
 
 export const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
