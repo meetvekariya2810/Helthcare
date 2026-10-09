@@ -675,6 +675,9 @@ const resolveRoleDashboard = (userOrRole, optionalDept) => {
     dept = (optionalDept || '').toLowerCase().trim();
   }
 
+  // 0. Dedicated Employee Self-Service Portal
+  if (role === 'EMPLOYEE' || role === 'SENIOR_EMPLOYEE') return '/employee/dashboard';
+
   // 1. Canteen
   if (role === 'CANTEEN_ADMIN') return '/canteen/dashboard';
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { HRDashboard } from '../hrms/HRDashboard';
 import { ProductionDashboard } from './ProductionDashboard';
@@ -27,6 +28,11 @@ export const DashboardDispatcher = () => {
 
   const role = (user?.role || '').toUpperCase().trim();
   const dept = (user?.department || '').toLowerCase().trim();
+
+  // 0. Standard Employee & Senior Employee -> Dedicated Employee Portal
+  if (role === 'EMPLOYEE' || role === 'SENIOR_EMPLOYEE') {
+    return <Navigate to="/employee/dashboard" replace />;
+  }
 
   // 1. Executive Management & Super Admin / Director / HR Roles -> HR / Workforce Command Center
   if (
