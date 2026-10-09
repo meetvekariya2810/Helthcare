@@ -1,7 +1,11 @@
-// BJK Healthcare Digital Brain - Vercel Serverless Function Entrypoint (ESM)
-import handler from './handler.cjs';
+// BJK Healthcare Digital Brain - Vercel Serverless Function Entrypoint
+const handler = require('./handler.cjs');
 
-export default async function (req, res) {
+function serverlessEntry(req, res) {
   return handler(req, res);
 }
+
+module.exports = serverlessEntry;
+module.exports.default = serverlessEntry;
+
 
