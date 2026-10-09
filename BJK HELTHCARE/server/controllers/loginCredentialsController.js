@@ -258,8 +258,11 @@ const getLoginCredentialsById = async (req, res) => {
       ]
     }).lean();
 
-    // Prepare accessConfig (if empty, build initial default from role)
-    const accessConfig = user.accessConfig || buildDefaultAccessConfig(user.role, user.department);
+    // Prepare accessConfig (if empty or missing modules, build initial default from role)
+    let accessConfig = user.accessConfig;
+    if (!accessConfig || typeof accessConfig !== 'object' || !Array.isArray(accessConfig.modules) || accessConfig.modules.length === 0) {
+      accessConfig = buildDefaultAccessConfig(user.role, user.department);
+    }
     const effective = resolveEffectivePermissions(user);
 
     // Fetch recent login activities

@@ -2026,15 +2026,76 @@ const CreateEmployeeLoginModal = ({ templates, onClose, onSuccess }) => {
 // MODAL 2: Dedicated Access Configuration Modal (Section 4 - 12, 20)
 // ---------------------------------------------------------------------------------------------
 const AccessConfigurationModal = ({ userDetail, templates, onClose, onSuccess }) => {
-  const [config, setConfig] = useState(userDetail.accessConfig || {});
+  const user = userDetail.user || {};
+
+  // Build robust initial config with fallback from templates or standard modules
+  const getInitialConfig = () => {
+    if (userDetail.accessConfig && Array.isArray(userDetail.accessConfig.modules) && userDetail.accessConfig.modules.length > 0) {
+      return userDetail.accessConfig;
+    }
+    const roleUpper = (user.role || 'EMPLOYEE').toUpperCase();
+    const isSuper = ['SUPER_ADMIN', 'DIRECTOR'].includes(roleUpper);
+    const isHR = isSuper || ['HR_ADMIN', 'HR_MANAGER', 'HR'].includes(roleUpper);
+    const effectiveMods = userDetail.effectivePermissions?.allowedModules || [];
+
+    const fallbackModuleList = (templates?.modules && Array.isArray(templates.modules) && templates.modules.length > 0)
+      ? templates.modules
+      : [
+          { id: 'executive', name: 'Executive Command Center', path: '/dashboard/hr', actions: ['view', 'manage', 'audit'] },
+          { id: 'hr', name: 'HR & Personnel Operations', path: '/hr/employees', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+          { id: 'production', name: 'Batch Manufacturing (Production)', path: '/production', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'qc', name: 'Quality Control (QC)', path: '/quality/qc', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'qa', name: 'Quality Assurance (QA)', path: '/quality/qa', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'microbiology', name: 'QC Microbiology', path: '/dashboard/microbiology', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'inventory', name: 'Warehouse & Inventory', path: '/inventory', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'finance', name: 'Finance & Accounts', path: '/finance', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'procurement', name: 'Purchase & Procurement', path: '/dashboard/procurement', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'engineering', name: 'Engineering & Maintenance', path: '/dashboard/engineering', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'regulatory', name: 'Regulatory Affairs', path: '/regulatory', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'sales', name: 'Commercial & Sales', path: '/crm', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'facilities', name: 'Facilities & Services', path: '/dashboard/facilities', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'canteen', name: 'Canteen Management', path: '/hrms/canteen', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'documents', name: 'Controlled Documents & SOPs', path: '/documents', actions: ['view', 'create', 'edit', 'approve'] },
+          { id: 'audit', name: 'Audit Logs & Governance', path: '/audit-logs', actions: ['view', 'export'] }
+        ];
+
+    return {
+      role: roleUpper,
+      department: user.department || 'General',
+      modules: fallbackModuleList.map(mod => {
+        const isAllowed = isSuper || effectiveMods.includes(mod.id) || (isHR && mod.id === 'hr') || user.department?.toLowerCase().includes(mod.id);
+        const actObj = {};
+        for (const a of (mod.actions || ['view', 'create', 'edit', 'approve'])) {
+          actObj[a] = isAllowed;
+        }
+        return {
+          id: mod.id,
+          name: mod.name,
+          path: mod.path,
+          enabled: isAllowed,
+          actions: actObj,
+          pages: (mod.pages || []).map(pg => ({
+            id: pg.id,
+            name: pg.name,
+            path: pg.path,
+            enabled: isAllowed,
+            actions: { view: isAllowed, edit: isAllowed, approve: isAllowed }
+          }))
+        };
+      }),
+      approvalPermissions: userDetail.accessConfig?.approvalPermissions || user.approvalPermissions || (isSuper ? ['ALL'] : []),
+      teamHeadAccess: userDetail.accessConfig?.teamHeadAccess || {},
+      departmentHeadAccess: userDetail.accessConfig?.departmentHeadAccess || {}
+    };
+  };
+
+  const [config, setConfig] = useState(getInitialConfig);
   const [approvalPermissions, setApprovalPermissions] = useState(
     userDetail.accessConfig?.approvalPermissions || userDetail.user?.approvalPermissions || []
   );
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('MODULES'); // 'MODULES', 'APPROVALS', 'TEAM', 'PREVIEW'
-
-  const user = userDetail.user || {};
 
   const handleSave = async () => {
     try {

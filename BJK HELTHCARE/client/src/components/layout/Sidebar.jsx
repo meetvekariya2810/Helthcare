@@ -116,7 +116,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
   const [openSections, setOpenSections] = useState({
     setupConfig: location.pathname.includes('/setup') || location.pathname.includes('/hr/roles'),
     coreHrms: true,
-    deptOperations: true
+    deptOperations: true,
+    enterpriseDepts: true
   });
 
   const [openSubSections, setOpenSubSections] = useState({
@@ -771,9 +772,236 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
           )}
 
           {/* ========================================================================= */}
-          {/* B. NON-HR DEPARTMENT OPERATIONAL SECTIONS */}
+          {/* B1. SUPER ADMIN / DIRECTOR: ALL ENTERPRISE DEPARTMENT WORKSPACES */}
           {/* ========================================================================= */}
-          {!isHR && (
+          {isDirector && (
+            <div className="pt-2 border-t border-slate-100 mt-2">
+              <button
+                type="button"
+                onClick={() => toggleSection('enterpriseDepts')}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all font-medium ${
+                  openSections.enterpriseDepts
+                    ? 'text-slate-900 font-semibold bg-slate-50/80'
+                    : 'text-slate-600 hover:bg-slate-50'
+                } ${isCollapsed ? 'justify-center' : ''}`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Building2 size={17} className="text-teal-600 flex-shrink-0" />
+                  {!isCollapsed && <span>Enterprise Workspaces</span>}
+                </div>
+                {!isCollapsed && (
+                  <ChevronDown
+                    size={14}
+                    className={`text-slate-400 transition-transform ${openSections.enterpriseDepts ? 'rotate-180' : ''}`}
+                  />
+                )}
+              </button>
+
+              {openSections.enterpriseDepts && !isCollapsed && (
+                <div className="pl-4 pr-1 mt-1 space-y-0.5 text-[11px] border-l-2 border-slate-200 ml-4">
+                  <NavLink
+                    to="/quality/qc"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <ShieldCheck size={14} className="text-amber-600 mr-2 flex-shrink-0" />
+                    <span>Quality Control (QC)</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/quality/qa"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <ShieldCheck size={14} className="text-rose-600 mr-2 flex-shrink-0" />
+                    <span>Quality Assurance (QA)</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/dashboard/microbiology"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <ShieldCheck size={14} className="text-teal-600 mr-2 flex-shrink-0" />
+                    <span>QC Microbiology</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/production"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Layers size={14} className="text-indigo-600 mr-2 flex-shrink-0" />
+                    <span>Manufacturing (Production)</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/inventory"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Boxes size={14} className="text-teal-600 mr-2 flex-shrink-0" />
+                    <span>Warehouse & Inventory</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/finance"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <CreditCard size={14} className="text-emerald-600 mr-2 flex-shrink-0" />
+                    <span>Finance & Accounts</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/dashboard/procurement"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Package size={14} className="text-amber-600 mr-2 flex-shrink-0" />
+                    <span>Purchase & Procurement</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/dashboard/engineering"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Wrench size={14} className="text-blue-600 mr-2 flex-shrink-0" />
+                    <span>Engineering & Equipment</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/regulatory"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Globe size={14} className="text-cyan-600 mr-2 flex-shrink-0" />
+                    <span>Regulatory Dossiers</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/crm"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Briefcase size={14} className="text-indigo-600 mr-2 flex-shrink-0" />
+                    <span>Commercial & Sales (CRM)</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/dashboard/facilities"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Building2 size={14} className="text-slate-600 mr-2 flex-shrink-0" />
+                    <span>Facilities & Services</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/products"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Pill size={14} className="text-emerald-600 mr-2 flex-shrink-0" />
+                    <span>Products Master</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/documents"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <FileText size={14} className="text-purple-600 mr-2 flex-shrink-0" />
+                    <span>Controlled Documents & SOPs</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/hrms/canteen"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Utensils size={14} className="text-[#00A896] mr-2 flex-shrink-0" />
+                    <span>Canteen Management</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/audit-logs"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center py-1.5 px-2 rounded font-medium transition-colors ${
+                        isActive ? 'text-[#00A896] font-bold bg-teal-50/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <ShieldAlert size={14} className="text-rose-600 mr-2 flex-shrink-0" />
+                    <span>Audit Logs & Compliance</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* B2. DEPARTMENT-SPECIFIC OPERATIONAL SECTIONS (NON-SUPER ADMIN / NON-HR) */}
+          {/* ========================================================================= */}
+          {!isDirector && !isHR && (
             <div className="pt-2 border-t border-slate-100 mt-2">
               {!isCollapsed && (
                 <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
