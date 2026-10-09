@@ -27,14 +27,35 @@ const app = express();
 const httpServer = http.createServer(app);
 const PORT = Number(process.env.PORT || 5000);
 
-// Connect to MongoDB Database and ensure Master & HR initialization
-(async function initDatabase() {
-  let conn = await connectDB();
-  while (!conn || require('mongoose').connection.readyState !== 1) {
-    console.log('[Server Startup] Waiting for MongoDB to become ready...');
-    await new Promise(r => setTimeout(r, 2000));
-    conn = await connectDB();
+// Ensure database connection for both long-running and serverless environments
+let dbInitPromise = null;
+const ensureDatabaseConnection = async () => {
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState === 1) return mongoose.connection;
+  if (!dbInitPromise) {
+    dbInitPromise = (async () => {
+      let conn = await connectDB();
+      let retries = 0;
+      while ((!conn || mongoose.connection.readyState !== 1) && retries < 3) {
+        retries++;
+        console.log(`[Server Startup] Waiting for MongoDB to become ready (attempt ${retries})...`);
+        await new Promise(r => setTimeout(r, 1500));
+        conn = await connectDB();
+      }
+      return conn;
+    })().catch(err => {
+      dbInitPromise = null;
+      console.error('[Database Connect Error]', err.message);
+    });
   }
+  return dbInitPromise;
+};
+
+// Auto-init for standalone server mode
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  (async function initDatabase() {
+    await ensureDatabaseConnection();
+
 
   try {
     const Product = require('./models/Product');
@@ -128,7 +149,20 @@ const PORT = Number(process.env.PORT || 5000);
   } catch (bankErr) {
     console.warn('[Server Auto-Init] Bank details initialization note:', bankErr.message);
   }
-})();
+  })();
+}
+
+// Ensure database connection for incoming API requests
+app.use(async (req, res, next) => {
+  if (req.url && req.url.startsWith('/api')) {
+    try {
+      await ensureDatabaseConnection();
+    } catch (e) {
+      console.error('[API Database Middleware Error]', e.message);
+    }
+  }
+  next();
+});
 
 // Request ID Middleware
 app.use((req, res, next) => {
@@ -405,7 +439,12 @@ async function startServer() {
   listenWithFallback(PORT);
 }
 
-startServer();
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  startServer();
+} else {
+  // In Vercel serverless, ensure global error handler is always mounted
+  app.use(errorHandler);
+}
 
 app.server = httpServer;
 module.exports = app;
