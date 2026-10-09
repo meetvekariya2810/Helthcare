@@ -41,6 +41,7 @@ export const getRoleRedirect = (userOrRole, customDashboard, optionalDept) => {
     return target;
   }
 
+  if (role === 'EMPLOYEE' || role === 'SENIOR_EMPLOYEE') return '/employee/dashboard';
   if (role === 'CANTEEN_ADMIN') return '/canteen/dashboard';
   if (role === 'SUPER_ADMIN' || role === 'DIRECTOR') return '/dashboard/hr';
   if (['HR_ADMIN', 'HR_MANAGER', 'HR_EXECUTIVE', 'HR', 'RECRUITER', 'PAYROLL_ADMIN'].includes(role) || dept.includes('human resource')) {
