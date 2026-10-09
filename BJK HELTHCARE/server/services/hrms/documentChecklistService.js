@@ -135,9 +135,11 @@ const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads', 'documents');
  * Ensure the documents directory exists on disk
  */
 function ensureUploadDirectory() {
-  if (!fs.existsSync(UPLOADS_DIR)) {
-    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  }
+  try {
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+  } catch (_) {}
 }
 
 /**
