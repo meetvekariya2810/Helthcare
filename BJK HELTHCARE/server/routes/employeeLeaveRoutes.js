@@ -24,13 +24,18 @@ const { authenticateEmployee, authorizeOwnership } = require('../middleware/empl
 
 // Configure secure document upload storage
 const uploadDir = path.join(__dirname, '..', 'uploads', 'documents');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (_) {
+  // Read-only filesystem in serverless environments
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    const dest = fs.existsSync(uploadDir) ? uploadDir : (process.env.VERCEL ? '/tmp' : uploadDir);
+    cb(null, dest);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);

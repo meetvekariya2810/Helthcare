@@ -13,13 +13,18 @@ const { authenticateEmployee, authorizeOwnership } = require('../middleware/empl
 
 // Configure Multer for PDF storage
 const uploadDir = path.join(__dirname, '..', 'uploads', 'documents');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (_) {
+  // Read-only filesystem in serverless environments
 }
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    const dest = fs.existsSync(uploadDir) ? uploadDir : (process.env.VERCEL ? '/tmp' : uploadDir);
+    cb(null, dest);
   },
   filename: function (req, file, cb) {
     const safeEmpId = (req.employeeId || 'EMP').replace(/[^a-zA-Z0-9_-]/g, '_');
