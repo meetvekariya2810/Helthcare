@@ -1,0 +1,52 @@
+Aug-26,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Sr. NO.,Emp. Code,Name ,Dept.,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,Present ,WO,PH,CL,SL,CO,LWP,A.Pay Days,Total Days
+,,,,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,,,,,,,,,
+1,BH1022,Dixita Jayantibhai Makwana,Production,P,WO,P,P,P,P ,P,P,AB,AB,AB,AB,AB,P,PH,P,AB,AB,AB,P,P,P,P,,,,,PH,,,,12.0,1.0,2.0,0.0,0.0,0.0,8.0,13.0,23.0
+2,BH1023,Milan Dilipbhai Mayani,QC,P,WO,P,P,P,P ,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,0.0,21.0,23.0
+3,BH1024,Kirtankumar Jayantibhai Patel,Engg.,P,WO,P,P,P,P ,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,0.0,21.0,23.0
+4,BH1026,Nidhi Kushwah,QC Micro,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,AB,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+5,BH1027,Pinkybahen Patel,Production,AB,AB,AB,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,17.0,2.0,2.0,0.0,0.0,0.0,3.0,19.0,24.0
+6,BH1028,Hiteshkumar Amarsinh Chauhan,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+7,BH1029,Shwetasingh Kurm Kshatriya,QA,P,WO,P,P,CL,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,1.0,0.0,0.0,0.0,22.0,24.0
+8,BH1030,Payalben Dilipbhai Darji,QC Micro,AB,AB,AB,AB,AB,AB,LEFT,,,,,,,,,,,,,,,,,,,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0,6.0,0.0,6.0
+9,BH1031,Karina Lalitbhai Patel,QC,P,WO,SL,E,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,1.0,0.0,0.0,21.0,23.0
+10,BH1032,Kartikkumar Patel,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+11,BH1033,Ayushkumar Patel,QA,P,WO,P,P,P,P,P,P1/2,CL,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,17.5,3.0,2.0,1.0,0.0,0.0,0.5,21.5,24.0
+12,BH1035,Sureshkumar Rajendrasinh Chauhan,Accounts,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+13,BH1038,Vishalkumar Patel,QA,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,AB,AB,WO,P,P,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,2.0,20.0,24.0
+14,BH1039,Daksheshkumar Nayi,Warehouse,P,WO,P,P,P,P,P,P,P,SL1/2,WO,p,P,P,PH,AB,P,WO,P,P,P,P,AB,,,,,PH,,,,16.5,3.0,2.0,0.0,0.5,0.0,2.0,20.0,24.0
+15,BH1040,Payal Chirag Chodvadiya,QC,AB,WO,P,P,P,P,P,P,P,P,WO,AB,AB,AB,PH,P,AB,P,P,P,P,P,P,,,,,PH,,,,15.0,2.0,2.0,0.0,0.0,0.0,5.0,17.0,24.0
+16,BH1041,Hetalben Jitendrakumar Pandit,QA,P,WO,P,P,P,CL1/2,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.5,3.0,2.0,0.5,0.0,0.0,0.0,22.0,24.0
+17,BH1042,Kinjal Kathiriya,QA,P,WO,P,P,P,P,P,SL,P,P,WO,P,P,P,PH,AB,P,WO,P,P,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,1.0,0.0,1.0,21.0,24.0
+18,BH1043,Hina Pankaj Chowdhry,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,P,P,P,P,P,P,,,,,PH,,,,20.0,2.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+19,BH1044,Balvantsinh Dinusinh Rathod,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+20,BH1045,Kishan Haresh Patel,Warehouse,P,WO,P,P,P,P,P1/2,AB,AB,AB,AB,AB,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,14.5,2.0,2.0,0.0,0.0,0.0,5.5,16.5,24.0
+21,BH1046,Krutika Parmar,HR & Admin,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+22,BH1047,Nigamkumar Rohitbhai Raval,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,AB,M,WO,P,P,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,1.0,20.0,23.0
+23,BH1048,Perin Pandit,QA,P,WO,P,P,SL,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,1.0,0.0,0.0,22.0,24.0
+24,BH1050,Jinalben Navinbhai Rana,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+25,BH1052,Ranjitkumar Baraiya,Purchase,P,WO,P,P,P,P,P,SL,P,P,WO,P,P,AB,PH,P,AB,AB,AB,P,P,P,AB,,,,,PH,,,,14.0,2.0,2.0,0.0,1.0,0.0,5.0,17.0,24.0
+26,BH1054,Chiragkumar Patel,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+27,BH1055,Harshil J. Bhuva,QA,SL,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,CO,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,1.0,0.0,21.0,23.0
+28,BH1057,Dharmik Patel,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,AB,AB,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,2.0,20.0,24.0
+29,BH1058,Bhaveshkumar Prajapati,Production,P,WO,P,P,P,P,P,P,P,P1/2,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,18.5,3.0,2.0,0.0,0.0,0.0,0.5,21.5,24.0
+30,BH1059,Vanraj Solanki,Production,P,WO,P,P,P,P,P,P,P,AB,WO,P,P,P,PH,P,M,WO,P,P,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,1.0,20.0,23.0
+31,BH1060,Shaileshgiri Goswami,Engg.,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,AB,AB,P,P,P,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,2.0,20.0,24.0
+32,BH1061,Ravindrasinh V. Makwana,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,AB,P,P,AB,,,,,PH,,,,17.0,3.0,2.0,0.0,0.0,0.0,2.0,20.0,24.0
+33,BH1062,Daxaben Dabhi,HR & Admin,P,WO,P,SL,P,P,P,P,P,P,WO,AB,P,AB,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,16.0,3.0,2.0,0.0,1.0,0.0,2.0,20.0,24.0
+34,BH1063,Pankajsinh Zala,Production,P,WO,P,P,P,P,P,P,P,P,WO,AB,AB,AB,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,16.0,3.0,2.0,0.0,0.0,0.0,3.0,19.0,24.0
+35,BH1064,Sagarkumar R. Patel,Production,P,WO,P,SL,P,P,P,P,P,P,WO,P,P,AB,PH,AB,P,WO,P,P,P,P,P,,,,,PH,,,,16.0,3.0,2.0,0.0,1.0,0.0,2.0,20.0,24.0
+36,BH1065,Ashwinsinh P. Zala,Warehouse,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,AB,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+37,BH1066,Sajjansinh N. Zala,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+38,BH1067,Rahulsinh S. Zala,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+39,BH1068,Surendra Kumar,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,CL,,,19.0,3.0,2.0,1.0,0.0,0.0,0.0,23.0,25.0
+40,BH1069,Jagdish Makwana,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,AB,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+41,BH1071,Vijaykumar Parmar,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+42,BH1072,Nidhi Sheladiya,QC Micro,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,AB,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+43,BH1073,Mayank Ramani,Production,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,AB,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+44,BH1074,Mansi R. Patel,QA,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,P,WO,P,P,P,P,P,,,,,PH,,,,19.0,3.0,2.0,0.0,0.0,0.0,0.0,22.0,24.0
+45,BH1076,Ajay Mesariya,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,AB,P,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+46,BH1077,Chirag Solanki,QC,P,WO,P,P,P,P,P,P,P,P,WO,P,P,P,PH,P,AB,WO,P,P,P,P,P,,,,,PH,,,,18.0,3.0,2.0,0.0,0.0,0.0,1.0,21.0,24.0
+47,BH1078,Harshil Panchal,Production,P,WO,P,P,P,P,P,P,P1/2,AB,WO,P,P,P,PH,P,P,WO,P,P,P,AB,P,,,,,PH,,,,16.5,3.0,2.0,0.0,0.0,0.0,2.5,19.5,24.0
+48,BH1079,Tirth Bhatt,QA,AB,AB,P,P,P,P,P1/2,AB,AB,AB,WO,P,LEFT,,,,,,,,,,,,,,,,,,,5.5,1.0,0.0,0.0,0.0,0.0,5.5,6.5,12.0
+49,BH1080,Sachinkumar R. Patel,QC,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,P,,,,,PH,,,,,,,,,,,,

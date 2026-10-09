@@ -1,0 +1,165 @@
+{
+  "company": {
+    "name": "BJK Healthcare Pvt. Ltd.",
+    "brand": "BJK Healthcare",
+    "tagline": "One Company. One Digital Brain. Intelligent Healthcare Operations.",
+    "cin": "U46497GJ2023PTC1393308",
+    "email": "contactus@bjkhealthcare.com",
+    "phone": "+91 99744 86967",
+    "website": "https://www.bjkhealthcare.com",
+    "launchDate": "March 2024",
+    "mission": "Increasing access to high-quality medicine and improving patient health is our mission.",
+    "vision": "To improve health and enhance quality of life by delivering safe, effective, and affordable pharmaceutical formulations. We are committed to excellence in manufacturing and innovation, ensuring every product meets the highest standards of quality and regulatory compliance.",
+    "about": "BJK Healthcare is a fully integrated specialty pharmaceuticals company focused on the research, development, and commercialization of innovative products. We deliver value-added solutions that enhance patient care and support healthcare professionals with greater safety and convenience. We believe in healthcare as it should be empowering people worldwide to live healthier lives. Driven by our belief that better access leads to better health, we leverage world-class manufacturing, scientific expertise, and commercial capabilities to deliver quality medicines where they are needed. We produce high-quality medicinal products, adhering to top industry standards, and remain committed to improving lives through pioneering research and superior production.",
+    "addresses": {
+      "corporateOffice": {
+        "title": "Registration Office & Corporate Presence",
+        "addressLine": "410-4th Floor, Syphon Gardenia, on S.P. Ring Road, Opp. Lubi Pumps, Nana Chiloda",
+        "city": "Ahmedabad",
+        "state": "Gujarat",
+        "pincode": "382330",
+        "country": "India"
+      },
+      "manufacturingUnit": {
+        "title": "Manufacturing Unit",
+        "addressLine": "Survey No. 1248 Rashtriya Raksha University Road, Village-Lavad, Taluka - Dehgam",
+        "district": "Gandhinagar",
+        "state": "Gujarat",
+        "pincode": "382305",
+        "country": "India"
+      }
+    },
+    "certifications": [
+      "WHO-GMP Certified",
+      "Compliant with US-FDA Standards",
+      "Compliant with UK-MHRA Standards",
+      "Compliant with ANVISA Standards",
+      "Uganda National Drug Authority (NDA) Certified",
+      "NAFDAC Nigeria Certified",
+      "Pharmacy and Poisons Board Kenya (PPB) Certified",
+      "EFDA Ethiopia Certified",
+      "Ivory Coast DPML / Ministry of Health Certified"
+    ],
+    "values": [
+      {
+        "title": "Quality",
+        "description": "We are dedicated to maintaining the highest standards of quality across all processes and products."
+      },
+      {
+        "title": "Teamwork",
+        "description": "We value collaboration, mutual respect, and shared success as key drivers of our growth and impact."
+      },
+      {
+        "title": "Integrity",
+        "description": "We operate with honesty, transparency, and accountability in every aspect of our business."
+      },
+      {
+        "title": "Sustainability",
+        "description": "We are committed to environmentally responsible practices and sustainable business growth."
+      },
+      {
+        "title": "Innovation",
+        "description": "We cultivate a culture of continuous innovation to enhance our products, processes, and patient outcomes."
+      },
+      {
+        "title": "Compliance",
+        "description": "We strictly adhere to all national and international regulatory and ethical standards."
+      },
+      {
+        "title": "Customer Focus",
+        "description": "We are dedicated to exceeding customer expectations by ensuring the reliable and timely delivery of high-quality products."
+      },
+      {
+        "title": "Commitment",
+        "description": "We act responsibly and ethically in all interactions with customers, partners, society, and the environment."
+      }
+    ],
+    "collaborationModels": [
+      {
+        "title": "WHO-GMP and EU-GMP Compliant Infrastructure",
+        "description": "A world-class manufacturing setup that meets both national and international regulatory standards."
+      },
+      {
+        "title": "Flexible Production Models",
+        "description": "Offering Contract Manufacturing (CMO), Loan Licensing, and Technology Transfer services."
+      },
+      {
+        "title": "End-to-End Support",
+        "description": "Comprehensive assistance from product development and stability studies to packaging, documentation, and regulatory submissions."
+      },
+      {
+        "title": "Confidentiality & IP Protection",
+        "description": "Secure handling of partner formulations and proprietary technologies."
+      },
+      {
+        "title": "Timely Delivery & Scalability",
+        "description": "High-volume capacity with efficient turnaround times to meet market demands."
+      }
+    ],
+    "globalDifferentiators": [
+      "Regulatory-compliant product dossiers (ACTD / CTD / eCTD formats)",
+      "Proven track record in product registrations and audits",
+      "Reliable supply chain and timely deliveries",
+      "Long-term B2B partnerships and private label offerings",
+      "Diverse portfolio covering acute and chronic therapeutic areas"
+    ]
+  },
+  "publicManufacturingStats": [
+    {
+      "dosageForm": "Tablets",
+      "statedCapacity": "17B+",
+      "unit": "Units / Annual Stated Output",
+      "description": "High-speed compression lines ensuring consistent quality and output.",
+      "sourceDocument": "BJK Healthcare Product Brochure",
+      "sourcePage": 3,
+      "sourceNotice": "Publicly stated company information (Not live factory output)"
+    },
+    {
+      "dosageForm": "Dry Powder Syrups (D.P.S. Bottles)",
+      "statedCapacity": "21M+",
+      "unit": "Bottles / Annual Stated Output",
+      "description": "Including Dry Powder syrups and suspensions, packed under stringent hygiene standards.",
+      "sourceDocument": "BJK Healthcare Product Brochure",
+      "sourcePage": 3,
+      "sourceNotice": "Publicly stated company information (Not live factory output)"
+    },
+    {
+      "dosageForm": "D.P.I. Capsules",
+      "statedCapacity": "3.5B",
+      "unit": "Capsules / Annual Stated Output",
+      "description": "Produced with precise dosing technology for inhalation and oral powders.",
+      "sourceDocument": "BJK Healthcare Product Brochure",
+      "sourcePage": 3,
+      "sourceNotice": "Publicly stated company information (Not live factory output)"
+    },
+    {
+      "dosageForm": "Capsules",
+      "statedCapacity": "11B+",
+      "unit": "Capsules / Annual Stated Output",
+      "description": "Produced with precise dosing technology for inhalation and oral powders.",
+      "sourceDocument": "BJK Healthcare Product Brochure",
+      "sourcePage": 3,
+      "sourceNotice": "Publicly stated company information (Not live factory output)"
+    },
+    {
+      "dosageForm": "Sachets",
+      "statedCapacity": "32M+",
+      "unit": "Sachets / Annual Stated Output",
+      "description": "Produced with precise dosing technology for inhalation and oral powders.",
+      "sourceDocument": "BJK Healthcare Product Brochure",
+      "sourcePage": 3,
+      "sourceNotice": "Publicly stated company information (Not live factory output)"
+    }
+  ],
+  "productionSteps": [
+    { "step": 1, "name": "Idea & Concept", "detail": "Formulation conception and therapeutic gap evaluation." },
+    { "step": 2, "name": "Research", "detail": "Pre-formulation chemistry, solubility profiling, and API compatibility testing." },
+    { "step": 3, "name": "Experiment & Pre-Clinical", "detail": "Lab-scale batches, analytical method validation, and stability evaluation." },
+    { "step": 4, "name": "Production", "detail": "Pilot-to-commercial scale synthesis under WHO-GMP cleanroom standards." },
+    { "step": 5, "name": "Packing & Labeling", "detail": "High-barrier blister, strip, bottle, and pouch packing with anti-counterfeit serialization." },
+    { "step": 6, "name": "Testing & Clinical Trials", "detail": "In-process quality controls, dissolution studies, bioequivalence, and batch release." },
+    { "step": 7, "name": "Approved & Registered", "detail": "Regulatory dossier submission (CTD/eCTD) and health authority clearances." },
+    { "step": 8, "name": "Distribution & Pharmacy", "detail": "Controlled cold/ambient logistics, hospital networks, and retail pharmacies." },
+    { "step": 9, "name": "Consumer Health", "detail": "Patient health restoration and ongoing post-market pharmacovigilance." }
+  ]
+}

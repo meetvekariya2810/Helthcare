@@ -1,0 +1,38 @@
+{
+  "name": "bjk-healthcare-server",
+  "version": "1.0.0",
+  "description": "BJK Healthcare Digital Brain Backend & HRMS API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node seed/seed.js",
+    "seed:master": "node seed/seed.js",
+    "seed:hrms": "node seed/hrmsSeed.js",
+    "seed:attendance": "node seed/attendanceSeed.js",
+    "seed:auth": "node seed/authSeed.js",
+    "verify": "node scripts/verifyDatabase.js",
+    "test:hrms": "node tests/hr/hrmsMasterTestSuite.js",
+    "test:policies": "node tests/hr/policyEngineTestSuite.js",
+    "test:onboarding": "node testHRGuidedOnboarding.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "docx": "^9.7.2",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.20.2"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.9"
+  }
+}

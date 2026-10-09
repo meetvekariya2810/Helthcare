@@ -1,0 +1,91 @@
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
+const {
+  getLeaveTypes,
+  getHolidays,
+  calculateWorkingDays,
+  getLeaveBalances,
+  getEmployeeLeaveLedger,
+  getLeaveRequests,
+  getLeaveById,
+  applyLeave,
+  withdrawLeave,
+  cancelLeave,
+  deleteLeave,
+  uploadLeaveDocument,
+  getTeamLeaves,
+  approveRejectTeamLeave
+} = require('../controllers/EmployeeLeaveController');
+const { authenticateEmployee, authorizeOwnership } = require('../middleware/employeeAuth');
+
+// Configure secure document upload storage
+const uploadDir = path.join(__dirname, '..', 'uploads', 'documents');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `leave-doc-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, JPG, JPEG, and PNG documents are allowed.'));
+    }
+  }
+});
+
+// All employee leave routes strictly require authenticated session & ownership verification
+router.use(authenticateEmployee);
+router.use(authorizeOwnership);
+
+// 1. Leave Master Metadata & Calculators
+router.get('/types', getLeaveTypes);
+router.get('/holidays', getHolidays);
+router.post('/calculate-days', calculateWorkingDays);
+
+// 2. Balances, Ledgers & Leave Applications
+router.get('/balance', getLeaveBalances);
+router.get('/ledger', getEmployeeLeaveLedger);
+router.get('/matrix', getEmployeeLeaveLedger);
+router.get('/history', getLeaveRequests);
+router.get('/', getLeaveRequests);
+router.get('/my', getLeaveRequests);
+router.post('/', applyLeave);
+router.post('/apply', applyLeave);
+
+// 3. Document Upload
+router.post('/upload-document', upload.single('file'), uploadLeaveDocument);
+
+// 4. Leave Request Details & Lifecycle Actions
+router.get('/:id', getLeaveById);
+router.post('/:id/withdraw', withdrawLeave);
+router.put('/:id/withdraw', withdrawLeave);
+router.post('/:id/cancel', cancelLeave);
+router.put('/:id/cancel', cancelLeave);
+router.delete('/:id', deleteLeave);
+
+// 5. Manager / Team Lead Workflows
+router.get('/team', getTeamLeaves);
+router.put('/team/:id/action', approveRejectTeamLeave);
+router.post('/team/:id/action', approveRejectTeamLeave);
+
+module.exports = router;

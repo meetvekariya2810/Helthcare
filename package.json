@@ -1,0 +1,20 @@
+{
+  "name": "bjk-healthcare-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix \"BJK HELTHCARE\"",
+    "dev:server": "npm run dev:server --prefix \"BJK HELTHCARE\"",
+    "dev:serve": "npm run dev:server --prefix \"BJK HELTHCARE\"",
+    "dev:client": "npm run dev:client --prefix \"BJK HELTHCARE\"",
+    "build": "npm run build --prefix \"BJK HELTHCARE\"",
+    "start": "npm run start --prefix \"BJK HELTHCARE\"",
+    "seed": "npm run seed --prefix \"BJK HELTHCARE\"",
+    "seed:auth": "npm run seed:auth --prefix \"BJK HELTHCARE\"",
+    "verify": "npm run verify --prefix \"BJK HELTHCARE/server\"",
+    "test:hrms": "npm run test:hrms --prefix \"BJK HELTHCARE/server\"",
+    "test:policies": "npm run test:policies --prefix \"BJK HELTHCARE/server\"",
+    "test:onboarding": "npm run test:onboarding --prefix \"BJK HELTHCARE/server\"",
+    "install:all": "npm run install:all --prefix \"BJK HELTHCARE\""
+  }
+}

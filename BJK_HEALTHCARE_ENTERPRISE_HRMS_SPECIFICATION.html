@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BJK Healthcare — Enterprise HRMS Master Specification</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    :root {
+      --navy: #0A192F;
+      --teal: #00A896;
+      --dark: #0F172A;
+      --slate: #334155;
+      --light-bg: #F8FAFC;
+      --border: #E2E8F0;
+      --emerald: #059669;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--slate);
+      background-color: #F1F5F9;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .doc-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      padding: 60px 80px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .header-banner {
+      border-bottom: 3px solid var(--teal);
+      padding-bottom: 24px;
+      margin-bottom: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-text {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    h1 {
+      color: var(--navy);
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 36px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      color: var(--teal);
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    p, li {
+      font-size: 14px;
+      color: #334155;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .table-container {
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--navy);
+      color: #FFFFFF;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:nth-child(even) td {
+      background: var(--light-bg);
+    }
+
+    .code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--teal);
+      background: #F1F5F9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .info-card {
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+
+    .info-card-title {
+      font-weight: 700;
+      color: #065F46;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: #94A3B8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media print {
+      body { background: #FFFFFF; padding: 0; }
+      .doc-container { box-shadow: none; border: none; padding: 20px; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-container">
+    <div class="header-banner">
+      <div>
+        <div class="logo-text">BJK HEALTHCARE LIMITED</div>
+        <div class="subtitle">Digital Brain — Enterprise HRMS & Workforce Intelligence</div>
+      </div>
+      <div>
+        <span class="badge">Master Specification Document</span>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">Corporate Philosophy</div>
+      <p style="margin: 0; font-size: 13px; color: #047857;">
+        <strong>"One Company. One Digital Brain. Intelligent Healthcare Operations."</strong><br>
+        Intelligent Workforce Management for Healthcare & Pharmaceutical Operations compliant with WHO-GMP Schedule M, US-FDA 21 CFR Part 211 & Part 11, and Indian Statutory Labor Standards.
+      </p>
+    </div>
+
+    <h1>1. System Overview & Technology Stack</h1>
+    <p>
+      The BJK Healthcare HRMS is fully integrated into the existing <strong>BJK Healthcare Digital Brain</strong>. It operates on a unified single database layer (<code>bjk_healthcare</code> on MongoDB Atlas) with zero duplicate authentication, user records, or audit subsystems.
+    </p>
+    <ul>
+      <li><strong>Frontend:</strong> React 18, Vite 5, Tailwind CSS, React Router v6, Lucide React, Recharts.</li>
+      <li><strong>Backend:</strong> Node.js, Express.js, JWT, bcryptjs, Helmet, CORS, PDFKit streaming engine.</li>
+      <li><strong>Database:</strong> MongoDB Atlas with indexed Mongoose schemas and strict relational references.</li>
+      <li><strong>Security & RBAC:</strong> Granular permissions per role, bcrypt salted password hashing, 21 CFR Part 11 electronic audit logs.</li>
+    </ul>
+
+    <h1>2. 16-Stage Pharmaceutical Employee Lifecycle</h1>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Lifecycle Phase</th>
+            <th>Operational Flow & Integration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td><strong>PLAN</strong></td>
+            <td>Departmental manpower requisitions and plant capacity staffing quotas.</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td><strong>RECRUIT</strong></td>
+            <td>Pharma job postings (B.Pharm, M.Pharm, QA/QC, Cleanroom) & ATS screening.</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td><strong>SELECT</strong></td>
+            <td>Technical assessments, hiring manager interview feedback, and score recording.</td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td><strong>HIRE</strong></td>
+            <td>Automated Generation of Official Offer Letters with CTC Annexure A.</td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td><strong>ONBOARD</strong></td>
+            <td>10-step checklist (KYC, Bank, PAN, NDA, cGMP & Cleanroom induction).</td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td><strong>ASSIGN</strong></td>
+            <td>Facility placement (Plant Unit 1), designation, team, and reporting manager.</td>
+          </tr>
+          <tr>
+            <td><strong>7</strong></td>
+            <td><strong>ATTEND</strong></td>
+            <td>Web, mobile & biometric punch recording with regularization workflows.</td>
+          </tr>
+          <tr>
+            <td><strong>8</strong></td>
+            <td><strong>SCHEDULE</strong></td>
+            <td>Rostering with automated conflict engine, rest-period & credential blocking.</td>
+          </tr>
+          <tr>
+            <td><strong>9</strong></td>
+            <td><strong>TRAIN</strong></td>
+            <td>Pharma LMS: cGMP, GLP, SOPs, Data Integrity with retraining timers.</td>
+          </tr>
+          <tr>
+            <td><strong>10</strong></td>
+            <td><strong>CERTIFY</strong></td>
+            <td>Qualifications, pharmacy licenses, cleanroom authorizations, and 90/60/30-day alerts.</td>
+          </tr>
+          <tr>
+            <td><strong>11</strong></td>
+            <td><strong>PERFORM</strong></td>
+            <td>Quarterly goals, KPI/KRA tracking, self appraisals, and manager reviews.</td>
+          </tr>
+          <tr>
+            <td><strong>12</strong></td>
+            <td><strong>PAY</strong></td>
+            <td>Statutory gross-to-net engine (EPF 12%, ESI, PT, TDS) with automated PDF payslips.</td>
+          </tr>
+          <tr>
+            <td><strong>13</strong></td>
+            <td><strong>DEVELOP</strong></td>
+            <td>Competency matrix, talent readiness, and succession planning.</td>
+          </tr>
+          <tr>
+            <td><strong>14</strong></td>
+            <td><strong>TRANSFER</strong></td>
+            <td>Inter-facility relocations between Corporate, Manufacturing, and R&D.</td>
+          </tr>
+          <tr>
+            <td><strong>15</strong></td>
+            <td><strong>PROMOTE</strong></td>
+            <td>Grade progression, compensation adjustments, and audit-logged role elevation.</td>
+          </tr>
+          <tr>
+            <td><strong>16</strong></td>
+            <td><strong>EXIT</strong></td>
+            <td>No-dues handover (QA, IT, Assets), Relieving & Experience PDF certificates, F&F.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h1>3. Implemented PDF Document Generation Engine</h1>
+    <p>
+      The platform features a dedicated server-side streaming PDF generator (<code>pdfService.js</code>) built with <code>pdfkit</code>. Documents are streamed directly over HTTP as binary attachments with verification hashes and automatic audit trail records.
+    </p>
+    <ul>
+      <li><strong>Salary Payslips:</strong> <code>GET /api/hrms/payroll/:id/pdf</code> — Comprehensive monthly earnings, statutory deductions (PF, ESI, PT, TDS), attendance statistics, and net pay in words.</li>
+      <li><strong>Training & GMP Certificates:</strong> <code>GET /api/hrms/training/enrollments/:id/certificate-pdf</code> — Landscape certificate with decorative borders, assessment score, valid-until date, and QA director stamp.</li>
+      <li><strong>Offer Letters:</strong> <code>GET /api/hrms/recruitment/candidates/:id/offer-pdf</code> — Formal appointment letters with Annexure A CTC breakdown, plant location, and confidentiality clauses.</li>
+      <li><strong>Experience Certificates:</strong> <code>GET /api/hrms/employees/:id/experience-pdf</code> — Service tenure verification, designation, and conduct certification.</li>
+      <li><strong>Statutory Reports:</strong> <code>GET /api/hrms/reports/export?type=...&format=pdf</code> — Form 25 Attendance Muster Roll and Employee Master directories.</li>
+    </ul>
+
+    <h1>4. Role-Based Access Control (RBAC)</h1>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Module Authorization Scope</th>
+            <th>Confidentiality Safeguards</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SUPER_ADMIN / DIRECTOR</strong></td>
+            <td>All system modules, analytics, audit logs, and configuration.</td>
+            <td>Full system oversight, executive sign-off authority.</td>
+          </tr>
+          <tr>
+            <td><strong>HR_ADMIN / HR_MANAGER</strong></td>
+            <td>Employees, onboarding, leave approvals, shifts, recruitment, training.</td>
+            <td>Restricted from unmasked salary data unless authorized.</td>
+          </tr>
+          <tr>
+            <td><strong>PAYROLL_ADMIN / FINANCE</strong></td>
+            <td>Payroll calculation, salary disbursement, expense claims.</td>
+            <td>Strictly isolated financial view; creates audit trail on changes.</td>
+          </tr>
+          <tr>
+            <td><strong>DEPARTMENT_MANAGER</strong></td>
+            <td>Subordinate team roster, attendance corrections, shift swaps, reviews.</td>
+            <td>Scoped strictly to reporting team members.</td>
+          </tr>
+          <tr>
+            <td><strong>EMPLOYEE</strong></td>
+            <td>Employee Self Service (ESS): check in/out, view own payslip, apply leave.</td>
+            <td>Zero visibility into peers' personal or salary information.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <span>Generated by BJK Healthcare Digital Brain Platform</span>
+      <span>Confidential & Proprietary &bull; 21 CFR Part 11 Validated</span>
+    </div>
+  </div>
+</body>
+</html>

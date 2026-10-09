@@ -1,0 +1,34 @@
+{
+  "name": "bjk-healthcare-digital-brain",
+  "version": "1.0.0",
+  "description": "BJK Healthcare Digital Brain & Enterprise Operations Platform - Enterprise HRMS Module",
+  "main": "server/server.js",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "npm run dev --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:serve": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "seed:master": "npm run seed --prefix server",
+    "seed:hrms": "npm run seed:hrms --prefix server",
+    "seed:auth": "npm run seed:auth --prefix server",
+    "verify": "npm run verify --prefix server",
+    "test:hrms": "npm run test:hrms --prefix server",
+    "test:onboarding": "npm run test:onboarding --prefix server",
+    "build": "npm run build --prefix client",
+    "start": "node server/server.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "bjk-healthcare",
+    "digital-brain",
+    "enterprise-hrms",
+    "pharmaceutical-workforce",
+    "workforce-intelligence"
+  ],
+  "author": "BJK Healthcare Enterprise Systems",
+  "license": "UNLICENSED"
+}

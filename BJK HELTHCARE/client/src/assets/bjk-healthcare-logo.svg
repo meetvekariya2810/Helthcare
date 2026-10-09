@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Cyan gradient for outer shape -->
+    <linearGradient id="bjkCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00B4D8" />
+      <stop offset="100%" stop-color="#0077B6" />
+    </linearGradient>
+
+    <!-- Teal/Green gradient for central shield shape -->
+    <linearGradient id="bjkTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#02C39A" />
+      <stop offset="50%" stop-color="#00A896" />
+      <stop offset="100%" stop-color="#009B8D" />
+    </linearGradient>
+
+    <!-- Purple accent gradient -->
+    <linearGradient id="bjkPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8338EC" />
+      <stop offset="100%" stop-color="#7B2CBF" />
+    </linearGradient>
+
+    <!-- Orange/Yellow accent gradient -->
+    <linearGradient id="bjkOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCBF49" />
+      <stop offset="100%" stop-color="#F77F00" />
+    </linearGradient>
+
+    <!-- Drop shadow filter -->
+    <filter id="bjkShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- LOGO EMBLEM GROUP (X: 10 to 130, Y: 10 to 130) -->
+  <g transform="translate(10, 10)" filter="url(#bjkShadow)">
+    <!-- 1. Blue/Cyan Outer Fluid Shape -->
+    <path d="M60 5 C88 5 112 25 116 55 C118 72 110 92 95 106 C80 120 62 115 60 115 C58 115 40 120 25 106 C10 92 2 72 4 55 C8 25 32 5 60 5 Z" 
+          fill="url(#bjkCyanGrad)" />
+
+    <!-- 2. Purple Accent Swirl (Left & Upper Arch) -->
+    <path d="M22 42 C16 58 18 76 28 88 C32 94 40 98 48 94 C38 86 34 72 36 60 C38 48 48 38 60 34 C50 32 30 32 22 42 Z" 
+          fill="url(#bjkPurpleGrad)" />
+
+    <!-- 3. Teal / Green Central Heart / Shield Shape -->
+    <path d="M60 22 C76 22 94 36 94 58 C94 82 72 98 60 106 C48 98 26 82 26 58 C26 36 44 22 60 22 Z" 
+          fill="url(#bjkTealGrad)" />
+
+    <!-- 4. Orange / Yellow Accent Arc (Right lower dynamic curve) -->
+    <path d="M72 94 C82 90 92 82 96 70 C99 60 98 50 94 44 C96 56 94 70 86 80 C80 88 74 92 72 94 Z" 
+          fill="url(#bjkOrangeGrad)" />
+    
+    <!-- Orange accent energy spark dot -->
+    <circle cx="92" cy="38" r="6" fill="url(#bjkOrangeGrad)" />
+
+    <!-- 5. Medical Cross (Precise pure white geometric medical cross inside central teal shape) -->
+    <g transform="translate(60, 62)">
+      <!-- Vertical bar -->
+      <rect x="-6" y="-22" width="12" height="44" rx="3" fill="#FFFFFF" />
+      <!-- Horizontal bar -->
+      <rect x="-22" y="-6" width="44" height="12" rx="3" fill="#FFFFFF" />
+      <!-- Inner subtle teal pulse center -->
+      <circle cx="0" cy="0" r="3.5" fill="#00A896" />
+    </g>
+  </g>
+
+  <!-- LOGO TYPOGRAPHY GROUP -->
+  <g transform="translate(150, 20)">
+    <!-- BJK Primary Bold Monogram Text -->
+    <text x="0" y="58" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="58" font-weight="900" letter-spacing="-0.03em" fill="#FFFFFF">
+      BJK
+    </text>
+    
+    <!-- Accent Dot on BJK -->
+    <circle cx="128" cy="22" r="5.5" fill="#00A896" />
+
+    <!-- HEALTHCARE Sub-brand Wordmark with High Letter-spacing -->
+    <text x="2" y="86" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="20" font-weight="800" letter-spacing="0.28em" fill="#00A896">
+      HEALTHCARE
+    </text>
+
+    <!-- Digital Brain / Operations Tagline -->
+    <text x="3" y="106" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" letter-spacing="0.12em" fill="#94A3B8">
+      DIGITAL BRAIN &#8226; ENTERPRISE PLATFORM
+    </text>
+  </g>
+</svg>

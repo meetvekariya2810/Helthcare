@@ -1,0 +1,96 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+const mongoose = require('mongoose');
+const { connectDB } = require('../config/db');
+const User = require('../models/User');
+const Employee = require('../models/Employee');
+const Department = require('../models/Department');
+
+const rawCsv = `Sep-26,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Sr. NO.,Emp. Code,Name ,Dept.,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,Present ,WO,PH,CL,SL,CO,LWP,A.Pay Days,Total Days,
+,,,,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,TH,FR,SA,SU,MO,TU,WE,,,,,,,,,,
+1,BH1022,Dixita Jayantibhai Makwana,Production,SL1/2,P,P,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,CO,WO,P,P,P,P,P,P,P,P,P,P,24.5,3.0,1.0,0.0,0.5,1.0,0.0,30.0,30.0,
+2,BH1023,Milan Dilipbhai Mayani,QC,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,SL,WO,P,P,P,P,WO,P,P,P,P,P,P,P,CL,WO,P,22.0,5.0,1.0,1.0,1.0,0.0,0.0,30.0,30.0,
+3,BH1024,Kirtankumar Jayantibhai Patel,Engg.,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,5.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+4,BH1026,Nidhi Kushwah,QC Micro,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,SL,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,1.0,0.0,0.0,30.0,30.0,
+5,BH1027,Pinkybahen Patel,Production,P,P,WO,PH,P,P,P,WO,P,P1/2,P,P,P1/2,P,WO,P,P,P,P,WO,AB,P,P,P,P,P,P,P,WO,P,22.0,5.0,1.0,0.0,0.0,0.0,2.0,28.0,30.0,
+6,BH1028,Hiteshkumar Amarsinh Chauhan,QC,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,CO,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+7,BH1029,Shwetasingh Kurm Kshatriya,QA,P,P,P,PH,P,P,P,WO,P,P,P,P,CO,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,4.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+8,BH1031,Karina Lalitbhai Patel,QC,P,AB,P,PH,WO,P,SL,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,SL,P,P,P,P,P,P,P,WO,P,21.0,5.0,1.0,0.0,2.0,0.0,1.0,29.0,30.0,
+9,BH1032,Kartikkumar Patel,QC,P,P,P,PH,P,CO,P,WO,P,P,P,P,P,P,WO,P,P,P,P,P,P,CO,P,P,P,P,P,P,WO,P,24.0,3.0,1.0,0.0,0.0,2.0,0.0,30.0,30.0,
+10,BH1033,Ayushkumar Patel,QA,P,P,WO,PH,P,P,P,WO,P,SL,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,CL,P,P,P,WO,P,22.0,5.0,1.0,1.0,1.0,0.0,0.0,30.0,30.0,
+11,BH1035,Sureshkumar Rajendrasinh Chauhan,Accounts,P,P,P,PH,WO,P,P,WO,P,P,P,P,SL1/2,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.5,5.0,1.0,0.0,0.5,0.0,0.0,30.0,30.0,
+12,BH1038,Vishalkumar Patel,QA,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,5.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+13,BH1039,Daksheshkumar Nayi,Warehouse,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,SL1/2,WO,P,P,P,P,WO,P,P,P,P,P,SL,P,P,WO,P,22.5,5.0,1.0,0.0,1.5,0.0,0.0,30.0,30.0,
+14,BH1040,Payal Chirag Chodvadiya,QC,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,5.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+15,BH1041,Hetalben Jitendrakumar Pandit,QA,WO,P,P,PH,P,P,P,WO,P,P,P,SL,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,1.0,0.0,0.0,30.0,30.0,
+16,BH1042,Kinjal Kathiriya,QA,P,P,CO,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+17,BH1043,Hina Pankaj Chowdhry,Production,P,P,P,PH,P,CO,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,CO,CO,SL,SL,P,P,P,21.0,3.0,1.0,0.0,2.0,3.0,0.0,30.0,30.0,
+18,BH1044,Balvantsinh Dinusinh Rathod,Production,P,P,P,PH,P,P,P,WO,P,P,P,P,P,P1/2,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.5,4.0,1.0,0.0,0.0,0.0,0.5,29.5,30.0,
+19,BH1045,Kishan Haresh Patel,Warehouse,P,P,P,PH,WO,P1/2,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,CO,P,P,P,P,P,WO,P,22.5,5.0,1.0,0.0,0.0,1.0,0.5,29.5,30.0,
+20,BH1046,Krutika Parmar,HR & Admin,P,P,P,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,25.0,4.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+21,BH1047,Nigamkumar Rohitbhai Raval,Production,P,P,P,PH,P,P,P,WO,P,P,P1/2,P,P,P,WO,P,P,P,P,WO,P,P,P,P,CO,SL,SL,P,WO,P,21.5,4.0,1.0,0.0,2.0,1.0,0.5,29.5,30.0,
+22,BH1048,Perin Pandit,QA,P,P,P,PH,P,P,P,WO,P,P,P,P,P,P,WO,CO,P,P,P,WO,P,P,P,P,AB,P,P,P,WO,P,23.0,4.0,1.0,0.0,0.0,1.0,1.0,29.0,30.0,
+23,BH1050,Jinalben Navinbhai Rana,QC,P,P,P,PH,WO,AB,P,WO,P,P,P,P,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,8.0,2.0,1.0,0.0,0.0,0.0,19.0,11.0,30.0,HOLD F & F CASE
+24,BH1052,Ranjitkumar Baraiya,Purchase,AB,P,P,PH,WO,P,P,P1/2,AB,AB,AB,AB,AB,AB,P,P,CO,P,P,WO,P,AB,AB,AB,AB,AB,AB,AB,AB,AB,9.5,2.0,1.0,0.0,0.0,1.0,16.5,13.5,30.0,HOLD F & F CASE
+25,BH1054,Chiragkumar Patel,QC,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,SL,WO,P,P,AB,SL,SL,P,P,P,WO,P,20.0,5.0,1.0,0.0,3.0,0.0,1.0,29.0,30.0,
+26,BH1055,Harshil J. Bhuva,QA,P,P,P,PH,WO,CO,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+27,BH1057,Dharmik Patel,QC,P,P,WO,PH,SL,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,1.0,0.0,0.0,30.0,30.0,
+28,BH1058,Bhaveshkumar Prajapati,Production,P,P,P,PH,P1/2,P,P,WO,P,AB,P,P,P,P,WO,P,P,P,P,WO,CO,CO,CO,AB,AB,P,P,P,WO,P,18.5,4.0,1.0,0.0,0.0,3.0,3.5,26.5,30.0,
+29,BH1059,Vanraj Solanki,Production,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,SL1/2,P,P,P,WO,P,P,P,P,P,P,P,P,WO,SL,22.5,5.0,1.0,0.0,1.5,0.0,0.0,30.0,30.0,
+30,BH1060,Shaileshgiri Goswami,Engg.,P,P,P,PH,P,CO,P,WO,P,P,P,P,P,P,WO,P,P,P,SL,WO,P,P,P,P,P,P,P,P,WO,P,23.0,4.0,1.0,0.0,1.0,1.0,0.0,30.0,30.0,
+31,BH1061,Ravindrasinh V. Makwana,Production,P,P,WO,PH,P,P,P,WO,P1/2,P,SL,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,SL,P,WO,P,21.5,5.0,1.0,0.0,2.0,0.0,0.5,29.5,30.0,
+32,BH1062,Daxaben Dabhi,HR & Admin,P,P,SL1/2,PH,WO,P,P,WO,P,P,P,AB,AB,P,WO,P,P,AB,P,WO,P,P,P1/2,AB,AB,AB,AB,AB,WO,P,15.0,5.0,1.0,0.0,0.5,0.0,8.5,21.5,30.0,
+33,BH1063,Pankajsinh Zala,Production,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,5.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+34,BH1064,Sagarkumar R. Patel,Production,P,P,WO,PH,P,SL1/2,P,WO,P,P,P,P,P,CL1/2,WO,P,P,P,P,WO,SL,P,P,P,P,P,P,AB,WO,P,21.0,5.0,1.0,0.5,1.5,0.0,1.0,29.0,30.0,
+35,BH1065,Ashwinsinh P. Zala,Warehouse,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,SL,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,1.0,0.0,0.0,30.0,30.0,
+36,BH1066,Sajjansinh N. Zala,Production,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,SL1/2,WO,P,P,P,P,WO,P,P,P,SL,P,P,P,P,WO,P,22.5,5.0,1.0,0.0,1.5,0.0,0.0,30.0,30.0,
+37,BH1067,Rahulsinh S. Zala,Production,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P1/2,SL,P,P,WO,P,22.5,5.0,1.0,0.0,1.0,0.0,0.5,29.5,30.0,
+38,BH1068,Surendra Kumar,Production,SL,SL,SL,PH,WO,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,21.0,5.0,1.0,0.0,3.0,0.0,0.0,30.0,30.0,
+39,BH1069,Jagdish Makwana,Production,P,P,WO,PH,P,P,P,WO,P,P,P,P1/2,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,SL,22.5,5.0,1.0,0.0,1.0,0.0,0.5,29.5,30.0,
+40,BH1071,Vijaykumar Parmar,Production,P,P,P,PH,WO,P,P,WO,P,CL,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,1.0,0.0,0.0,0.0,30.0,30.0,
+41,BH1072,Nidhi Sheladiya,QC Micro,P,P,P,PH,WO,CO,CL,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,22.0,5.0,1.0,1.0,0.0,1.0,0.0,30.0,30.0,
+42,BH1073,Mayank Ramani,Production,P,P,P,PH,WO,P,P,WO,P,CO,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+43,BH1074,Mansi R. Patel,QA,P,P,P,PH,P,P,P,WO,P,CO,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,24.0,4.0,1.0,0.0,0.0,1.0,0.0,30.0,30.0,
+44,BH1076,Ajay Mesariya,QC,P,P,WO,PH,P,P,P,WO,P,P,P,P,P1/2,P,WO,P,P,P,P,WO,CL,P,P,P,P,P,SL,P,WO,P,21.5,5.0,1.0,1.0,1.0,0.0,0.5,29.5,30.0,
+45,BH1077,Chirag Solanki,QC,P,P,WO,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,CL,P,P,P,P,WO,P,23.0,5.0,1.0,1.0,0.0,0.0,0.0,30.0,30.0,
+46,BH1078,Harshil Panchal,Production,P,P,P,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,CO,P,WO,P,P,P,P,P,P,CL,P,WO,P,23.0,4.0,1.0,1.0,0.0,1.0,0.0,30.0,30.0,
+47,BH1080,Sachinkumar R. Patel,QC,P,P,P,PH,WO,P,P,WO,P,P,P,P,P,P,WO,CL,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,23.0,5.0,1.0,1.0,0.0,0.0,0.0,30.0,30.0,
+48,BH1081,Priyang Vaghani,BD,P,P,P,PH,P,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,25.0,4.0,1.0,0.0,0.0,0.0,0.0,30.0,30.0,
+49,,Renish Suvagiya,Admin,AB,AB,AB,AB,AB,P,P,WO,P,P,P,P,P,P,WO,P,P,P,P,WO,P,P,P,P,P,P,P,P,WO,P,21.0,4.0,0.0,0.0,0.0,0.0,5.0,25.0,30.0,
+50,BH1082,Zalakkumar Patel,QA,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,P,P,P,P,P,P1/2,WO,P,6.5,1.0,0.0,0.0,0.0,0.0,22.5,7.5,30.0,
+51,BH1083,Ravindrasinh D. Thakor,QC,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,AB,P,P,P,P,WO,P,5.0,1.0,0.0,0.0,0.0,0.0,24.0,6.0,30.0,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1421.5,,`;
+
+async function testMatch() {
+  await connectDB();
+  const lines = rawCsv.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const rows = [];
+  for (let i = 3; i < lines.length - 1; i++) {
+    const parts = lines[i].split(',');
+    const sr = parts[0]?.trim();
+    const code = parts[1]?.trim();
+    const name = parts[2]?.trim();
+    const dept = parts[3]?.trim();
+    if (!name) continue;
+    rows.push({ sr, code, name, dept });
+  }
+
+  console.log('Total September Rows:', rows.length);
+
+  for (const r of rows) {
+    let matchedUser = null;
+    let matchedEmp = null;
+    if (r.code) {
+      matchedUser = await User.findOne({ $or: [{ employeeCode: r.code }, { employeeId: r.code }] }).lean();
+      matchedEmp = await Employee.findOne({ $or: [{ employeeCode: r.code }, { employeeId: r.code }] }).lean();
+    }
+    if (!matchedUser && !matchedEmp && r.name) {
+      matchedUser = await User.findOne({ name: new RegExp('^' + r.name.trim(), 'i') }).lean();
+      matchedEmp = await Employee.findOne({ fullName: new RegExp('^' + r.name.trim(), 'i') }).lean();
+    }
+    console.log(`[${r.sr}] Code: '${r.code}' | Name: '${r.name}' -> Matched: ${matchedUser ? 'User: ' + matchedUser.name + ' (' + (matchedUser.employeeCode || matchedUser.employeeId) + ')' : matchedEmp ? 'Emp: ' + matchedEmp.fullName + ' (' + matchedEmp.employeeCode + ')' : 'NONE'}`);
+  }
+
+  process.exit(0);
+}
+testMatch();

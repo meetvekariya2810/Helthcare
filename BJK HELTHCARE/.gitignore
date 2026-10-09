@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment Files
+.env
+.env.*
+!.env.example
+*.env.local
+
+# Build Outputs
+dist/
+build/
+client/dist/
+
+# Uploads & Temporary artifacts
+server/uploads/
+server/backups/
+scratch/
+
+# Excel / Sensitive Master Credential Spreadsheets
+*.xlsx
+*.xls
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
