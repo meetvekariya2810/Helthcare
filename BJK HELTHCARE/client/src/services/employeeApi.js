@@ -101,7 +101,21 @@ export const employeeLeaveAPI = {
     }),
   getTeamLeaves: () => employeeApiClient.get('/employee/leave/team'),
   approveTeamLeave: (id, data) => employeeApiClient.post(`/employee/leave/team/${id}/action`, data),
+
+  // BJK-HR-POL-001 Self-Service Methods
+  getCompOffAuthorizations: () => employeeApiClient.get('/employee/leave/comp-off/authorizations'),
+  requestCompOffAuthorization: (data) => employeeApiClient.post('/employee/leave/comp-off/authorizations', data),
+  getCompOffCredits: () => employeeApiClient.get('/employee/leave/comp-off/credits'),
+  getMedicalFitnessRecords: () => employeeApiClient.get('/employee/leave/gmp/medical-fitness'),
+  uploadMedicalFitnessCertificate: (data) => employeeApiClient.post('/employee/leave/gmp/medical-fitness', data),
+  getEncashments: () => employeeApiClient.get('/employee/leave/encashment'),
+  applyEncashment: (data) => employeeApiClient.post('/employee/leave/encashment', data),
+  getRegularizations: () => employeeApiClient.get('/employee/leave/regularization'),
+  applyRegularization: (data) => employeeApiClient.post('/employee/leave/regularization', data),
+  getGrievances: () => employeeApiClient.get('/employee/leave/grievances'),
+  raiseGrievance: (data) => employeeApiClient.post('/employee/leave/grievances', data)
 };
+
 
 // Payroll Service
 export const employeePayrollAPI = {

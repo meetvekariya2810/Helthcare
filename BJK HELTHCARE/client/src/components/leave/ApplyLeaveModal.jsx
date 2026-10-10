@@ -21,86 +21,107 @@ import { leaveAPI } from '../../services/api';
 
 export const DEFAULT_LEAVE_TYPES = [
   {
+    code: 'EARNED_LEAVE',
+    name: 'Earned Leave (EL / PL)',
+    annualQuotaDays: 7,
+    accrualRateMonthly: 0.58,
+    isPaid: true,
+    allowHalfDay: false,
+    minConsecutiveDays: 3,
+    maxConsecutiveDays: 15,
+    minNoticeDays: 7,
+    maxAccumulationDays: 50,
+    carryForwardPercent: 50,
+    description: 'Annual leave accrued at 0.58 days/month (7 days/year). Min block: 3 days. Advance notice: 7 days for 3-4 days, 15 days for 5+ days. Max accumulation: 50 days.'
+  },
+  {
     code: 'CASUAL_LEAVE',
     name: 'Casual Leave (CL)',
-    annualQuotaDays: 12,
+    annualQuotaDays: 7,
+    accrualRateMonthly: 0.58,
     isPaid: true,
     allowHalfDay: true,
-    maxConsecutiveDays: 3,
-    description: 'Short-duration personal, emergency or family matters (Max 3 continuous days)'
+    maxConsecutiveDays: 2,
+    minNoticeDays: 1,
+    description: 'Short-term urgent absences (7 days/year, 0.58 days/month). Confirmed employees only. Max 2 consecutive days (3 days requires HOD exception). Lapses Dec 31.'
   },
   {
     code: 'SICK_LEAVE',
-    name: 'Sick / Medical Leave (SL)',
-    annualQuotaDays: 12,
+    name: 'Sick Leave (SL)',
+    annualQuotaDays: 4,
     isPaid: true,
     allowHalfDay: true,
-    requiresDocumentProof: true,
-    description: 'Medical illness, health recuperation & appointments (Medical certificate required for >2 days)'
-  },
-  {
-    code: 'PRIVILEGE_LEAVE',
-    name: 'Earned / Privilege Leave (EL/PL)',
-    annualQuotaDays: 15,
-    isPaid: true,
-    minNoticeDays: 7,
-    description: 'Planned personal vacation, annual rest & recreational leave (Advance notice required)'
+    maxConsecutiveDays: 4,
+    requiresDocumentProof: false, // required if > 2 days
+    description: 'Medical recuperation (4 days credited Jan 1). 1-2 days self-declaration, 3-4 days requires MBBS doctor certificate. GMP staff returning from 4+ days require Fitness Certificate.'
   },
   {
     code: 'COMPENSATORY_OFF',
     name: 'Compensatory Off (Comp-Off)',
-    annualQuotaDays: 2,
+    annualQuotaDays: 0,
     isPaid: true,
-    description: 'Compensatory off earned by working on scheduled weekly offs or national holidays'
-  },
-  {
-    code: 'MATERNITY_LEAVE',
-    name: 'Maternity Leave (ML)',
-    annualQuotaDays: 182,
-    isPaid: true,
-    applicableGender: 'FEMALE',
-    description: 'Maternity benefit for female employees as per statutory norms (26 weeks)'
-  },
-  {
-    code: 'PATERNITY_LEAVE',
-    name: 'Paternity Leave (PL)',
-    annualQuotaDays: 15,
-    isPaid: true,
-    applicableGender: 'MALE',
-    description: 'Paternity leave for new fathers'
+    allowHalfDay: true,
+    minNoticeDays: 3,
+    description: 'Time off in lieu of authorized extra work (1 day for full day, 0.5 day for 4 hrs). Valid for 90 days from earned date. Min 3 days advance notice.'
   },
   {
     code: 'BEREAVEMENT_LEAVE',
     name: 'Bereavement Leave (BL)',
-    annualQuotaDays: 5,
+    annualQuotaDays: 2,
     isPaid: true,
-    description: 'Compassionate leave for bereavement in immediate family'
+    description: 'Compassionate leave: 2 days for immediate family (spouse, child, parent, sibling), 1 day for extended family. Supporting document required.'
   },
   {
     code: 'MARRIAGE_LEAVE',
     name: 'Marriage Leave',
     annualQuotaDays: 5,
     isPaid: true,
-    description: 'Special personal leave for employee wedding'
+    minNoticeDays: 30,
+    requiresDocumentProof: true,
+    description: '5 paid days for employee wedding, granted once during tenure. Min 30 days advance notice + wedding invitation/certificate.'
+  },
+  {
+    code: 'SPECIAL_LEAVE',
+    name: 'Birthday / Anniversary Special Leave',
+    annualQuotaDays: 1,
+    isPaid: true,
+    minNoticeDays: 15,
+    requiresDocumentProof: true,
+    description: '1 paid day for employee own birthday or marriage anniversary. Min 15 days advance notice + certificate proof.'
+  },
+  {
+    code: 'ELECTION_DUTY',
+    name: 'Election Duty Leave',
+    annualQuotaDays: 0,
+    isPaid: true,
+    requiresDocumentProof: true,
+    description: 'Paid leave for authorized duty period deputed by Election Commission of India. Deputation order copy required.'
+  },
+  {
+    code: 'COURT_ATTENDANCE',
+    name: 'Jury Duty / Court Summons',
+    annualQuotaDays: 0,
+    isPaid: true,
+    requiresDocumentProof: true,
+    description: 'Paid leave for legal proceedings as witness or juror. Official summons copy required.'
   },
   {
     code: 'UNPAID_LEAVE',
-    name: 'Leave Without Pay (LWP / Loss of Pay)',
+    name: 'Leave Without Pay (LOP)',
     annualQuotaDays: 0,
     isPaid: false,
-    description: 'Approved unpaid absence beyond statutory leave allocations'
+    description: 'Approved unpaid absence. Pro-rata salary deduction: (Monthly Gross / Calendar Days) * LOP Days. Requires Head-HR approval.'
   }
 ];
 
 export const DEFAULT_BALANCES = [
-  { leaveType: 'CASUAL_LEAVE', allocated: 12, used: 2, pending: 0, available: 10 },
-  { leaveType: 'SICK_LEAVE', allocated: 12, used: 1, pending: 0, available: 11 },
-  { leaveType: 'PRIVILEGE_LEAVE', allocated: 15, used: 3, pending: 0, available: 12 },
-  { leaveType: 'COMPENSATORY_OFF', allocated: 2, used: 0, pending: 0, available: 2 },
-  { leaveType: 'MATERNITY_LEAVE', allocated: 182, used: 0, pending: 0, available: 182 },
-  { leaveType: 'PATERNITY_LEAVE', allocated: 15, used: 0, pending: 0, available: 15 },
-  { leaveType: 'BEREAVEMENT_LEAVE', allocated: 5, used: 0, pending: 0, available: 5 },
+  { leaveType: 'EARNED_LEAVE', allocated: 7, used: 0, pending: 0, available: 7 },
+  { leaveType: 'CASUAL_LEAVE', allocated: 7, used: 0, pending: 0, available: 7 },
+  { leaveType: 'SICK_LEAVE', allocated: 4, used: 0, pending: 0, available: 4 },
+  { leaveType: 'COMPENSATORY_OFF', allocated: 0, used: 0, pending: 0, available: 0 },
+  { leaveType: 'BEREAVEMENT_LEAVE', allocated: 2, used: 0, pending: 0, available: 2 },
   { leaveType: 'MARRIAGE_LEAVE', allocated: 5, used: 0, pending: 0, available: 5 },
+  { leaveType: 'SPECIAL_LEAVE', allocated: 1, used: 0, pending: 0, available: 1 },
   { leaveType: 'UNPAID_LEAVE', allocated: 0, used: 0, pending: 0, available: 0 }
 ];
 

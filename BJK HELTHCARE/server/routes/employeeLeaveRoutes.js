@@ -18,8 +18,20 @@ const {
   deleteLeave,
   uploadLeaveDocument,
   getTeamLeaves,
-  approveRejectTeamLeave
+  approveRejectTeamLeave,
+  getMyCompOffAuthorizations,
+  createMyCompOffAuthorization,
+  getMyCompOffCredits,
+  getMyMedicalFitnessRecords,
+  uploadMedicalFitnessCertificate,
+  getMyEncashmentRequests,
+  applyMyEncashmentRequest,
+  getMyRegularizationRequests,
+  applyMyRegularizationRequest,
+  getMyGrievances,
+  createMyGrievance
 } = require('../controllers/EmployeeLeaveController');
+
 const { authenticateEmployee, authorizeOwnership } = require('../middleware/employeeAuth');
 
 // Configure secure document upload storage
@@ -93,4 +105,22 @@ router.get('/team', getTeamLeaves);
 router.put('/team/:id/action', approveRejectTeamLeave);
 router.post('/team/:id/action', approveRejectTeamLeave);
 
+// 6. BJK-HR-POL-001 Employee Self-Service Operations
+router.get('/comp-off/authorizations', getMyCompOffAuthorizations);
+router.post('/comp-off/authorizations', createMyCompOffAuthorization);
+router.get('/comp-off/credits', getMyCompOffCredits);
+
+router.get('/gmp/medical-fitness', getMyMedicalFitnessRecords);
+router.post('/gmp/medical-fitness', uploadMedicalFitnessCertificate);
+
+router.get('/encashment', getMyEncashmentRequests);
+router.post('/encashment', applyMyEncashmentRequest);
+
+router.get('/regularization', getMyRegularizationRequests);
+router.post('/regularization', applyMyRegularizationRequest);
+
+router.get('/grievances', getMyGrievances);
+router.post('/grievances', createMyGrievance);
+
 module.exports = router;
+

@@ -121,6 +121,51 @@ router.get('/attendance/employee/:employeeCode', leaveController.getEmployeeAtte
 router.post('/import', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), uploadMem.single('file'), leaveController.importLeaveCSVData);
 router.get('/export', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER', 'HR_EXECUTIVE', 'AUDITOR'), leaveController.exportLeaveCSVData);
 
+// 10. BJK-HR-POL-001 Policy Engine & Advanced Workforce Controls
+const policyController = require('../controllers/leavePolicyController');
+
+// Policy Configuration & Clarification Register
+router.get('/policy-config', policyController.getPolicyConfig);
+router.get('/policy-clarifications', policyController.getPolicyClarifications);
+router.put('/policy-clarifications/:itemKey', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.updatePolicyClarification);
+
+// Comp-Off Management
+router.get('/comp-off/authorizations', policyController.getCompOffAuthorizations);
+router.post('/comp-off/authorizations', policyController.createCompOffAuthorization);
+router.put('/comp-off/authorizations/:id/approve-rm', requireRole('SUPER_ADMIN', 'DIRECTOR', 'TEAM_LEAD', 'QA_MANAGER', 'QC_MANAGER', 'PRODUCTION_MANAGER', 'DEPARTMENT_MANAGER', 'HR_ADMIN', 'HR_MANAGER'), policyController.approveCompOffByRM);
+router.put('/comp-off/authorizations/:id/approve-hr', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.approveCompOffByHR);
+router.put('/comp-off/authorizations/:id/verify-work', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.verifyCompOffWorkAndGrantCredit);
+router.get('/comp-off/credits', policyController.getCompOffCredits);
+
+// GMP & Pharmaceutical Workforce Controls
+router.get('/gmp/blackout-periods', policyController.getBlackoutPeriods);
+router.post('/gmp/blackout-periods', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER', 'QA_MANAGER'), policyController.createBlackoutPeriod);
+router.delete('/gmp/blackout-periods/:id', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.deleteBlackoutPeriod);
+router.get('/gmp/staffing-thresholds', policyController.getStaffingThresholds);
+router.put('/gmp/staffing-thresholds/:department', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER', 'PRODUCTION_MANAGER', 'QA_MANAGER'), policyController.updateStaffingThreshold);
+router.get('/gmp/refresher-trainings', policyController.getRefresherTrainings);
+router.put('/gmp/refresher-trainings/:id/verify', requireRole('SUPER_ADMIN', 'DIRECTOR', 'QA_MANAGER', 'HR_ADMIN', 'HR_MANAGER'), policyController.verifyRefresherTraining);
+router.get('/gmp/medical-fitness', policyController.getMedicalFitnessRecords);
+router.put('/gmp/medical-fitness/:id/verify', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.verifyMedicalFitnessRecord);
+
+// Encashment & Regularization
+router.get('/encashment', policyController.getEncashmentRequests);
+router.post('/encashment', policyController.createEncashmentRequest);
+router.put('/encashment/:id/approve', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.approveEncashmentRequest);
+router.get('/regularization', policyController.getRegularizationRequests);
+router.post('/regularization', policyController.createRegularizationRequest);
+router.put('/regularization/:id/approve', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.approveRegularizationRequest);
+
+// Year-End Reconciliation & LOP
+router.get('/year-end/preview', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.previewYearEndReconciliation);
+router.post('/year-end/execute', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.executeYearEndReconciliationAction);
+router.post('/lop/calculate', policyController.calculateLOP);
+
+// Grievances
+router.get('/grievances', policyController.getLeaveGrievances);
+router.post('/grievances', policyController.createLeaveGrievance);
+router.put('/grievances/:id/advance', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), policyController.advanceGrievanceStage);
+
 // Direct approve/reject aliases
 router.put('/:id/approve', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), leaveController.hrApprove);
 router.put('/:id/reject', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER'), leaveController.hrReject);
@@ -129,3 +174,4 @@ router.put('/:id/reject', requireRole('SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR
 router.get('/', leaveController.getLeaveLedgerDashboard);
 
 module.exports = router;
+

@@ -5,7 +5,14 @@ const {
   HolidayCalendar,
   LeaveBalance,
   LeaveRequest,
-  LeaveActivity
+  LeaveActivity,
+  CompOffWorkAuthorization,
+  CompOffCredit,
+  MedicalFitnessRecord,
+  LeaveRefresherTraining,
+  LeaveEncashmentRequest,
+  LeaveRegularizationRequest,
+  LeaveGrievance
 } = require('../models/hrms/Leave');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
@@ -17,7 +24,13 @@ const {
   logLeaveActivity,
   initLeaveMaster
 } = require('../services/hrms/leaveService');
+const {
+  validateLeaveApplicationRules,
+  determineApprovalHierarchy,
+  deductCompOffCredits
+} = require('../services/hrms/leavePolicyService');
 const { logEmployeeAudit } = require('../middleware/employeeAuth');
+
 
 /**
  * GET /api/employee/leave/types
@@ -358,13 +371,52 @@ const applyLeave = async (req, res) => {
       });
     }
 
-    // 5. Consecutive Days Limit Check
+    // 5. BJK-HR-POL-001 Policy Validation Engine Check
+    const policyValidation = await validateLeaveApplicationRules({
+      employee,
+      leaveType: ltConfig.code,
+      duration: calculatedDuration,
+      startDate: sDate,
+      endDate: eDate,
+      isHalfDay: !!isHalfDay,
+      reason: combinedReason,
+      hasDocument: !!(supportingDocument?.fileUrl || supportingDocument?.documentName),
+      documentType: supportingDocument?.documentType || '',
+      isEmergency: !!req.body.isEmergency
+    });
+
+    if (!policyValidation.isValid && policyValidation.errors && policyValidation.errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: policyValidation.errors.join(' | ')
+      });
+    }
+
+    // Comp-Off Active Credit Verification
+    if (ltConfig.code === 'COMPENSATORY_OFF') {
+      const activeCredits = await CompOffCredit.find({
+        employeeCode: employeeId,
+        status: { $in: ['ACTIVE', 'PARTIALLY_USED'] },
+        expiryDate: { $gte: new Date() },
+        remainingDays: { $gt: 0 }
+      });
+      const totalAvailableCredits = activeCredits.reduce((s, c) => s + c.remainingDays, 0);
+      if (totalAvailableCredits < calculatedDuration) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient active Comp-Off credits. Active within 90 days: ${totalAvailableCredits} day(s), Requested: ${calculatedDuration} day(s) (Policy Section 8.3).`
+        });
+      }
+    }
+
+    // 6. Consecutive Days Limit Check
     if (ltConfig.maxConsecutiveDays && calculatedDuration > ltConfig.maxConsecutiveDays) {
       return res.status(400).json({
         success: false,
         message: `Policy limit exceeded: Maximum continuous days allowed for ${ltConfig.name} is ${ltConfig.maxConsecutiveDays} day(s). Requested: ${calculatedDuration} day(s).`
       });
     }
+
 
     // 6. Supporting Document Requirement Check
     const isDocMandatory = ltConfig.requiresDocumentProof || (ltConfig.code === 'SICK_LEAVE' && calculatedDuration > 2);
@@ -504,12 +556,58 @@ const applyLeave = async (req, res) => {
 
     await leaveRequest.save();
 
+    // Trigger BJK-HR-POL-001 GMP workforce controls if flagged
+    if (policyValidation.requiresFitnessCert) {
+      try {
+        await MedicalFitnessRecord.findOneAndUpdate(
+          { leaveRequestId: leaveRequest._id },
+          {
+            $setOnInsert: {
+              employee: employee._id,
+              employeeCode: employeeId,
+              employeeName: employee.fullName,
+              department: employee.departmentName || employee.department,
+              leaveRequestId: leaveRequest._id,
+              sickLeaveDays: calculatedDuration,
+              certificateType: 'FITNESS_TO_RESUME',
+              isGmpCriticalRole: true,
+              documentUrl: supportingDocument?.fileUrl || '',
+              status: supportingDocument?.fileUrl ? 'SUBMITTED' : 'SUBMITTED'
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (_) {}
+    }
+
+    if (policyValidation.requiresRefresherTraining) {
+      try {
+        await LeaveRefresherTraining.findOneAndUpdate(
+          { leaveRequestId: leaveRequest._id },
+          {
+            $setOnInsert: {
+              employee: employee._id,
+              employeeCode: employeeId,
+              employeeName: employee.fullName,
+              department: employee.departmentName || employee.department,
+              leaveRequestId: leaveRequest._id,
+              leaveDurationDays: calculatedDuration,
+              returnDate: eDate,
+              status: 'REQUIRED'
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (_) {}
+    }
+
     // 11. Reserve Pending Leave Balance
     if (balanceItem) {
       balanceItem.pending = (balanceItem.pending || 0) + calculatedDuration;
       balanceDoc.markModified('balances');
       await balanceDoc.save().catch(e => console.warn('[Balance Save Warning]:', e.message));
     }
+
 
     // 12. Record Activity & Immutable Audit Log
     await logLeaveActivity({
@@ -1023,6 +1121,156 @@ const approveRejectTeamLeave = async (req, res) => {
   }
 };
 
+// ==============================================================================
+// 6. EMPLOYEE BJK-HR-POL-001 SELF-SERVICE WORKFLOW HANDLERS
+// ==============================================================================
+
+// GET /api/employee/leave/comp-off/authorizations
+const getMyCompOffAuthorizations = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const authorizations = await CompOffWorkAuthorization.find({ employeeCode: employeeId }).sort({ workDate: -1 });
+    res.json({ success: true, count: authorizations.length, authorizations });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/employee/leave/comp-off/authorizations
+const createMyCompOffAuthorization = async (req, res) => {
+  try {
+    req.body.employeeCode = req.employeeId || req.user.employeeId;
+    const { createCompOffAuthorization } = require('./leavePolicyController');
+    return createCompOffAuthorization(req, res);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/employee/leave/comp-off/credits
+const getMyCompOffCredits = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const credits = await CompOffCredit.find({ employeeCode: employeeId }).sort({ expiryDate: 1 });
+    const now = new Date();
+    for (const c of credits) {
+      if (c.checkExpiry(now)) await c.save();
+    }
+    res.json({ success: true, count: credits.length, credits });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/employee/leave/gmp/medical-fitness
+const getMyMedicalFitnessRecords = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const records = await MedicalFitnessRecord.find({ employeeCode: employeeId }).sort({ createdAt: -1 });
+    res.json({ success: true, count: records.length, records });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/employee/leave/gmp/medical-fitness
+const uploadMedicalFitnessCertificate = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const { doctorName, doctorRegistrationNo, clinicOrHospital, documentUrl, leaveRequestId } = req.body;
+    const employee = await Employee.findOne({ $or: [{ employeeId }, { employeeCode: employeeId }] });
+
+    const record = await MedicalFitnessRecord.create({
+      employee: employee?._id,
+      employeeCode: employeeId,
+      employeeName: employee?.fullName || req.user?.name,
+      department: employee?.departmentName || employee?.department || 'Operations',
+      leaveRequestId: leaveRequestId || null,
+      sickLeaveDays: 4,
+      certificateType: 'FITNESS_TO_RESUME',
+      doctorName,
+      doctorRegistrationNo,
+      clinicOrHospital,
+      documentUrl,
+      status: 'SUBMITTED'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Fitness to resume duties certificate submitted for HR review and GMP compliance.',
+      record
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/employee/leave/encashment
+const getMyEncashmentRequests = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const requests = await LeaveEncashmentRequest.find({ employeeCode: employeeId }).sort({ createdAt: -1 });
+    res.json({ success: true, count: requests.length, requests });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/employee/leave/encashment
+const applyMyEncashmentRequest = async (req, res) => {
+  try {
+    req.body.employeeCode = req.employeeId || req.user.employeeId;
+    const { createEncashmentRequest } = require('./leavePolicyController');
+    return createEncashmentRequest(req, res);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/employee/leave/regularization
+const getMyRegularizationRequests = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const requests = await LeaveRegularizationRequest.find({ employeeCode: employeeId }).sort({ createdAt: -1 });
+    res.json({ success: true, count: requests.length, requests });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/employee/leave/regularization
+const applyMyRegularizationRequest = async (req, res) => {
+  try {
+    req.body.employeeCode = req.employeeId || req.user.employeeId;
+    const { createRegularizationRequest } = require('./leavePolicyController');
+    return createRegularizationRequest(req, res);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/employee/leave/grievances
+const getMyGrievances = async (req, res) => {
+  try {
+    const employeeId = (req.employeeId || req.user.employeeId).toUpperCase();
+    const grievances = await LeaveGrievance.find({ employeeCode: employeeId }).sort({ createdAt: -1 });
+    res.json({ success: true, count: grievances.length, grievances });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/employee/leave/grievances
+const createMyGrievance = async (req, res) => {
+  try {
+    req.body.employeeCode = req.employeeId || req.user.employeeId;
+    const { createLeaveGrievance } = require('./leavePolicyController');
+    return createLeaveGrievance(req, res);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getLeaveTypes,
   getHolidays,
@@ -1037,5 +1285,19 @@ module.exports = {
   deleteLeave,
   uploadLeaveDocument,
   getTeamLeaves,
-  approveRejectTeamLeave
+  approveRejectTeamLeave,
+
+  // Employee Self-Service additions
+  getMyCompOffAuthorizations,
+  createMyCompOffAuthorization,
+  getMyCompOffCredits,
+  getMyMedicalFitnessRecords,
+  uploadMedicalFitnessCertificate,
+  getMyEncashmentRequests,
+  applyMyEncashmentRequest,
+  getMyRegularizationRequests,
+  applyMyRegularizationRequest,
+  getMyGrievances,
+  createMyGrievance
 };
+

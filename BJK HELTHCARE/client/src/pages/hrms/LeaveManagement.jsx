@@ -16,6 +16,14 @@ import { LeaveCalendarView } from '../../components/leave/LeaveCalendarView';
 import { LeaveActivityView } from '../../components/leave/LeaveActivityView';
 import { LeaveReportsView } from '../../components/leave/LeaveReportsView';
 
+// BJK-HR-POL-001 Policy Components
+import { PolicyConfigView } from '../../components/leave/PolicyConfigView';
+import { CompOffCommandCenter } from '../../components/leave/CompOffCommandCenter';
+import { GMPPharmaControlsView } from '../../components/leave/GMPPharmaControlsView';
+import { YearEndEncashmentView } from '../../components/leave/YearEndEncashmentView';
+import { GrievanceRegisterView } from '../../components/leave/GrievanceRegisterView';
+
+
 import {
   CalendarCheck,
   Plus,
@@ -763,8 +771,65 @@ export const LeaveManagement = () => {
             >
               Reports & Analytics
             </button>
+
+            {/* BJK-HR-POL-001 Policy-Based Tabs */}
+            <button
+              onClick={() => setActiveTab('POLICY_CONFIG')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'POLICY_CONFIG'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Policy BJK-HR-POL-001
+            </button>
+
+            <button
+              onClick={() => setActiveTab('COMPOFF_CENTER')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'COMPOFF_CENTER'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Comp-Off Center
+            </button>
+
+            <button
+              onClick={() => setActiveTab('GMP_CONTROLS')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'GMP_CONTROLS'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Pharma & GMP Controls
+            </button>
+
+            <button
+              onClick={() => setActiveTab('YEAR_END_ENCASHMENT')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'YEAR_END_ENCASHMENT'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Year-End & Encashment
+            </button>
+
+            <button
+              onClick={() => setActiveTab('GRIEVANCE_REGISTER')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'GRIEVANCE_REGISTER'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Grievance Register
+            </button>
           </>
         )}
+
       </div>
 
       {/* Global Filter Bar for HR / Admin */}
@@ -1167,6 +1232,14 @@ export const LeaveManagement = () => {
 
       {/* Tab: Reports & Analytics */}
       {activeTab === 'REPORTS' && <LeaveReportsView />}
+
+      {/* BJK-HR-POL-001 Tab Views */}
+      {activeTab === 'POLICY_CONFIG' && <PolicyConfigView />}
+      {activeTab === 'COMPOFF_CENTER' && <CompOffCommandCenter isHR={isHR} user={user} />}
+      {activeTab === 'GMP_CONTROLS' && <GMPPharmaControlsView />}
+      {activeTab === 'YEAR_END_ENCASHMENT' && <YearEndEncashmentView isHR={isHR} />}
+      {activeTab === 'GRIEVANCE_REGISTER' && <GrievanceRegisterView isHR={isHR} />}
+
 
       {/* ========================================================================= */}
       {/* EMPLOYEE-WISE DETAIL MODAL (Prompt Section 2, 5, 14: e.g. Dixita BH1022) */}
