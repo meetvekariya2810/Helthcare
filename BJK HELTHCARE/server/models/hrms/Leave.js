@@ -389,11 +389,24 @@ LeaveActivitySchema.index({ timestamp: -1 });
 
 // Export Models
 const LeaveType = mongoose.models.LeaveType || mongoose.model('LeaveType', LeaveTypeSchema);
-const LeavePolicy = mongoose.models.LeavePolicy || mongoose.model('LeavePolicy', LeavePolicySchema);
 const HolidayCalendar = mongoose.models.HolidayCalendar || mongoose.model('HolidayCalendar', HolidayCalendarSchema);
 const LeaveBalance = mongoose.models.LeaveBalance || mongoose.model('LeaveBalance', LeaveBalanceSchema);
 const LeaveRequest = mongoose.models.LeaveRequest || mongoose.model('LeaveRequest', LeaveRequestSchema);
 const LeaveActivity = mongoose.models.LeaveActivity || mongoose.model('LeaveActivity', LeaveActivitySchema);
+
+const {
+  LeavePolicy,
+  CompOffWorkAuthorization,
+  CompOffCredit,
+  LeaveBlackoutPeriod,
+  DepartmentStaffingThreshold,
+  LeaveRefresherTraining,
+  MedicalFitnessRecord,
+  LeaveEncashmentRequest,
+  LeaveRegularizationRequest,
+  LeaveGrievance,
+  PolicyClarification
+} = require('./LeavePolicyModels');
 
 module.exports = {
   LeaveType,
@@ -401,5 +414,16 @@ module.exports = {
   HolidayCalendar,
   LeaveBalance,
   LeaveRequest,
-  LeaveActivity
+  LeaveActivity,
+  CompOffWorkAuthorization,
+  CompOffCredit,
+  LeaveBlackoutPeriod,
+  DepartmentStaffingThreshold,
+  LeaveRefresherTraining,
+  MedicalFitnessRecord,
+  LeaveEncashmentRequest,
+  LeaveRegularizationRequest,
+  LeaveGrievance,
+  PolicyClarification
 };
+

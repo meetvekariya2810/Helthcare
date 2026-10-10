@@ -17,22 +17,68 @@ import {
   HelpCircle,
   Eye,
   Building,
-  Briefcase
+  Briefcase,
+  Award,
+  FileCheck,
+  Stethoscope,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { PolicyCenter } from './PolicyCenter';
 import { Holidays } from './Holidays';
+import { employeeLeaveAPI } from '../../services/employeeApi';
 
 export const EmployeePortal = ({ initialTab = 'dashboard' }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [leaveSubTab, setLeaveSubTab] = useState('apply'); // 'apply' | 'compoff' | 'fitness' | 'encashment'
   const [leaveBalances, setLeaveBalances] = useState({
     EL: { balance: 7, max: 50, carryover: true },
     CL: { balance: 7, max: 7, carryover: false },
     SL: { balance: 4, max: 4, carryover: false },
-    COMP_OFF: { balance: 2, max: 10, validDays: 90 }
+    COMP_OFF: { balance: 0, max: 10, validDays: 90 }
   });
+  const [compOffCredits, setCompOffCredits] = useState([]);
+  const [compOffAuthorizations, setCompOffAuthorizations] = useState([]);
+  const [fitnessRecords, setFitnessRecords] = useState([]);
+  const [encashmentRecords, setEncashmentRecords] = useState([]);
+  const [regularizationRecords, setRegularizationRecords] = useState([]);
+
+  // Comp-Off Auth Form
+  const [compOffForm, setCompOffForm] = useState({
+    workDate: '',
+    workType: 'FULL_DAY',
+    scheduledHours: 8,
+    businessJustification: '',
+    isHolidayWork: false
+  });
+
+  // Fitness Cert Form
+  const [fitnessForm, setFitnessForm] = useState({
+    certifyingDoctor: '',
+    doctorRegistrationNumber: '',
+    clinicOrHospitalName: '',
+    examinationDate: new Date().toISOString().split('T')[0],
+    isCleanroomFit: true,
+    certificateDocumentUrl: ''
+  });
+
+  // Encashment Form
+  const [encashmentForm, setEncashmentForm] = useState({
+    encashmentDays: 5,
+    reason: ''
+  });
+
+  // Regularization Form
+  const [regularizationForm, setRegularizationForm] = useState({
+    absenceStartDate: '',
+    absenceEndDate: '',
+    reasonCategory: 'HOSPITALIZATION',
+    detailedExplanation: '',
+    proofDocumentUrl: ''
+  });
+
   const [policies, setPolicies] = useState([]);
   const [acknowledgments, setAcknowledgments] = useState([]);
   const [attendanceToday, setAttendanceToday] = useState({
@@ -83,8 +129,127 @@ export const EmployeePortal = ({ initialTab = 'dashboard' }) => {
       if (ackRes?.data?.data) {
         setAcknowledgments(ackRes.data.data);
       }
+
+      // Fetch employee leave balances & records from BJK Leave Engine
+      const [balRes, authRes, credRes, fitRes, encRes, regRes] = await Promise.allSettled([
+        employeeLeaveAPI.getBalance().catch(() => null),
+        employeeLeaveAPI.getCompOffAuthorizations().catch(() => null),
+        employeeLeaveAPI.getCompOffCredits().catch(() => null),
+        employeeLeaveAPI.getMedicalFitnessRecords().catch(() => null),
+        employeeLeaveAPI.getEncashments().catch(() => null),
+        employeeLeaveAPI.getRegularizations().catch(() => null)
+      ]);
+
+      if (balRes.status === 'fulfilled' && balRes.value?.data?.balances) {
+        const bals = balRes.value.data.balances;
+        const el = bals.find(b => b.leaveType === 'EARNED_LEAVE' || b.leaveType === 'PRIVILEGE_LEAVE')?.available ?? 7;
+        const cl = bals.find(b => b.leaveType === 'CASUAL_LEAVE')?.available ?? 7;
+        const sl = bals.find(b => b.leaveType === 'SICK_LEAVE')?.available ?? 4;
+        const co = bals.find(b => b.leaveType === 'COMPENSATORY_OFF')?.available ?? 0;
+        setLeaveBalances({
+          EL: { balance: el, max: 50, carryover: true },
+          CL: { balance: cl, max: 7, carryover: false },
+          SL: { balance: sl, max: 4, carryover: false },
+          COMP_OFF: { balance: co, max: 10, validDays: 90 }
+        });
+      }
+
+      if (authRes.status === 'fulfilled' && authRes.value?.data?.authorizations) {
+        setCompOffAuthorizations(authRes.value.data.authorizations);
+      }
+      if (credRes.status === 'fulfilled' && credRes.value?.data?.credits) {
+        setCompOffCredits(credRes.value.data.credits);
+      }
+      if (fitRes.status === 'fulfilled' && fitRes.value?.data?.records) {
+        setFitnessRecords(fitRes.value.data.records);
+      }
+      if (encRes.status === 'fulfilled' && encRes.value?.data?.requests) {
+        setEncashmentRecords(encRes.value.data.requests);
+      }
+      if (regRes.status === 'fulfilled' && regRes.value?.data?.requests) {
+        setRegularizationRecords(regRes.value.data.requests);
+      }
     } catch (err) {
       console.error('Error fetching employee portal data:', err);
+    }
+  };
+
+  const handleCompOffRequest = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await employeeLeaveAPI.requestCompOffAuthorization(compOffForm);
+      if (res.data?.success) {
+        setSubmittedMessage('Comp-Off Advance Work Authorization requested successfully. Awaiting Manager & HR approval.');
+        setCompOffAuthorizations(prev => [res.data.authorization, ...prev]);
+        setCompOffForm({
+          workDate: '',
+          workType: 'FULL_DAY',
+          scheduledHours: 8,
+          businessJustification: '',
+          isHolidayWork: false
+        });
+        setTimeout(() => setSubmittedMessage(''), 5000);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error submitting comp-off authorization request');
+    }
+  };
+
+  const handleFitnessSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await employeeLeaveAPI.uploadMedicalFitnessCertificate(fitnessForm);
+      if (res.data?.success) {
+        setSubmittedMessage('Fitness to Resume Duties Certificate recorded. Awaiting HR & QA review.');
+        setFitnessRecords(prev => [res.data.record, ...prev]);
+        setFitnessForm({
+          certifyingDoctor: '',
+          doctorRegistrationNumber: '',
+          clinicOrHospitalName: '',
+          examinationDate: new Date().toISOString().split('T')[0],
+          isCleanroomFit: true,
+          certificateDocumentUrl: ''
+        });
+        setTimeout(() => setSubmittedMessage(''), 5000);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error submitting fitness certificate');
+    }
+  };
+
+  const handleEncashmentSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await employeeLeaveAPI.applyEncashment(encashmentForm);
+      if (res.data?.success) {
+        setSubmittedMessage(`Encashment request for ${encashmentForm.encashmentDays} days submitted to HR for December payroll processing.`);
+        setEncashmentRecords(prev => [res.data.request, ...prev]);
+        setEncashmentForm({ encashmentDays: 5, reason: '' });
+        setTimeout(() => setSubmittedMessage(''), 5000);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error submitting encashment request');
+    }
+  };
+
+  const handleRegularizationSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await employeeLeaveAPI.applyRegularization(regularizationForm);
+      if (res.data?.success) {
+        setSubmittedMessage('Absence regularization submitted to Head - HR for emergency exception review.');
+        setRegularizationRecords(prev => [res.data.request, ...prev]);
+        setRegularizationForm({
+          absenceStartDate: '',
+          absenceEndDate: '',
+          reasonCategory: 'HOSPITALIZATION',
+          detailedExplanation: '',
+          proofDocumentUrl: ''
+        });
+        setTimeout(() => setSubmittedMessage(''), 5000);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error submitting regularization request');
     }
   };
 
@@ -349,165 +514,615 @@ export const EmployeePortal = ({ initialTab = 'dashboard' }) => {
         <PolicyCenter />
       )}
 
-      {/* TAB 3: Leave Application with Real Validation */}
+      {/* TAB 3: Leave Application & BJK-HR-POL-001 Self-Service */}
       {activeTab === 'leave' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Application Form */}
-          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
-            <h2 className="text-base font-bold mb-1">Apply for Leave</h2>
-            <p className="text-xs text-slate-400 mb-6">
-              Requests are validated instantly against BJK-HR-POL-001 rules prior to supervisor submission.
-            </p>
+        <div className="space-y-6">
+          {/* Sub Navigation Bar */}
+          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+            {[
+              { id: 'apply', label: 'Apply Leave', icon: CalendarCheck },
+              { id: 'compoff', label: 'Comp-Off & 90-Day Credits', icon: Award },
+              { id: 'fitness', label: 'GMP Fitness to Resume', icon: Stethoscope },
+              { id: 'encashment', label: 'Encashment & Regularization', icon: FileCheck }
+            ].map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => setLeaveSubTab(sub.id)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  leaveSubTab === sub.id
+                    ? 'bg-bjk-teal text-white shadow-sm'
+                    : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <sub.icon size={13} />
+                {sub.label}
+              </button>
+            ))}
+          </div>
 
-            <form onSubmit={handleApplyLeave} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Leave Type</label>
-                  <select
-                    value={leaveForm.leaveType}
-                    onChange={(e) => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
-                  >
-                    <option value="EL">Earned Leave (EL) - Min 3 days</option>
-                    <option value="CL">Casual Leave (CL) - Max 2 days</option>
-                    <option value="SL">Sick Leave (SL) - 4d upfront</option>
-                    <option value="COMP_OFF">Compensatory Off - 90d validity</option>
-                    <option value="BEREAVEMENT_IMMEDIATE">Bereavement (Immediate family) - 2 paid days</option>
-                    <option value="MARRIAGE">Marriage Leave - 5 paid days</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Consecutive Working Days</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="30"
-                    required
-                    value={leaveForm.consecutiveDays}
-                    onChange={(e) => setLeaveForm({ ...leaveForm, consecutiveDays: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Start Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={leaveForm.startDate}
-                    onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">End Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={leaveForm.endDate}
-                    onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
-                  />
-                </div>
-              </div>
-
-              {leaveForm.leaveType === 'SL' && Number(leaveForm.consecutiveDays) >= 3 && (
-                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between">
-                  <span className="text-amber-300 text-xs">Medical certificate required for Sick Leave of 3+ days (Slide 6)</span>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={leaveForm.hasMedicalCert}
-                      onChange={(e) => setLeaveForm({ ...leaveForm, hasMedicalCert: e.target.checked })}
-                      className="rounded bg-slate-800 border-slate-700 text-bjk-teal focus:ring-0"
-                    />
-                    <span className="text-white text-xs">Certificate Attached</span>
-                  </label>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">Reason for Absence</label>
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Provide brief context for leave request..."
-                  value={leaveForm.reason}
-                  onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal resize-none"
-                />
-              </div>
-
-              {/* Validation Feedback */}
-              {leaveValidationResult && (
-                <div
-                  className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
-                    leaveValidationResult.valid
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                  }`}
-                >
-                  {leaveValidationResult.valid ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+          {/* Sub-Tab 1: Apply Leave */}
+          {leaveSubTab === 'apply' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="font-semibold block">{leaveValidationResult.message}</span>
-                    <span className="text-[10px] text-slate-400">Rule Citation: {leaveValidationResult.citation}</span>
+                    <h2 className="text-base font-bold">Apply for Leave (BJK-HR-POL-001)</h2>
+                    <p className="text-xs text-slate-400">
+                      Validated in real-time according to BJK Healthcare leave rules.
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    Policy v1.0 Active
+                  </span>
+                </div>
+
+                <form onSubmit={handleApplyLeave} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Leave Type</label>
+                      <select
+                        value={leaveForm.leaveType}
+                        onChange={(e) => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      >
+                        <option value="EL">Earned Leave (EL) - Min 3 days</option>
+                        <option value="CL">Casual Leave (CL) - Max 2 days</option>
+                        <option value="SL">Sick Leave (SL) - 4d annual</option>
+                        <option value="COMP_OFF">Compensatory Off - 90d validity</option>
+                        <option value="BEREAVEMENT_IMMEDIATE">Bereavement (Immediate family) - 2 paid days</option>
+                        <option value="MARRIAGE">Marriage Leave - 5 paid days</option>
+                        <option value="SPECIAL_LEAVE">Special (Birthday/Anniversary) - 1 paid day</option>
+                        <option value="UNPAID_LEAVE">Leave Without Pay (LOP) - Requires HR Head</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Consecutive Working Days</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        required
+                        value={leaveForm.consecutiveDays}
+                        onChange={(e) => setLeaveForm({ ...leaveForm, consecutiveDays: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={leaveForm.startDate}
+                        onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">End Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={leaveForm.endDate}
+                        onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                  </div>
+
+                  {leaveForm.leaveType === 'SL' && Number(leaveForm.consecutiveDays) >= 3 && (
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between">
+                      <span className="text-amber-300 text-xs">Medical certificate required from registered practitioner (MBBS+) for Sick Leave &ge; 3 days</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={leaveForm.hasMedicalCert}
+                          onChange={(e) => setLeaveForm({ ...leaveForm, hasMedicalCert: e.target.checked })}
+                          className="rounded bg-slate-800 border-slate-700 text-bjk-teal focus:ring-0"
+                        />
+                        <span className="text-white text-xs">Certificate Attached</span>
+                      </label>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Reason for Absence</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="Provide brief context and workload coverage details..."
+                      value={leaveForm.reason}
+                      onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal resize-none"
+                    />
+                  </div>
+
+                  {/* Validation Feedback */}
+                  {leaveValidationResult && (
+                    <div
+                      className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                        leaveValidationResult.valid
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                      }`}
+                    >
+                      {leaveValidationResult.valid ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                      <div>
+                        <span className="font-semibold block">{leaveValidationResult.message}</span>
+                        <span className="text-[10px] text-slate-400">Rule Citation: {leaveValidationResult.citation}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={validateLeave}
+                      className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium"
+                    >
+                      Validate Policy Rules
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-medium shadow-md shadow-teal-500/30"
+                    >
+                      Submit for Approval
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Rule Quick Reference */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs space-y-4">
+                <h3 className="font-bold text-white text-sm">Policy Entitlements (BJK-HR-POL-001)</h3>
+                <div className="space-y-3 text-slate-300">
+                  <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+                    <span className="font-semibold text-bjk-teal block">Earned Leave (EL)</span>
+                    <span className="text-slate-400 text-[11px]">
+                      &bull; Entitlement: 7 days/yr (0.58 days/month)<br />
+                      &bull; Min block: 3 consecutive working days<br />
+                      &bull; Max accumulation: 50 days (50% carry-forward)<br />
+                      &bull; Notice: 7 days for 3-4 days, 15 days for 5+ days
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+                    <span className="font-semibold text-purple-300 block">Casual Leave (CL)</span>
+                    <span className="text-slate-400 text-[11px]">
+                      &bull; Entitlement: 7 days/yr (0.58 days/month)<br />
+                      &bull; Max continuous: 2 days at a time<br />
+                      &bull; Confirmed employees only (No carry-forward, lapses Dec 31)
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+                    <span className="font-semibold text-emerald-300 block">Sick Leave (SL)</span>
+                    <span className="text-slate-400 text-[11px]">
+                      &bull; Entitlement: 4 days/yr credited on Jan 1<br />
+                      &bull; Notice: Within 2 hours of shift start<br />
+                      &bull; MBBS doctor certificate required for 3-4 days
+                    </span>
                   </div>
                 </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={validateLeave}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium"
-                >
-                  Validate Policy Rules
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-medium shadow-md shadow-teal-500/30"
-                >
-                  Submit for Manager Approval
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Rule Quick Reference */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs space-y-4">
-            <h3 className="font-bold text-white text-sm">Policy Rules Quick Guide (POL-001)</h3>
-            <div className="space-y-3 text-slate-300">
-              <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
-                <span className="font-semibold text-bjk-teal block">Earned Leave (EL)</span>
-                <span className="text-slate-400 text-[11px]">
-                  &bull; Min block: 3 days<br />
-                  &bull; Max continuous: 15 days<br />
-                  &bull; Advance notice: 15d for 5+ days; 7d for 3-4 days<br />
-                  &bull; Max accumulation: 50 days
-                </span>
-              </div>
-              <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
-                <span className="font-semibold text-purple-300 block">Casual Leave (CL)</span>
-                <span className="text-slate-400 text-[11px]">
-                  &bull; Max continuous: 2 days at a time<br />
-                  &bull; Cannot normally be clubbed with holidays<br />
-                  &bull; Lapses Dec 31
-                </span>
-              </div>
-              <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
-                <span className="font-semibold text-rose-300 block">Unauthorized Absence Penalties</span>
-                <span className="text-slate-400 text-[11px]">
-                  &bull; 1 day: LOP + salary deduction<br />
-                  &bull; 2-3 days: LOP + written warning<br />
-                  &bull; 4-7 days: LOP + suspension<br />
-                  &bull; 8+ days: Voluntary abandonment / termination
-                </span>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Sub-Tab 2: Comp-Off Advance Work Pre-Auth & Credits */}
+          {leaveSubTab === 'compoff' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-base font-bold">Comp-Off Advance Work Authorization (Section 8)</h2>
+                    <p className="text-xs text-slate-400">
+                      Under BJK-HR-POL-001, Comp-Off requires advance authorization before performing extra work.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleCompOffRequest} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Work Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={compOffForm.workDate}
+                        onChange={(e) => setCompOffForm({ ...compOffForm, workDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Work Duration</label>
+                      <select
+                        value={compOffForm.workType}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCompOffForm({
+                            ...compOffForm,
+                            workType: val,
+                            scheduledHours: val === 'HALF_DAY' ? 4 : 8
+                          });
+                        }}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      >
+                        <option value="FULL_DAY">Full Day (8 Hours = 1 Comp-Off Day)</option>
+                        <option value="HALF_DAY">Half Day (4 Hours = 0.5 Comp-Off Day)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+                    <input
+                      type="checkbox"
+                      id="isHolidayWork"
+                      checked={compOffForm.isHolidayWork}
+                      onChange={(e) => setCompOffForm({ ...compOffForm, isHolidayWork: e.target.checked })}
+                      className="rounded bg-slate-800 border-slate-700 text-bjk-teal focus:ring-0"
+                    />
+                    <label htmlFor="isHolidayWork" className="text-slate-300 text-xs cursor-pointer">
+                      Work scheduled on Weekly Off or Declared Public Holiday
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Business Justification / Project Need</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="Specify critical production batch, QA documentation, regulatory audit support..."
+                      value={compOffForm.businessJustification}
+                      onChange={(e) => setCompOffForm({ ...compOffForm, businessJustification: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-semibold shadow-md shadow-teal-500/20"
+                    >
+                      Request Advance Authorization
+                    </button>
+                  </div>
+                </form>
+
+                {/* Pre-Authorizations History */}
+                <div className="mt-8 border-t border-slate-800 pt-6">
+                  <h3 className="text-sm font-bold text-white mb-3">My Pre-Authorization Requests</h3>
+                  {compOffAuthorizations.length === 0 ? (
+                    <div className="p-4 bg-slate-800/30 rounded-xl text-center text-slate-400 text-xs">
+                      No advance work authorization requests submitted yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {compOffAuthorizations.map((auth, idx) => (
+                        <div key={idx} className="p-3 bg-slate-800/40 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-semibold text-white block">
+                              {new Date(auth.workDate).toLocaleDateString()} &bull; {auth.workType} ({auth.scheduledHours} hrs)
+                            </span>
+                            <span className="text-[11px] text-slate-400">{auth.businessJustification}</span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                            auth.status === 'CREDITED' ? 'bg-emerald-500/20 text-emerald-400' :
+                            auth.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-400' :
+                            'bg-amber-500/20 text-amber-400'
+                          }`}>
+                            {auth.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Comp-Off Active Credits & 90-Day Expiry Tracker */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs space-y-4">
+                <h3 className="font-bold text-white text-sm">Active Credits (90-Day Window)</h3>
+                <p className="text-slate-400 text-[11px]">
+                  Comp-Off credits expire strictly 90 days from earned date. Unused credits lapse and cannot be encashed.
+                </p>
+
+                {compOffCredits.length === 0 ? (
+                  <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-800 text-center text-slate-400">
+                    No active Comp-Off credits in ledger.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {compOffCredits.map((c, i) => {
+                      const daysLeft = Math.ceil((new Date(c.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+                      return (
+                        <div key={i} className="p-3 bg-slate-800/40 rounded-xl border border-slate-800 space-y-1">
+                          <div className="flex items-center justify-between font-semibold text-white">
+                            <span>{c.creditDays} Day(s) Credit</span>
+                            <span className={`text-[10px] ${daysLeft < 15 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                              {daysLeft > 0 ? `${daysLeft} days left` : 'Expired'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            Earned: {new Date(c.earnedDate).toLocaleDateString()}<br />
+                            Expires: {new Date(c.expiryDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Sub-Tab 3: GMP Fitness to Resume */}
+          {leaveSubTab === 'fitness' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-base font-bold">Fitness to Resume Duties Certificate (Section 7.7)</h2>
+                    <p className="text-xs text-slate-400">
+                      Mandatory under WHO GMP and Schedule M for manufacturing & QC staff returning from Sick Leave &ge; 4 days.
+                    </p>
+                  </div>
+                  <Stethoscope className="text-cyan-400" size={24} />
+                </div>
+
+                <form onSubmit={handleFitnessSubmit} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Certifying Doctor Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Dr. Full Name (MBBS+)"
+                        value={fitnessForm.certifyingDoctor}
+                        onChange={(e) => setFitnessForm({ ...fitnessForm, certifyingDoctor: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Medical Registration Number</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="MCI / State Medical Council Reg No"
+                        value={fitnessForm.doctorRegistrationNumber}
+                        onChange={(e) => setFitnessForm({ ...fitnessForm, doctorRegistrationNumber: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Clinic / Hospital Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Hospital / Medical Centre"
+                        value={fitnessForm.clinicOrHospitalName}
+                        onChange={(e) => setFitnessForm({ ...fitnessForm, clinicOrHospitalName: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Examination Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={fitnessForm.examinationDate}
+                        onChange={(e) => setFitnessForm({ ...fitnessForm, examinationDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800 space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={fitnessForm.isCleanroomFit}
+                        onChange={(e) => setFitnessForm({ ...fitnessForm, isCleanroomFit: e.target.checked })}
+                        className="rounded bg-slate-800 border-slate-700 text-bjk-teal focus:ring-0"
+                      />
+                      <span className="text-white text-xs font-semibold">
+                        Physician certifies employee free from open lesions, communicable skin/respiratory conditions for GMP cleanrooms
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Certificate Document URL / Attachment</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. /uploads/medical/fitness_certificate.pdf"
+                      value={fitnessForm.certificateDocumentUrl}
+                      onChange={(e) => setFitnessForm({ ...fitnessForm, certificateDocumentUrl: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-semibold shadow-md shadow-teal-500/20"
+                    >
+                      Submit Fitness Record
+                    </button>
+                  </div>
+                </form>
+
+                {/* Fitness Records History */}
+                <div className="mt-8 border-t border-slate-800 pt-6">
+                  <h3 className="text-sm font-bold text-white mb-3">Submitted Fitness Records</h3>
+                  {fitnessRecords.length === 0 ? (
+                    <div className="p-4 bg-slate-800/30 rounded-xl text-center text-slate-400 text-xs">
+                      No fitness records submitted yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {fitnessRecords.map((r, i) => (
+                        <div key={i} className="p-3 bg-slate-800/40 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-semibold text-white block">Dr. {r.certifyingDoctor} ({r.doctorRegistrationNumber})</span>
+                            <span className="text-[11px] text-slate-400">{r.clinicOrHospitalName} &bull; Examined: {new Date(r.examinationDate).toLocaleDateString()}</span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                            r.status === 'VERIFIED_FIT' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                          }`}>
+                            {r.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Compliance Note */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-xs space-y-4">
+                <h3 className="font-bold text-white text-sm">Regulatory Notice (WHO GMP & 21 CFR 211)</h3>
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Personnel with illness or open lesions that may adversely affect pharmaceutical products must be excluded from direct manufacturing contact until certified fit.
+                </p>
+                <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-white block">Extended Leave Notice:</span>
+                  Leaves of 30+ consecutive days require GMP refresher training before resumption of cleanroom duties.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-Tab 4: Encashment & Regularization */}
+          {leaveSubTab === 'encashment' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Encashment Application Form */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-base font-bold">December EL Encashment (Section 12.1)</h2>
+                    <p className="text-xs text-slate-400">
+                      Max 10 days per year; minimum 20 days balance must be retained.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleEncashmentSubmit} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Encashment Days (1 to 10)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      required
+                      value={encashmentForm.encashmentDays}
+                      onChange={(e) => setEncashmentForm({ ...encashmentForm, encashmentDays: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Reason / Notes</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Optional notes for payroll..."
+                      value={encashmentForm.reason}
+                      onChange={(e) => setEncashmentForm({ ...encashmentForm, reason: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal resize-none"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800 text-[11px] text-slate-400">
+                    Encashment payout is calculated based on Basic Salary and disbursed in December payroll.
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-semibold shadow-md shadow-teal-500/20"
+                    >
+                      Submit Encashment Request
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* LOP Regularization Request Form */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-base font-bold">Absence Regularization (Section 13.4)</h2>
+                    <p className="text-xs text-slate-400">
+                      Emergency regularization for unforeseen hospitalization or calamity.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleRegularizationSubmit} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Absence Start Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={regularizationForm.absenceStartDate}
+                        onChange={(e) => setRegularizationForm({ ...regularizationForm, absenceStartDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Absence End Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={regularizationForm.absenceEndDate}
+                        onChange={(e) => setRegularizationForm({ ...regularizationForm, absenceEndDate: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Emergency Category</label>
+                    <select
+                      value={regularizationForm.reasonCategory}
+                      onChange={(e) => setRegularizationForm({ ...regularizationForm, reasonCategory: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal"
+                    >
+                      <option value="HOSPITALIZATION">Emergency Hospitalization</option>
+                      <option value="ACCIDENT">Accident / Medical Trauma</option>
+                      <option value="NATURAL_CALAMITY">Natural Calamity / Civic Disturbance</option>
+                      <option value="FAMILY_CRISIS">Severe Family Crisis</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Detailed Justification</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="Explain inability to provide advance intimation..."
+                      value={regularizationForm.detailedExplanation}
+                      onChange={(e) => setRegularizationForm({ ...regularizationForm, detailedExplanation: e.target.value })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-bjk-teal resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-bjk-teal hover:bg-bjk-teal/90 text-white text-xs font-semibold shadow-md shadow-teal-500/20"
+                    >
+                      Submit for HR Approval
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

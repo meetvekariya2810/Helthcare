@@ -187,7 +187,20 @@ module.exports = {
 
   // Factory Geofence & Attendance Policy Models
   AttendancePolicy: require('./AttendancePolicy'),
-  AttendanceAuditLog: require('./AttendanceAuditLog')
+  AttendanceAuditLog: require('./AttendanceAuditLog'),
+
+  // BJK-HR-POL-001 Policy Leave Models
+  CompOffWorkAuthorization: require('./hrms/LeavePolicyModels').CompOffWorkAuthorization,
+  CompOffCredit: require('./hrms/LeavePolicyModels').CompOffCredit,
+  LeaveBlackoutPeriod: require('./hrms/LeavePolicyModels').LeaveBlackoutPeriod,
+  DepartmentStaffingThreshold: require('./hrms/LeavePolicyModels').DepartmentStaffingThreshold,
+  LeaveRefresherTraining: require('./hrms/LeavePolicyModels').LeaveRefresherTraining,
+  MedicalFitnessRecord: require('./hrms/LeavePolicyModels').MedicalFitnessRecord,
+  LeaveEncashmentRequest: require('./hrms/LeavePolicyModels').LeaveEncashmentRequest,
+  LeaveRegularizationRequest: require('./hrms/LeavePolicyModels').LeaveRegularizationRequest,
+  LeaveGrievance: require('./hrms/LeavePolicyModels').LeaveGrievance,
+  PolicyClarification: require('./hrms/LeavePolicyModels').PolicyClarification
 };
+
 
 

@@ -1096,8 +1096,74 @@ const hrApprove = async (req, res) => {
       await balanceDoc.save();
     }
 
+    // BJK-HR-POL-001 Policy integrations:
+    // 1. If Comp-Off, deduct FIFO from active credits
+    if (leaveRequest.leaveType === 'COMPENSATORY_OFF') {
+      try {
+        const { deductCompOffCredits } = require('../services/hrms/leavePolicyService');
+        await deductCompOffCredits(leaveRequest.employeeId, leaveRequest.duration, leaveRequest);
+      } catch (coErr) {
+        console.warn('[leaveController] Comp-off credit deduction warning:', coErr.message);
+      }
+    }
+
+    // 2. If extended leave >= 30 days in GMP department, ensure refresher training is scheduled
+    const deptUpper = (leaveRequest.department || '').toUpperCase();
+    const isGmpDept = ['PRD', 'PRODUCTION', 'QC', 'QUALITY_CONTROL', 'QA', 'QUALITY_ASSURANCE', 'WAREHOUSE', 'ENGG'].some(d => deptUpper.includes(d));
+    if (leaveRequest.duration >= 30 && isGmpDept) {
+      try {
+        const { LeaveRefresherTraining } = require('../models/hrms/LeavePolicyModels');
+        await LeaveRefresherTraining.findOneAndUpdate(
+          { leaveRequestId: leaveRequest._id },
+          {
+            $setOnInsert: {
+              employee: leaveRequest.employee,
+              employeeCode: leaveRequest.employeeId,
+              employeeName: leaveRequest.employeeName,
+              department: leaveRequest.department,
+              leaveRequestId: leaveRequest._id,
+              leaveDurationDays: leaveRequest.duration,
+              returnDate: leaveRequest.endDate,
+              status: 'REQUIRED'
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (trErr) {
+        console.warn('[leaveController] Refresher training trigger warning:', trErr.message);
+      }
+    }
+
+    // 3. If Sick Leave >= 4 days in GMP department, record medical fitness requirement
+    if (leaveRequest.leaveType === 'SICK_LEAVE' && leaveRequest.duration >= 4 && isGmpDept) {
+      try {
+        const { MedicalFitnessRecord } = require('../models/hrms/LeavePolicyModels');
+        await MedicalFitnessRecord.findOneAndUpdate(
+          { leaveRequestId: leaveRequest._id },
+          {
+            $setOnInsert: {
+              employee: leaveRequest.employee,
+              employeeCode: leaveRequest.employeeId,
+              employeeName: leaveRequest.employeeName,
+              department: leaveRequest.department,
+              leaveRequestId: leaveRequest._id,
+              sickLeaveDays: leaveRequest.duration,
+              certificateType: 'FITNESS_TO_RESUME',
+              isGmpCriticalRole: true,
+              documentUrl: leaveRequest.supportingDocument?.fileUrl || '',
+              status: leaveRequest.supportingDocument?.fileUrl ? 'SUBMITTED' : 'SUBMITTED'
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (fitErr) {
+        console.warn('[leaveController] Medical fitness record trigger warning:', fitErr.message);
+      }
+    }
+
     await logLeaveActivity({
       req,
+
       leaveRequest,
       actor: req.user,
       action: 'APPROVE',

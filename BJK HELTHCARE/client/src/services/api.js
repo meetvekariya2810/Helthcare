@@ -299,8 +299,51 @@ export const hrmsAPI = {
     getDepartments: (params) => api.get('/leave/departments', { params }),
     getEmployeeAttendance: (employeeCode) => api.get(`/leave/attendance/employee/${employeeCode}`),
     importCSV: (formData) => api.post('/leave/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-    exportCSV: (params) => api.get('/leave/export', { params, responseType: 'blob' })
+    exportCSV: (params) => api.get('/leave/export', { params, responseType: 'blob' }),
+
+    // BJK-HR-POL-001 Policy & Controls API
+    getPolicyConfig: () => api.get('/leave/policy-config'),
+    getPolicyClarifications: () => api.get('/leave/policy-clarifications'),
+    updatePolicyClarification: (key, data) => api.put(`/leave/policy-clarifications/${key}`, data),
+
+    // Comp-Off API
+    getCompOffAuthorizations: (params) => api.get('/leave/comp-off/authorizations', { params }),
+    createCompOffAuthorization: (data) => api.post('/leave/comp-off/authorizations', data),
+    approveCompOffRM: (id, data) => api.put(`/leave/comp-off/authorizations/${id}/approve-rm`, data),
+    approveCompOffHR: (id, data) => api.put(`/leave/comp-off/authorizations/${id}/approve-hr`, data),
+    verifyCompOffWork: (id, data) => api.put(`/leave/comp-off/authorizations/${id}/verify-work`, data),
+    getCompOffCredits: (params) => api.get('/leave/comp-off/credits', { params }),
+
+    // GMP Pharma Controls API
+    getBlackoutPeriods: () => api.get('/leave/gmp/blackout-periods'),
+    createBlackoutPeriod: (data) => api.post('/leave/gmp/blackout-periods', data),
+    deleteBlackoutPeriod: (id) => api.delete(`/leave/gmp/blackout-periods/${id}`),
+    getStaffingThresholds: () => api.get('/leave/gmp/staffing-thresholds'),
+    updateStaffingThreshold: (dept, data) => api.put(`/leave/gmp/staffing-thresholds/${dept}`, data),
+    getRefresherTrainings: (params) => api.get('/leave/gmp/refresher-trainings', { params }),
+    verifyRefresherTraining: (id, data) => api.put(`/leave/gmp/refresher-trainings/${id}/verify`, data),
+    getMedicalFitnessRecords: (params) => api.get('/leave/gmp/medical-fitness', { params }),
+    verifyMedicalFitnessRecord: (id, data) => api.put(`/leave/gmp/medical-fitness/${id}/verify`, data),
+
+    // Encashment & Regularization API
+    getEncashments: (params) => api.get('/leave/encashment', { params }),
+    createEncashment: (data) => api.post('/leave/encashment', data),
+    approveEncashment: (id, data) => api.put(`/leave/encashment/${id}/approve`, data),
+    getRegularizations: (params) => api.get('/leave/regularization', { params }),
+    createRegularization: (data) => api.post('/leave/regularization', data),
+    approveRegularization: (id, data) => api.put(`/leave/regularization/${id}/approve`, data),
+
+    // Year-End & LOP API
+    previewYearEnd: (params) => api.get('/leave/year-end/preview', { params }),
+    executeYearEnd: (data) => api.post('/leave/year-end/execute', data),
+    calculateLOP: (data) => api.post('/leave/lop/calculate', data),
+
+    // Grievances API
+    getGrievances: (params) => api.get('/leave/grievances', { params }),
+    createGrievance: (data) => api.post('/leave/grievances', data),
+    advanceGrievance: (id, data) => api.put(`/leave/grievances/${id}/advance`, data)
   },
+
 
   // Payroll
   getPayrollRuns: (params) => api.get('/hrms/payroll', { params }),
