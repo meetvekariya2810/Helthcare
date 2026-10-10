@@ -11,6 +11,24 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
+// Lightweight in-flight request deduplicator for identical concurrent GET requests
+const inFlightRequests = new Map();
+const originalGet = apiClient.get.bind(apiClient);
+apiClient.get = function (url, config = {}) {
+  if (!config.cancelToken && !config.signal && !config.responseType) {
+    const key = url + (config.params ? JSON.stringify(config.params) : '');
+    if (inFlightRequests.has(key)) {
+      return inFlightRequests.get(key);
+    }
+    const requestPromise = originalGet(url, config).finally(() => {
+      inFlightRequests.delete(key);
+    });
+    inFlightRequests.set(key, requestPromise);
+    return requestPromise;
+  }
+  return originalGet(url, config);
+};
+
 // Intercept requests to add JWT token and Request-ID
 apiClient.interceptors.request.use(
   (config) => {

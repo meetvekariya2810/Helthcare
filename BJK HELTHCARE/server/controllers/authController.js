@@ -35,7 +35,16 @@ const signToken = (user, sessionId) => {
   );
 };
 
-// Seeded development persona accounts with real bcrypt password hashes
+// Seeded development persona accounts with lazy-evaluated bcrypt password hashes
+const passwordHashMap = new Map();
+const getLazyPasswordHash = (pwd) => {
+  if (!pwd) return '';
+  if (!passwordHashMap.has(pwd)) {
+    passwordHashMap.set(pwd, bcrypt.hashSync(pwd, 10));
+  }
+  return passwordHashMap.get(pwd);
+};
+
 const getDevAccounts = () => {
   const hrManagerPwd = process.env.SEED_HR_MANAGER_PASSWORD || 'Bjk@2810';
   const superAdminPwd = process.env.SEED_SUPER_ADMIN_PASSWORD || 'Admin@BJK2026!';
@@ -51,7 +60,7 @@ const getDevAccounts = () => {
       email: 'bh1046@bjkhealthcare.com',
       workEmail: 'bh1046@bjkhealthcare.com',
       username: 'bh1046',
-      passwordHash: bcrypt.hashSync('Bjk@2810', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.HR_MANAGER,
       department: 'Human Resources',
       employeeId: 'BH1046',
@@ -64,7 +73,7 @@ const getDevAccounts = () => {
       _id: 'bjk-superadmin-01',
       name: 'Super Admin',
       email: 'superadmin@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-ADM-000',
@@ -76,7 +85,7 @@ const getDevAccounts = () => {
       _id: 'bjk-hr-00',
       name: 'HR Administration',
       email: 'hr@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(hrManagerPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.HR_MANAGER,
       department: 'Human Resources',
       employeeId: 'BJK-HR-000',
@@ -88,7 +97,7 @@ const getDevAccounts = () => {
       _id: 'bjk-hr-01',
       name: 'HR Manager',
       email: 'hr.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(hrManagerPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.HR_MANAGER,
       department: 'Human Resources',
       employeeId: 'BJK-EMP-004',
@@ -100,7 +109,7 @@ const getDevAccounts = () => {
       _id: 'bjk-admin-01',
       name: 'Dr. Vikram Mehta',
       email: 'admin@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-EMP-000',
@@ -112,7 +121,7 @@ const getDevAccounts = () => {
       _id: 'bjk-dir-01',
       name: 'Executive Director',
       email: 'director@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(directorPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.DIRECTOR,
       department: 'Executive Management',
       employeeId: 'BJK-EMP-001',
@@ -124,7 +133,7 @@ const getDevAccounts = () => {
       _id: 'bjk-hr-02',
       name: 'HR Administrator',
       email: 'hr.admin@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(hrAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.HR_ADMIN,
       department: 'Human Resources',
       employeeId: 'BJK-EMP-002',
@@ -136,7 +145,7 @@ const getDevAccounts = () => {
       _id: 'bjk-qa-01',
       name: 'Dr. Anita Desai',
       email: 'qa.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(qaManagerPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.QA_MANAGER,
       department: 'Quality Assurance',
       employeeId: 'BJK-QA-001',
@@ -148,7 +157,7 @@ const getDevAccounts = () => {
       _id: 'bjk-ops-01',
       name: 'Kunal Verma',
       email: 'operations.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.OPERATIONS_MANAGER,
       department: 'Operations & Production',
       employeeId: 'BJK-OPS-001',
@@ -160,7 +169,7 @@ const getDevAccounts = () => {
       _id: 'bjk-prd-01',
       name: 'Amit Trivedi',
       email: 'production.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.PRODUCTION_MANAGER,
       department: 'Manufacturing Operations',
       employeeId: 'BJK-PRD-001',
@@ -172,7 +181,7 @@ const getDevAccounts = () => {
       _id: 'bjk-qc-01',
       name: 'Suresh Patel',
       email: 'qc.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.QC_MANAGER,
       department: 'Quality Control',
       employeeId: 'BJK-QC-001',
@@ -184,7 +193,7 @@ const getDevAccounts = () => {
       _id: 'bjk-reg-01',
       name: 'Pooja Iyer',
       email: 'regulatory.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.REGULATORY_MANAGER,
       department: 'Regulatory Affairs',
       employeeId: 'BJK-REG-001',
@@ -196,7 +205,7 @@ const getDevAccounts = () => {
       _id: 'bjk-wh-01',
       name: 'Mahesh Solanki',
       email: 'inventory.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.WAREHOUSE_MANAGER,
       department: 'Warehouse & Logistics',
       employeeId: 'BJK-WH-001',
@@ -208,7 +217,7 @@ const getDevAccounts = () => {
       _id: 'bjk-crm-01',
       name: 'Rohan Gupta',
       email: 'crm.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.CRM_MANAGER,
       department: 'Commercial & Sales',
       employeeId: 'BJK-CRM-001',
@@ -220,7 +229,7 @@ const getDevAccounts = () => {
       _id: 'bjk-exp-01',
       name: 'Sameer Joshi',
       email: 'export.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EXPORT_MANAGER,
       department: 'International Business',
       employeeId: 'BJK-EXP-001',
@@ -232,7 +241,7 @@ const getDevAccounts = () => {
       _id: 'bjk-fin-01',
       name: 'Manish Parekh',
       email: 'finance.manager@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.FINANCE_MANAGER,
       department: 'Finance & Accounts',
       employeeId: 'BJK-FIN-001',
@@ -244,7 +253,7 @@ const getDevAccounts = () => {
       _id: 'bjk-doc-01',
       name: 'Smita Kulkarni',
       email: 'documents.controller@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.DOCUMENT_CONTROLLER,
       department: 'Quality Assurance',
       employeeId: 'BJK-DOC-001',
@@ -256,7 +265,7 @@ const getDevAccounts = () => {
       _id: 'bjk-aud-01',
       name: 'CA Alok Singhania',
       email: 'auditor@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.AUDITOR,
       department: 'Internal Quality Audit',
       employeeId: 'BJK-AUD-001',
@@ -268,7 +277,7 @@ const getDevAccounts = () => {
       _id: 'bjk-regv-01',
       name: 'Sunil Shah',
       email: 'regulatory.viewer@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.REGULATORY_VIEWER,
       department: 'Regulatory Affairs',
       employeeId: 'BJK-REG-003',
@@ -280,7 +289,7 @@ const getDevAccounts = () => {
       _id: 'bjk-exev-01',
       name: 'Arun Bhatia',
       email: 'executive.viewer@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(superAdminPwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EXECUTIVE_VIEWER,
       department: 'Executive Management',
       employeeId: 'BJK-EXE-001',
@@ -292,7 +301,7 @@ const getDevAccounts = () => {
       _id: 'bjk-emp-01',
       name: 'Rajesh Patel',
       email: 'employee@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(employeePwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Production Operations',
       employeeId: 'BJK-EMP-003',
@@ -304,7 +313,7 @@ const getDevAccounts = () => {
       _id: 'bjk-emp-02',
       name: 'Rajesh Patel',
       email: 'rajesh.patel@bjkhealthcare.com',
-      passwordHash: bcrypt.hashSync(employeePwd, 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Quality Control',
       employeeId: 'BJK-EMP-006',
@@ -318,7 +327,7 @@ const getDevAccounts = () => {
       email: 'canteen@bjkhealthcare.com',
       workEmail: 'canteen@bjkhealthcare.com',
       username: 'canteen',
-      passwordHash: bcrypt.hashSync('BJK@Canteen#2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.CANTEEN_ADMIN || 'CANTEEN_ADMIN',
       department: 'Canteen Department',
       employeeId: 'BJK-CNT-001',
@@ -336,7 +345,7 @@ const getDevAccounts = () => {
       name: 'Ketan (Super Admin)',
       email: 'ketan@bjkhealthcare.com',
       username: 'ketan',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-ADM-KETAN',
@@ -349,7 +358,7 @@ const getDevAccounts = () => {
       name: 'Haresh (Super Admin)',
       email: 'haresh@bjkhealthcare.com',
       username: 'haresh',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-ADM-HARESH',
@@ -362,7 +371,7 @@ const getDevAccounts = () => {
       name: 'Ravi (Super Admin)',
       email: 'ravi@bjkhealthcare.com',
       username: 'ravi',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-ADM-RAVI',
@@ -375,7 +384,7 @@ const getDevAccounts = () => {
       name: 'Meet (Super Admin)',
       email: 'meet@bjkhealthcare.com',
       username: 'meet',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'BJK-ADM-MEET',
@@ -388,7 +397,7 @@ const getDevAccounts = () => {
       name: 'Test Admin (Executive)',
       email: 'admin.test@bjkhealthcare.com',
       username: 'test-adm-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SUPER_ADMIN,
       department: 'Executive Management',
       employeeId: 'TEST-ADM-01',
@@ -401,7 +410,7 @@ const getDevAccounts = () => {
       name: 'Test HR Manager',
       email: 'hr.test@bjkhealthcare.com',
       username: 'test-hr-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.HR_MANAGER,
       department: 'Human Resources',
       employeeId: 'TEST-HR-01',
@@ -414,7 +423,7 @@ const getDevAccounts = () => {
       name: 'Test Production Manager',
       email: 'prd.manager@bjkhealthcare.com',
       username: 'test-prd-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.PRODUCTION_MANAGER,
       department: 'Production',
       employeeId: 'TEST-PRD-MGR',
@@ -427,7 +436,7 @@ const getDevAccounts = () => {
       name: 'Test Production Officer',
       email: 'prd.test@bjkhealthcare.com',
       username: 'test-prd-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Production',
       employeeId: 'TEST-PRD-01',
@@ -440,7 +449,7 @@ const getDevAccounts = () => {
       name: 'Test QC Manager',
       email: 'qc.manager@bjkhealthcare.com',
       username: 'test-qc-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.QC_MANAGER,
       department: 'Quality Control',
       employeeId: 'TEST-QC-MGR',
@@ -453,7 +462,7 @@ const getDevAccounts = () => {
       name: 'Test QC Chemist',
       email: 'qc.test@bjkhealthcare.com',
       username: 'test-qc-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Quality Control',
       employeeId: 'TEST-QC-01',
@@ -466,7 +475,7 @@ const getDevAccounts = () => {
       name: 'Test QA Manager',
       email: 'qa.manager@bjkhealthcare.com',
       username: 'test-qa-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.QA_MANAGER,
       department: 'Quality Assurance',
       employeeId: 'TEST-QA-MGR',
@@ -479,7 +488,7 @@ const getDevAccounts = () => {
       name: 'Test QA Officer',
       email: 'qa.test@bjkhealthcare.com',
       username: 'test-qa-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Quality Assurance',
       employeeId: 'TEST-QA-01',
@@ -492,7 +501,7 @@ const getDevAccounts = () => {
       name: 'Test Warehouse Manager',
       email: 'wh.manager@bjkhealthcare.com',
       username: 'test-wh-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.WAREHOUSE_MANAGER,
       department: 'Warehouse',
       employeeId: 'TEST-WH-MGR',
@@ -505,7 +514,7 @@ const getDevAccounts = () => {
       name: 'Test Warehouse Executive',
       email: 'warehouse.test@bjkhealthcare.com',
       username: 'test-wh-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Warehouse',
       employeeId: 'TEST-WH-01',
@@ -518,7 +527,7 @@ const getDevAccounts = () => {
       name: 'Test Engineering Manager',
       email: 'engg.manager@bjkhealthcare.com',
       username: 'test-eng-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.OPERATIONS_MANAGER,
       department: 'Engineering',
       employeeId: 'TEST-ENG-MGR',
@@ -531,7 +540,7 @@ const getDevAccounts = () => {
       name: 'Test Engineering Technician',
       email: 'engg.test@bjkhealthcare.com',
       username: 'test-eng-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Engineering',
       employeeId: 'TEST-ENG-01',
@@ -544,7 +553,7 @@ const getDevAccounts = () => {
       name: 'Test Finance Manager',
       email: 'accounts.manager@bjkhealthcare.com',
       username: 'test-acc-mgr',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.FINANCE_MANAGER,
       department: 'Accounts',
       employeeId: 'TEST-ACC-MGR',
@@ -557,7 +566,7 @@ const getDevAccounts = () => {
       name: 'Test Accounts Executive',
       email: 'accounts.test@bjkhealthcare.com',
       username: 'test-acc-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'Accounts',
       employeeId: 'TEST-ACC-01',
@@ -570,7 +579,7 @@ const getDevAccounts = () => {
       name: 'Test Purchase Officer',
       email: 'purchase.test@bjkhealthcare.com',
       username: 'test-pur-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.OPERATIONS_MANAGER,
       department: 'Purchase',
       employeeId: 'TEST-PUR-01',
@@ -583,7 +592,7 @@ const getDevAccounts = () => {
       name: 'Test Regulatory Officer',
       email: 'regulatory.test@bjkhealthcare.com',
       username: 'test-ra-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.REGULATORY_MANAGER,
       department: 'Regulatory Affairs',
       employeeId: 'TEST-RA-01',
@@ -596,7 +605,7 @@ const getDevAccounts = () => {
       name: 'Test Sales Manager',
       email: 'sales.test@bjkhealthcare.com',
       username: 'test-sales-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.SALES_MANAGER,
       department: 'Sales & Marketing',
       employeeId: 'TEST-SALES-01',
@@ -609,7 +618,7 @@ const getDevAccounts = () => {
       name: 'Test Microbiologist',
       email: 'micro.test@bjkhealthcare.com',
       username: 'test-mic-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.EMPLOYEE,
       department: 'QC Micro',
       employeeId: 'TEST-MIC-01',
@@ -622,7 +631,7 @@ const getDevAccounts = () => {
       name: 'Test Admin Executive',
       email: 'facility.test@bjkhealthcare.com',
       username: 'test-fcl-01',
-      passwordHash: bcrypt.hashSync('Bjk@2026', 10),
+      get passwordHash() { return getLazyPasswordHash(); },
       role: ROLES.ADMIN,
       department: 'Admin',
       employeeId: 'TEST-FCL-01',
@@ -823,18 +832,20 @@ const login = async (req, res) => {
         }
 
         if (!user) {
-          try {
-            const { seedEmployeePortalUsers } = require('../seed/employeePortalSeed');
-            await seedEmployeePortalUsers();
-            user = await User.findOne({
-              $or: [
-                { email: normalizedIdentifier },
-                { email: loginIdentifier },
-                { employeeId: loginIdentifier.toUpperCase() },
-                { employeeId: loginIdentifier }
-              ]
-            }).select('+password +passwordHash');
-          } catch (_) {}
+          if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL && !process.env.VERCEL_ENV) {
+            try {
+              const { seedEmployeePortalUsers } = require('../seed/employeePortalSeed');
+              await seedEmployeePortalUsers();
+              user = await User.findOne({
+                $or: [
+                  { email: normalizedIdentifier },
+                  { email: loginIdentifier },
+                  { employeeId: loginIdentifier.toUpperCase() },
+                  { employeeId: loginIdentifier }
+                ]
+              }).select('+password +passwordHash');
+            } catch (_) {}
+          }
         }
 
         if (user) {
@@ -1014,36 +1025,45 @@ const login = async (req, res) => {
           const expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + 7);
 
-          await UserSession.create({
-            userId: user._id,
-            employeeId: user.employeeId || '',
-            sessionId,
-            ipAddress,
-            device: uaParsed.device,
-            browser: uaParsed.browser,
-            operatingSystem: uaParsed.os,
-            status: 'ACTIVE',
-            lastActivity: new Date(),
-            expiresAt
-          }).catch(() => {});
-
-          // Record LoginActivity
-          await LoginActivity.create({
-            userId: user._id,
-            employeeId: user.employeeId || '',
-            email: user.email,
-            loginTime: new Date(),
-            ipAddress,
-            device: uaParsed.device,
-            browser: uaParsed.browser,
-            operatingSystem: uaParsed.os,
-            sessionId,
-            status: 'SUCCESS'
-          }).catch(() => {});
-
-          user.failedLoginAttempts = 0;
-          user.lastLogin = new Date();
-          await user.save({ validateBeforeSave: false }).catch(() => {});
+          // Run session creation, login activity logging, user timestamp update, and audit record concurrently
+          await Promise.allSettled([
+            UserSession.create({
+              userId: user._id,
+              employeeId: user.employeeId || '',
+              sessionId,
+              ipAddress,
+              device: uaParsed.device,
+              browser: uaParsed.browser,
+              operatingSystem: uaParsed.os,
+              status: 'ACTIVE',
+              lastActivity: new Date(),
+              expiresAt
+            }),
+            LoginActivity.create({
+              userId: user._id,
+              employeeId: user.employeeId || '',
+              email: user.email,
+              loginTime: new Date(),
+              ipAddress,
+              device: uaParsed.device,
+              browser: uaParsed.browser,
+              operatingSystem: uaParsed.os,
+              sessionId,
+              status: 'SUCCESS'
+            }),
+            (async () => {
+              user.failedLoginAttempts = 0;
+              user.lastLogin = new Date();
+              await user.save({ validateBeforeSave: false }).catch(() => {});
+            })(),
+            recordAudit({
+              req: { user, headers: req.headers, socket: req.socket },
+              action: 'LOGIN_SUCCESS',
+              module: 'SECURITY',
+              recordId: user._id,
+              details: `User ${user.email} (${user.role}) logged in successfully via MongoDB.`
+            })
+          ]);
 
           const token = signToken(user, sessionId);
           const effective = resolveEffectivePermissions(user);
@@ -1054,14 +1074,6 @@ const login = async (req, res) => {
           ]));
           const scope = user.dataScope || resolveDataScope(user);
           const dashboard = resolveRoleDashboard(user);
-
-          await recordAudit({
-            req: { user, headers: req.headers, socket: req.socket },
-            action: 'LOGIN_SUCCESS',
-            module: 'SECURITY',
-            recordId: user._id,
-            details: `User ${user.email} (${user.role}) logged in successfully via MongoDB.`
-          });
 
           return res.status(200).json({
             success: true,
@@ -1477,10 +1489,10 @@ const getMe = async (req, res) => {
       try {
         let user = null;
         if (mongoose.isValidObjectId(userId)) {
-          user = await User.findById(userId);
+          user = await User.findById(userId).lean();
         }
         if (!user && userEmail) {
-          user = await User.findOne({ email: userEmail });
+          user = await User.findOne({ email: userEmail }).lean();
         }
         if (user) {
           if (!user.isActive || user.isLocked) {

@@ -7,137 +7,140 @@ import { MainLayout } from './components/layout/MainLayout';
 import { EmployeeLayout } from './components/employee/EmployeeLayout';
 import { EmployeeProtectedRoute } from './components/employee/EmployeeProtectedRoute';
 
+const lazyPage = (importFn, name) => React.lazy(() => importFn().then(m => ({ default: m[name] || m.default })));
+
+
 // Employee Portal Pages
-import { EmployeeLogin } from './pages/employee/EmployeeLogin';
-import { EmployeeDashboard } from './pages/employee/EmployeeDashboard';
-import { EmployeeProfilePage } from './pages/employee/EmployeeProfilePage';
-import { EmployeeAttendancePage } from './pages/employee/EmployeeAttendancePage';
-import { EmployeeFaceAttendancePage } from './pages/employee/EmployeeFaceAttendancePage';
-import { EmployeeShiftPage } from './pages/employee/EmployeeShiftPage';
-import { EmployeeLeavePage } from './pages/employee/EmployeeLeavePage';
-import { EmployeeTasksPage } from './pages/employee/EmployeeTasksPage';
-import { EmployeePayrollPage } from './pages/employee/EmployeePayrollPage';
-import { EmployeeDocumentsPage } from './pages/employee/EmployeeDocumentsPage';
-import { EmployeeTrainingPage } from './pages/employee/EmployeeTrainingPage';
-import { EmployeePoliciesPage } from './pages/employee/EmployeePoliciesPage';
-import { EmployeeTeamPage } from './pages/employee/EmployeeTeamPage';
-import { EmployeeCommunicationPage } from './pages/employee/EmployeeCommunicationPage';
-import { EmployeeSupportPage } from './pages/employee/EmployeeSupportPage';
-import { EmployeeSettingsPage } from './pages/employee/EmployeeSettingsPage';
-import { EmployeeIDCardPage } from './pages/employee/EmployeeIDCardPage';
-import { EmployeeCanteenPage } from './pages/employee/EmployeeCanteenPage';
-import { EmployeeCalendarPage } from './pages/employee/EmployeeCalendarPage';
-import { EmployeeIDCardManager } from './pages/hrms/EmployeeIDCardManager';
-import { PublicEmployeeVerification } from './pages/PublicEmployeeVerification';
+const EmployeeLogin = lazyPage(() => import('./pages/employee/EmployeeLogin'), 'EmployeeLogin');
+const EmployeeDashboard = lazyPage(() => import('./pages/employee/EmployeeDashboard'), 'EmployeeDashboard');
+const EmployeeProfilePage = lazyPage(() => import('./pages/employee/EmployeeProfilePage'), 'EmployeeProfilePage');
+const EmployeeAttendancePage = lazyPage(() => import('./pages/employee/EmployeeAttendancePage'), 'EmployeeAttendancePage');
+const EmployeeFaceAttendancePage = lazyPage(() => import('./pages/employee/EmployeeFaceAttendancePage'), 'EmployeeFaceAttendancePage');
+const EmployeeShiftPage = lazyPage(() => import('./pages/employee/EmployeeShiftPage'), 'EmployeeShiftPage');
+const EmployeeLeavePage = lazyPage(() => import('./pages/employee/EmployeeLeavePage'), 'EmployeeLeavePage');
+const EmployeeTasksPage = lazyPage(() => import('./pages/employee/EmployeeTasksPage'), 'EmployeeTasksPage');
+const EmployeePayrollPage = lazyPage(() => import('./pages/employee/EmployeePayrollPage'), 'EmployeePayrollPage');
+const EmployeeDocumentsPage = lazyPage(() => import('./pages/employee/EmployeeDocumentsPage'), 'EmployeeDocumentsPage');
+const EmployeeTrainingPage = lazyPage(() => import('./pages/employee/EmployeeTrainingPage'), 'EmployeeTrainingPage');
+const EmployeePoliciesPage = lazyPage(() => import('./pages/employee/EmployeePoliciesPage'), 'EmployeePoliciesPage');
+const EmployeeTeamPage = lazyPage(() => import('./pages/employee/EmployeeTeamPage'), 'EmployeeTeamPage');
+const EmployeeCommunicationPage = lazyPage(() => import('./pages/employee/EmployeeCommunicationPage'), 'EmployeeCommunicationPage');
+const EmployeeSupportPage = lazyPage(() => import('./pages/employee/EmployeeSupportPage'), 'EmployeeSupportPage');
+const EmployeeSettingsPage = lazyPage(() => import('./pages/employee/EmployeeSettingsPage'), 'EmployeeSettingsPage');
+const EmployeeIDCardPage = lazyPage(() => import('./pages/employee/EmployeeIDCardPage'), 'EmployeeIDCardPage');
+const EmployeeCanteenPage = lazyPage(() => import('./pages/employee/EmployeeCanteenPage'), 'EmployeeCanteenPage');
+const EmployeeCalendarPage = lazyPage(() => import('./pages/employee/EmployeeCalendarPage'), 'EmployeeCalendarPage');
+const EmployeeIDCardManager = lazyPage(() => import('./pages/hrms/EmployeeIDCardManager'), 'EmployeeIDCardManager');
+const PublicEmployeeVerification = lazyPage(() => import('./pages/PublicEmployeeVerification'), 'PublicEmployeeVerification');
 
 // Digital Brain Pages
 import { Login } from './pages/Login';
-import { ChangePasswordPage } from './pages/auth/ChangePasswordPage';
+const ChangePasswordPage = lazyPage(() => import('./pages/auth/ChangePasswordPage'), 'ChangePasswordPage');
 
 // Dedicated Canteen Portal Pages
-import { CanteenLogin } from './pages/canteen/CanteenLogin';
-import { CanteenDashboard } from './pages/canteen/CanteenDashboard';
+const CanteenLogin = lazyPage(() => import('./pages/canteen/CanteenLogin'), 'CanteenLogin');
+const CanteenDashboard = lazyPage(() => import('./pages/canteen/CanteenDashboard'), 'CanteenDashboard');
 import { CanteenLayout } from './components/canteen/CanteenLayout';
 import { CanteenProtectedRoute } from './components/canteen/CanteenProtectedRoute';
 
-import { CommandCenter } from './pages/CommandCenter';
-import { DigitalBrainModules } from './pages/DigitalBrainModules';
-import { AuditLogs } from './pages/AuditLogs';
-import { AdminDatabaseManager } from './pages/AdminDatabaseManager';
-import { AccessRestricted } from './pages/AccessRestricted';
-import { FactoryPage } from './pages/FactoryPage';
-import { ProductionPage } from './pages/ProductionPage';
-import { QCPage } from './pages/QCPage';
-import { QAPage } from './pages/QAPage';
-import { RegulatoryPage } from './pages/RegulatoryPage';
-import { InventoryPage } from './pages/InventoryPage';
-import { CRMPage } from './pages/CRMPage';
-import { ExportPage } from './pages/ExportPage';
-import { FinancePage } from './pages/FinancePage';
-import { DocumentsPage } from './pages/DocumentsPage';
-import { AICopilotPage } from './pages/AICopilotPage';
-import { ProductsPage } from './pages/ProductsPage';
-import { OperationsDashboard } from './pages/OperationsDashboard';
+const CommandCenter = lazyPage(() => import('./pages/CommandCenter'), 'CommandCenter');
+const DigitalBrainModules = lazyPage(() => import('./pages/DigitalBrainModules'), 'DigitalBrainModules');
+const AuditLogs = lazyPage(() => import('./pages/AuditLogs'), 'AuditLogs');
+const AdminDatabaseManager = lazyPage(() => import('./pages/AdminDatabaseManager'), 'AdminDatabaseManager');
+const AccessRestricted = lazyPage(() => import('./pages/AccessRestricted'), 'AccessRestricted');
+const FactoryPage = lazyPage(() => import('./pages/FactoryPage'), 'FactoryPage');
+const ProductionPage = lazyPage(() => import('./pages/ProductionPage'), 'ProductionPage');
+const QCPage = lazyPage(() => import('./pages/QCPage'), 'QCPage');
+const QAPage = lazyPage(() => import('./pages/QAPage'), 'QAPage');
+const RegulatoryPage = lazyPage(() => import('./pages/RegulatoryPage'), 'RegulatoryPage');
+const InventoryPage = lazyPage(() => import('./pages/InventoryPage'), 'InventoryPage');
+const CRMPage = lazyPage(() => import('./pages/CRMPage'), 'CRMPage');
+const ExportPage = lazyPage(() => import('./pages/ExportPage'), 'ExportPage');
+const FinancePage = lazyPage(() => import('./pages/FinancePage'), 'FinancePage');
+const DocumentsPage = lazyPage(() => import('./pages/DocumentsPage'), 'DocumentsPage');
+const AICopilotPage = lazyPage(() => import('./pages/AICopilotPage'), 'AICopilotPage');
+const ProductsPage = lazyPage(() => import('./pages/ProductsPage'), 'ProductsPage');
+const OperationsDashboard = lazyPage(() => import('./pages/OperationsDashboard'), 'OperationsDashboard');
 
 // Department-Specific RBAC Dashboards
 import { DepartmentRoute } from './components/common/DepartmentRoute';
-import { DashboardDispatcher } from './pages/dashboards/DashboardDispatcher';
-import { ProductionDashboard } from './pages/dashboards/ProductionDashboard';
-import { QCDashboard } from './pages/dashboards/QCDashboard';
-import { QADashboard } from './pages/dashboards/QADashboard';
-import { WarehouseDashboard } from './pages/dashboards/WarehouseDashboard';
-import { EngineeringDashboard } from './pages/dashboards/EngineeringDashboard';
-import { FinanceDashboard } from './pages/dashboards/FinanceDashboard';
-import { ProcurementDashboard } from './pages/dashboards/ProcurementDashboard';
-import { RegulatoryDashboard } from './pages/dashboards/RegulatoryDashboard';
-import { SalesDashboard } from './pages/dashboards/SalesDashboard';
-import { MicrobiologyDashboard } from './pages/dashboards/MicrobiologyDashboard';
-import { FacilitiesDashboard } from './pages/dashboards/FacilitiesDashboard';
+const DashboardDispatcher = lazyPage(() => import('./pages/dashboards/DashboardDispatcher'), 'DashboardDispatcher');
+const ProductionDashboard = lazyPage(() => import('./pages/dashboards/ProductionDashboard'), 'ProductionDashboard');
+const QCDashboard = lazyPage(() => import('./pages/dashboards/QCDashboard'), 'QCDashboard');
+const QADashboard = lazyPage(() => import('./pages/dashboards/QADashboard'), 'QADashboard');
+const WarehouseDashboard = lazyPage(() => import('./pages/dashboards/WarehouseDashboard'), 'WarehouseDashboard');
+const EngineeringDashboard = lazyPage(() => import('./pages/dashboards/EngineeringDashboard'), 'EngineeringDashboard');
+const FinanceDashboard = lazyPage(() => import('./pages/dashboards/FinanceDashboard'), 'FinanceDashboard');
+const ProcurementDashboard = lazyPage(() => import('./pages/dashboards/ProcurementDashboard'), 'ProcurementDashboard');
+const RegulatoryDashboard = lazyPage(() => import('./pages/dashboards/RegulatoryDashboard'), 'RegulatoryDashboard');
+const SalesDashboard = lazyPage(() => import('./pages/dashboards/SalesDashboard'), 'SalesDashboard');
+const MicrobiologyDashboard = lazyPage(() => import('./pages/dashboards/MicrobiologyDashboard'), 'MicrobiologyDashboard');
+const FacilitiesDashboard = lazyPage(() => import('./pages/dashboards/FacilitiesDashboard'), 'FacilitiesDashboard');
 
 // HRMS Operations Pages
-import { HRDashboard } from './pages/hrms/HRDashboard';
-import { Employees } from './pages/hrms/Employees';
-import { EmployeeProfile } from './pages/hrms/EmployeeProfile';
-import { AddEmployeeWizard } from './pages/hrms/AddEmployeeWizard';
-import { EmployeeHierarchy } from './pages/hrms/EmployeeHierarchy';
-import { FormerEmployees } from './pages/hrms/FormerEmployees';
-import { Organization } from './pages/hrms/Organization';
-import { Attendance } from './pages/hrms/Attendance';
-import { AttendanceCommandCenter } from './pages/hrms/AttendanceCommandCenter';
-import { AttendanceReportBuilder } from './pages/hrms/AttendanceReportBuilder';
-import { CoreHRMSDashboard } from './pages/hrms/CoreHRMSDashboard';
-import { DailyAttendanceManagement } from './pages/hrms/DailyAttendanceManagement';
-import { TodayPresentEmployees } from './pages/hrms/TodayPresentEmployees';
-import { TodayAbsentEmployees } from './pages/hrms/TodayAbsentEmployees';
-import { AttendanceHistory } from './pages/hrms/AttendanceHistory';
-import { NonTechnicalEmployees } from './pages/hrms/NonTechnicalEmployees';
-import { AttendanceReports } from './pages/hrms/AttendanceReports';
-import { MyHRMSDashboard } from './pages/hrms/MyHRMSDashboard';
-import { Shifts } from './pages/hrms/Shifts';
-import { Rostering } from './pages/hrms/Rostering';
-import { LeaveManagement } from './pages/hrms/LeaveManagement';
-import { Payroll } from './pages/hrms/Payroll';
-import { Recruitment } from './pages/hrms/Recruitment';
-import { Onboarding } from './pages/hrms/Onboarding';
-import { Performance } from './pages/hrms/Performance';
-import { Training } from './pages/hrms/Training';
-import { Credentials } from './pages/hrms/Credentials';
-import { Documents } from './pages/hrms/Documents';
-import { Assets } from './pages/hrms/Assets';
-import { Expenses } from './pages/hrms/Expenses';
-import { EmployeeSelfService } from './pages/hrms/EmployeeSelfService';
-import { ManagerSelfService } from './pages/hrms/ManagerSelfService';
-import { HRAnalytics } from './pages/hrms/HRAnalytics';
-import { HRAutomation } from './pages/hrms/HRAutomation';
-import { HRCompliance } from './pages/hrms/HRCompliance';
-import { HRAICopilot } from './pages/hrms/HRAICopilot';
-import { HRNotifications } from './pages/hrms/HRNotifications';
-import { HRSettings } from './pages/hrms/HRSettings';
-import { HROffboarding } from './pages/hrms/HROffboarding';
-import { HRDepartments } from './pages/hrms/HRDepartments';
-import { HRRoles } from './pages/hrms/HRRoles';
-import { HRSessions } from './pages/hrms/HRSessions';
-import { SetupDepartments } from './pages/hrms/SetupDepartments';
-import { SetupSubDepartments } from './pages/hrms/SetupSubDepartments';
+const HRDashboard = lazyPage(() => import('./pages/hrms/HRDashboard'), 'HRDashboard');
+const Employees = lazyPage(() => import('./pages/hrms/Employees'), 'Employees');
+const EmployeeProfile = lazyPage(() => import('./pages/hrms/EmployeeProfile'), 'EmployeeProfile');
+const AddEmployeeWizard = lazyPage(() => import('./pages/hrms/AddEmployeeWizard'), 'AddEmployeeWizard');
+const EmployeeHierarchy = lazyPage(() => import('./pages/hrms/EmployeeHierarchy'), 'EmployeeHierarchy');
+const FormerEmployees = lazyPage(() => import('./pages/hrms/FormerEmployees'), 'FormerEmployees');
+const Organization = lazyPage(() => import('./pages/hrms/Organization'), 'Organization');
+const Attendance = lazyPage(() => import('./pages/hrms/Attendance'), 'Attendance');
+const AttendanceCommandCenter = lazyPage(() => import('./pages/hrms/AttendanceCommandCenter'), 'AttendanceCommandCenter');
+const AttendanceReportBuilder = lazyPage(() => import('./pages/hrms/AttendanceReportBuilder'), 'AttendanceReportBuilder');
+const CoreHRMSDashboard = lazyPage(() => import('./pages/hrms/CoreHRMSDashboard'), 'CoreHRMSDashboard');
+const DailyAttendanceManagement = lazyPage(() => import('./pages/hrms/DailyAttendanceManagement'), 'DailyAttendanceManagement');
+const TodayPresentEmployees = lazyPage(() => import('./pages/hrms/TodayPresentEmployees'), 'TodayPresentEmployees');
+const TodayAbsentEmployees = lazyPage(() => import('./pages/hrms/TodayAbsentEmployees'), 'TodayAbsentEmployees');
+const AttendanceHistory = lazyPage(() => import('./pages/hrms/AttendanceHistory'), 'AttendanceHistory');
+const NonTechnicalEmployees = lazyPage(() => import('./pages/hrms/NonTechnicalEmployees'), 'NonTechnicalEmployees');
+const AttendanceReports = lazyPage(() => import('./pages/hrms/AttendanceReports'), 'AttendanceReports');
+const MyHRMSDashboard = lazyPage(() => import('./pages/hrms/MyHRMSDashboard'), 'MyHRMSDashboard');
+const Shifts = lazyPage(() => import('./pages/hrms/Shifts'), 'Shifts');
+const Rostering = lazyPage(() => import('./pages/hrms/Rostering'), 'Rostering');
+const LeaveManagement = lazyPage(() => import('./pages/hrms/LeaveManagement'), 'LeaveManagement');
+const Payroll = lazyPage(() => import('./pages/hrms/Payroll'), 'Payroll');
+const Recruitment = lazyPage(() => import('./pages/hrms/Recruitment'), 'Recruitment');
+const Onboarding = lazyPage(() => import('./pages/hrms/Onboarding'), 'Onboarding');
+const Performance = lazyPage(() => import('./pages/hrms/Performance'), 'Performance');
+const Training = lazyPage(() => import('./pages/hrms/Training'), 'Training');
+const Credentials = lazyPage(() => import('./pages/hrms/Credentials'), 'Credentials');
+const Documents = lazyPage(() => import('./pages/hrms/Documents'), 'Documents');
+const Assets = lazyPage(() => import('./pages/hrms/Assets'), 'Assets');
+const Expenses = lazyPage(() => import('./pages/hrms/Expenses'), 'Expenses');
+const EmployeeSelfService = lazyPage(() => import('./pages/hrms/EmployeeSelfService'), 'EmployeeSelfService');
+const ManagerSelfService = lazyPage(() => import('./pages/hrms/ManagerSelfService'), 'ManagerSelfService');
+const HRAnalytics = lazyPage(() => import('./pages/hrms/HRAnalytics'), 'HRAnalytics');
+const HRAutomation = lazyPage(() => import('./pages/hrms/HRAutomation'), 'HRAutomation');
+const HRCompliance = lazyPage(() => import('./pages/hrms/HRCompliance'), 'HRCompliance');
+const HRAICopilot = lazyPage(() => import('./pages/hrms/HRAICopilot'), 'HRAICopilot');
+const HRNotifications = lazyPage(() => import('./pages/hrms/HRNotifications'), 'HRNotifications');
+const HRSettings = lazyPage(() => import('./pages/hrms/HRSettings'), 'HRSettings');
+const HROffboarding = lazyPage(() => import('./pages/hrms/HROffboarding'), 'HROffboarding');
+const HRDepartments = lazyPage(() => import('./pages/hrms/HRDepartments'), 'HRDepartments');
+const HRRoles = lazyPage(() => import('./pages/hrms/HRRoles'), 'HRRoles');
+const HRSessions = lazyPage(() => import('./pages/hrms/HRSessions'), 'HRSessions');
+const SetupDepartments = lazyPage(() => import('./pages/hrms/SetupDepartments'), 'SetupDepartments');
+const SetupSubDepartments = lazyPage(() => import('./pages/hrms/SetupSubDepartments'), 'SetupSubDepartments');
 
 // HR Login Credentials & Employee Access Control Layer
-import { HRLoginCredentials } from './pages/hrms/HRLoginCredentials';
-import { HRApprovalPermissions } from './pages/hrms/HRApprovalPermissions';
-import { HRAccessAudit } from './pages/hrms/HRAccessAudit';
+const HRLoginCredentials = lazyPage(() => import('./pages/hrms/HRLoginCredentials'), 'HRLoginCredentials');
+const HRApprovalPermissions = lazyPage(() => import('./pages/hrms/HRApprovalPermissions'), 'HRApprovalPermissions');
+const HRAccessAudit = lazyPage(() => import('./pages/hrms/HRAccessAudit'), 'HRAccessAudit');
 
 // BJK Policy-Driven HRMS Modules (Official Handbook)
-import { PolicyCenter } from './pages/hrms/PolicyCenter';
-import { HRDisciplinaryCenter } from './pages/hrms/HRDisciplinaryCenter';
-import { HRPoshCenter } from './pages/hrms/HRPoshCenter';
-import { HRMaternityCenter } from './pages/hrms/HRMaternityCenter';
-import { HRSafetyCenter } from './pages/hrms/HRSafetyCenter';
-import { HRSeparationCenter } from './pages/hrms/HRSeparationCenter';
-import { HRDiversityCenter } from './pages/hrms/HRDiversityCenter';
-import { HRPrivacySecurityCenter } from './pages/hrms/HRPrivacySecurityCenter';
-import { Holidays } from './pages/hrms/Holidays';
-import { EmployeePortal } from './pages/hrms/EmployeePortal';
-import { HRCanteenManagement } from './pages/hrms/HRCanteenManagement';
-import { HRWorkforceCalendar } from './pages/hrms/HRWorkforceCalendar';
+const PolicyCenter = lazyPage(() => import('./pages/hrms/PolicyCenter'), 'PolicyCenter');
+const HRDisciplinaryCenter = lazyPage(() => import('./pages/hrms/HRDisciplinaryCenter'), 'HRDisciplinaryCenter');
+const HRPoshCenter = lazyPage(() => import('./pages/hrms/HRPoshCenter'), 'HRPoshCenter');
+const HRMaternityCenter = lazyPage(() => import('./pages/hrms/HRMaternityCenter'), 'HRMaternityCenter');
+const HRSafetyCenter = lazyPage(() => import('./pages/hrms/HRSafetyCenter'), 'HRSafetyCenter');
+const HRSeparationCenter = lazyPage(() => import('./pages/hrms/HRSeparationCenter'), 'HRSeparationCenter');
+const HRDiversityCenter = lazyPage(() => import('./pages/hrms/HRDiversityCenter'), 'HRDiversityCenter');
+const HRPrivacySecurityCenter = lazyPage(() => import('./pages/hrms/HRPrivacySecurityCenter'), 'HRPrivacySecurityCenter');
+const Holidays = lazyPage(() => import('./pages/hrms/Holidays'), 'Holidays');
+const EmployeePortal = lazyPage(() => import('./pages/hrms/EmployeePortal'), 'EmployeePortal');
+const HRCanteenManagement = lazyPage(() => import('./pages/hrms/HRCanteenManagement'), 'HRCanteenManagement');
+const HRWorkforceCalendar = lazyPage(() => import('./pages/hrms/HRWorkforceCalendar'), 'HRWorkforceCalendar');
 
 // Error Boundary to prevent display failures or stuck screens
 class ErrorBoundary extends React.Component {
@@ -279,6 +282,14 @@ const PermissionRoute = ({ permission, allowedRoles, module, children }) => {
   return children;
 };
 
+
+const PageLoadingFallback = () => (
+  <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-slate-400">
+    <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mb-3" />
+    <span className="text-xs font-semibold text-slate-400 tracking-wider">Loading Module...</span>
+  </div>
+);
+
 export const App = () => {
   return (
     <BrowserRouter>
@@ -286,6 +297,7 @@ export const App = () => {
         <AuthProvider>
           <EmployeeAuthProvider>
             <NotificationProvider>
+            <React.Suspense fallback={<PageLoadingFallback />}>
             <Routes>
               {/* Public Auth & QR Verification Routes */}
               <Route path="/login" element={<Login />} />
@@ -1121,6 +1133,7 @@ export const App = () => {
             {/* Catch-all redirects safely to role portal */}
             <Route path="*" element={<SmartRedirect />} />
           </Routes>
+            </React.Suspense>
         </NotificationProvider>
         </EmployeeAuthProvider>
       </AuthProvider>

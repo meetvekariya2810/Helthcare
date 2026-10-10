@@ -237,64 +237,9 @@ const REFERENCE_NON_TECH_STAFF = [
   }
 ];
 
-// Automatically ensure 10 reference non-technical staff exist
+// Reference staff auto-seeder disabled to preserve authoritative non-technical master data
 const ensureReferenceNonTechStaff = async () => {
-  try {
-    const existingCount = await Employee.countDocuments({
-      $or: [
-        { isNonTechnical: true },
-        { staffCategory: 'NON_TECHNICAL' }
-      ]
-    });
-
-    if (existingCount < 10) {
-      const todayStr = getDateString(new Date());
-      const initialStatuses = ['PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'ABSENT', 'LEAVE'];
-
-      for (let i = 0; i < REFERENCE_NON_TECH_STAFF.length; i++) {
-        const staffData = REFERENCE_NON_TECH_STAFF[i];
-        const status = initialStatuses[i];
-
-        let emp = await Employee.findOne({ employeeId: staffData.employeeId });
-        if (!emp) {
-          emp = new Employee(staffData);
-          await emp.save();
-        } else if (!emp.isNonTechnical) {
-          emp.isNonTechnical = true;
-          emp.staffCategory = 'NON_TECHNICAL';
-          await emp.save();
-        }
-
-        // Ensure attendance record exists for today
-        let att = await Attendance.findOne({
-          $or: [
-            { employeeId: emp.employeeId, dateString: todayStr },
-            { employeeCode: emp.employeeId, attendanceDate: todayStr }
-          ]
-        });
-        if (!att) {
-          att = new Attendance({
-            employee: emp._id,
-            employeeId: emp.employeeId,
-            employeeCode: emp.employeeId,
-            attendanceDate: todayStr,
-            employeeName: emp.fullName,
-            departmentName: emp.departmentName,
-            branchName: 'Ahmedabad Branch',
-            date: new Date(todayStr),
-            dateString: todayStr,
-            status: status,
-            source: 'MANUAL',
-            workingHours: status === 'PRESENT' ? 8 : 0,
-            remarks: `Initial seed: ${status}`
-          });
-          await att.save();
-        }
-      }
-    }
-  } catch (err) {
-    console.error('[ensureReferenceNonTechStaff] Auto-seed non-blocking warning:', err.message);
-  }
+  return;
 };
 
 // Strict category filter (Technical vs Non-Technical Staff)
@@ -509,7 +454,7 @@ const getNonTechnicalStaffList = async (req, res) => {
   try {
     await ensureReferenceNonTechStaff();
     const scopeFilter = getScopeQuery(req.user, 'employee');
-    const nonTechFilter = getNonTechFilter(scopeFilter);
+    const nonTechFilter = getCategoryFilter('NON_TECHNICAL', scopeFilter);
     const { search, department, status } = req.query;
 
     const query = { ...nonTechFilter };

@@ -45,9 +45,10 @@ export const AuthProvider = ({ children }) => {
           if (isMounted) {
             setUser(parsedUser);
             setToken(storedToken);
+            setIsLoading(false); // Instant unlock: render authenticated UI immediately
           }
 
-          // Verify token and fetch fresh user profile from backend
+          // Verify token and fetch fresh user profile from backend in background
           const res = await authAPI.getMe();
           if (res.data?.success && isMounted) {
             const verifiedUser = res.data.user;

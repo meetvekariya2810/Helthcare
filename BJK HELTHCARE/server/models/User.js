@@ -251,6 +251,8 @@ UserSchema.virtual('isFirstLogin')
   });
 
 // Indexes for fast lookups
+UserSchema.index({ email: 1 });
+UserSchema.index({ workEmail: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ department: 1 });
 UserSchema.index({ employeeId: 1 });

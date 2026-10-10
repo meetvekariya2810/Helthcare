@@ -32,20 +32,15 @@ let dbInitPromise = null;
 const ensureDatabaseConnection = async () => {
   const mongoose = require('mongoose');
   if (mongoose.connection.readyState === 1) return mongoose.connection;
+  if (mongoose.connection.readyState === 2 && dbInitPromise) return dbInitPromise;
   if (!dbInitPromise) {
     dbInitPromise = (async () => {
       let conn = await connectDB();
-      let retries = 0;
-      while ((!conn || mongoose.connection.readyState !== 1) && retries < 3) {
-        retries++;
-        console.log(`[Server Startup] Waiting for MongoDB to become ready (attempt ${retries})...`);
-        await new Promise(r => setTimeout(r, 1500));
-        conn = await connectDB();
-      }
-      return conn;
+      return conn || mongoose.connection;
     })().catch(err => {
       dbInitPromise = null;
       console.error('[Database Connect Error]', err.message);
+      return null;
     });
   }
   return dbInitPromise;
@@ -154,7 +149,8 @@ if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
 
 // Ensure database connection for incoming API requests
 app.use(async (req, res, next) => {
-  if (req.url && req.url.startsWith('/api')) {
+  const isApi = (req.url && req.url.startsWith('/api')) || (req.originalUrl && req.originalUrl.startsWith('/api'));
+  if (isApi) {
     try {
       await ensureDatabaseConnection();
     } catch (e) {

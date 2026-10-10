@@ -917,6 +917,9 @@ EmployeeSchema.methods.getSanitizedForRole = function(userRole) {
 
 // Database Indexes for Fast Enterprise Search & RBAC
 EmployeeSchema.index({ employeeCode: 1 });
+EmployeeSchema.index({ employeeId: 1 });
+EmployeeSchema.index({ email: 1 });
+EmployeeSchema.index({ employeeCategory: 1 });
 EmployeeSchema.index({ status: 1 });
 EmployeeSchema.index({ employmentStatus: 1 });
 EmployeeSchema.index({ department: 1 });

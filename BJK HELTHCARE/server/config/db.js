@@ -50,13 +50,17 @@ const connectDB = async (retryCount = 0, maxRetries = 3, allowFallback = false) 
   // Configure Mongoose global options
   mongoose.set('strictQuery', false);
 
-  // Connection options for production stability
+  const isServerless = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+
+  // Connection options for production stability and instant serverless wakeups
   const mongooseOptions = {
     dbName: dbName,
-    serverSelectionTimeoutMS: 10000,
-    connectTimeoutMS: 12000,
-    socketTimeoutMS: 45000,
-    autoIndex: true,
+    serverSelectionTimeoutMS: 8000,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 30000,
+    maxPoolSize: isServerless ? 10 : 25,
+    minPoolSize: isServerless ? 0 : 2,
+    autoIndex: !isServerless && process.env.NODE_ENV !== 'production',
   };
 
   // Setup connection event listeners once
