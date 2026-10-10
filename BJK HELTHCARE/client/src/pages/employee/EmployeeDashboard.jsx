@@ -1613,31 +1613,31 @@ export const EmployeeDashboard = () => {
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
                   <span className="text-[10px] text-slate-400 font-bold uppercase block">Current Month</span>
                   <span className="text-xs font-bold text-slate-800 mt-1 block">
-                    {latestPayroll.month || 'September 2026'}
+                    {latestPayroll.payPeriod || latestPayroll.month || 'Current Period'}
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
                   <span className="text-[10px] text-slate-400 font-bold uppercase block">Gross Salary</span>
                   <span className="text-xs font-bold text-slate-900 font-mono mt-1 block">
-                    {latestPayroll.grossSalary != null ? `₹${latestPayroll.grossSalary.toLocaleString()}` : '--'}
+                    {(latestPayroll.grossEarnings ?? latestPayroll.grossSalary) != null ? `₹${(latestPayroll.grossEarnings ?? latestPayroll.grossSalary).toLocaleString('en-IN')}` : '--'}
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200/80">
                   <span className="text-[10px] text-emerald-700 font-bold uppercase block">Net Salary Credited</span>
                   <span className="text-base font-black text-emerald-800 font-mono mt-1 block">
-                    {latestPayroll.netSalary != null ? `₹${latestPayroll.netSalary.toLocaleString()}` : '--'}
+                    {(latestPayroll.netPay ?? latestPayroll.netSalary) != null ? `₹${(latestPayroll.netPay ?? latestPayroll.netSalary).toLocaleString('en-IN')}` : '--'}
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
                   <span className="text-[10px] text-slate-400 font-bold uppercase block">Deductions (PF / Tax)</span>
                   <span className="text-xs font-bold text-slate-700 font-mono mt-1 block">
-                    {latestPayroll.totalDeductions != null ? `₹${latestPayroll.totalDeductions.toLocaleString()}` : '--'}
+                    {latestPayroll.totalDeductions != null ? `₹${latestPayroll.totalDeductions.toLocaleString('en-IN')}` : '--'}
                   </span>
                 </div>
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 mb-4 text-center">
-                Payroll information is currently unavailable.
+                No payroll generated for the current cycle. Awaiting HR disbursement run.
               </div>
             )}
           </div>

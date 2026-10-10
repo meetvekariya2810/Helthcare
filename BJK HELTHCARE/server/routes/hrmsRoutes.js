@@ -40,7 +40,7 @@ const {
 const { getShifts, createShift, updateShift } = require('../controllers/hrms/shiftController');
 const { getRosters, assignShift, requestShiftSwap, approveShiftSwap } = require('../controllers/hrms/rosterController');
 const { getLeaveTypes, getLeaveBalances, getLeaveRequests, applyLeave, updateLeaveStatus } = require('../controllers/hrms/leaveController');
-const { getPayrollRuns, getPayslipById, processPayroll, approvePayroll, getPayrollRules, downloadPayslipPDF } = require('../controllers/hrms/payrollController');
+const { getPayrollRuns, getPayslipById, processPayroll, approvePayroll, deletePayrollRecord, deletePayrollBatch, getPayrollRules, downloadPayslipPDF } = require('../controllers/hrms/payrollController');
 const { getJobs, createJob, getCandidates, updateCandidateStage, downloadOfferLetterPDF, initiateOnboardingFromCandidate } = require('../controllers/hrms/recruitmentController');
 const { getOnboardingList, updateChecklistTask } = require('../controllers/hrms/onboardingController');
 const { getPrograms, getEnrollments, enrollEmployee, completeTraining, downloadCertificatePDF } = require('../controllers/hrms/trainingController');
@@ -181,6 +181,8 @@ router.get('/payroll/:id', getPayslipById);
 router.get('/payroll/:id/pdf', downloadPayslipPDF);
 router.post('/payroll/process', requirePermission(PERMISSIONS.PAYROLL_PROCESS), processPayroll);
 router.put('/payroll/:id/approve', requirePermission(PERMISSIONS.PAYROLL_PROCESS), approvePayroll);
+router.delete('/payroll/:id', requirePermission(PERMISSIONS.PAYROLL_PROCESS), deletePayrollRecord);
+router.delete('/payroll/batch/:payPeriod', requirePermission(PERMISSIONS.PAYROLL_PROCESS), deletePayrollBatch);
 
 // 9. Recruitment & ATS
 router.get('/recruitment/jobs', requirePermission(PERMISSIONS.RECRUITMENT_VIEW), getJobs);

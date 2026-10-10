@@ -18,7 +18,8 @@ import {
   TrendingUp,
   ShieldCheck,
   Eye,
-  Download
+  Download,
+  Trash2
 } from 'lucide-react';
 
 export const Payroll = () => {
@@ -34,129 +35,42 @@ export const Payroll = () => {
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [processMonth, setProcessMonth] = useState(9);
   const [processYear, setProcessYear] = useState(2026);
+  const [processTarget, setProcessTarget] = useState('ALL');
+  const [targetEmployeeId, setTargetEmployeeId] = useState('');
+  const [employeesList, setEmployeesList] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Payslip Preview Modal
   const [selectedPayslip, setSelectedPayslip] = useState(null);
   const [isPayslipModalOpen, setIsPayslipModalOpen] = useState(false);
 
+  useEffect(() => {
+    const loadEmployees = async () => {
+      try {
+        const res = await hrmsAPI.getEmployees({ limit: 300 });
+        if (res.data?.success && Array.isArray(res.data.employees)) {
+          setEmployeesList(res.data.employees);
+        }
+      } catch (_) {}
+    };
+    loadEmployees();
+  }, []);
+
   const fetchPayroll = async () => {
     try {
       setIsLoading(true);
       const res = await hrmsAPI.getPayrollRuns({ payPeriod: selectedPeriod });
       if (res.data.success) {
-        setRecords(res.data.records);
-        setSummary(res.data.summary);
+        setRecords(res.data.records || []);
+        setSummary(res.data.summary || null);
+      } else {
+        setRecords([]);
+        setSummary(null);
       }
     } catch (err) {
-      console.warn('[BJK HRMS]: Fallback payroll records:', err.message);
-      setRecords([
-        {
-          _id: 'pay-1',
-          employeeId: 'BJK-00101',
-          employeeName: 'Dr. Vikram Mehta',
-          departmentName: 'Quality Assurance',
-          designationTitle: 'Lead QA Manager',
-          payPeriod: '2026-09',
-          grossEarnings: 114500,
-          totalDeductions: 13740,
-          netPay: 100760,
-          totalCompanyCost: 125600,
-          status: 'APPROVED',
-          earnings: {
-            basic: 65000,
-            hra: 26000,
-            specialAllowance: 15000,
-            transportAllowance: 5000,
-            medicalAllowance: 2500,
-            overtimePay: 0,
-            nightDifferentialAllowance: 0
-          },
-          deductions: {
-            providentFund: 1800,
-            employeeStateInsurance: 0,
-            professionalTax: 200,
-            taxDeductedAtSource: 11740
-          },
-          attendanceSummary: {
-            totalDays: 30,
-            payableDays: 30,
-            presentDays: 26,
-            weeklyOffs: 4
-          }
-        },
-        {
-          _id: 'pay-2',
-          employeeId: 'BJK-00102',
-          employeeName: 'Priya Sharma',
-          departmentName: 'Quality Control',
-          designationTitle: 'Senior QC Analyst',
-          payPeriod: '2026-09',
-          grossEarnings: 61500,
-          totalDeductions: 4500,
-          netPay: 57000,
-          totalCompanyCost: 68200,
-          status: 'PROCESSED',
-          earnings: {
-            basic: 35000,
-            hra: 14000,
-            specialAllowance: 8000,
-            transportAllowance: 3000,
-            medicalAllowance: 1500,
-            overtimePay: 0,
-            nightDifferentialAllowance: 0
-          },
-          deductions: {
-            providentFund: 1800,
-            employeeStateInsurance: 0,
-            professionalTax: 200,
-            taxDeductedAtSource: 2500
-          },
-          attendanceSummary: {
-            totalDays: 30,
-            payableDays: 30,
-            presentDays: 26,
-            weeklyOffs: 4
-          }
-        },
-        {
-          _id: 'pay-3',
-          employeeId: 'BJK-00103',
-          employeeName: 'Rajesh Patel',
-          departmentName: 'Production Operations',
-          designationTitle: 'Production Line Operator',
-          payPeriod: '2026-09',
-          grossEarnings: 40450,
-          totalDeductions: 2840,
-          netPay: 37610,
-          totalCompanyCost: 45100,
-          status: 'CALCULATED',
-          earnings: {
-            basic: 22000,
-            hra: 8800,
-            specialAllowance: 4000,
-            transportAllowance: 2000,
-            medicalAllowance: 1200,
-            overtimePay: 350,
-            nightDifferentialAllowance: 2100
-          },
-          deductions: {
-            providentFund: 1800,
-            employeeStateInsurance: 0,
-            professionalTax: 200,
-            taxDeductedAtSource: 840
-          },
-          attendanceSummary: {
-            totalDays: 30,
-            payableDays: 30,
-            presentDays: 26,
-            weeklyOffs: 4,
-            overtimeHours: 2.5,
-            nightShiftCount: 6
-          }
-        }
-      ]);
-      setSummary({ totalGross: 216450, totalNet: 195370, totalDeductions: 21080, totalCompanyCost: 238900, count: 3 });
+      console.warn('[BJK HRMS]: No payroll records found:', err.message);
+      setRecords([]);
+      setSummary(null);
     } finally {
       setIsLoading(false);
     }
@@ -168,11 +82,20 @@ export const Payroll = () => {
 
   const handleProcessPayroll = async (e) => {
     e.preventDefault();
+    if (processTarget === 'SPECIFIC' && !targetEmployeeId) {
+      showToast('Please select an employee for the payroll run', 'error', 'Validation');
+      return;
+    }
     try {
       setIsProcessing(true);
-      const res = await hrmsAPI.processPayroll({ month: processMonth, year: processYear });
+      const payload = {
+        month: processMonth,
+        year: processYear,
+        employeeId: processTarget === 'SPECIFIC' ? targetEmployeeId : 'ALL'
+      };
+      const res = await hrmsAPI.processPayroll(payload);
       if (res.data.success) {
-        showToast(res.data.message, 'success', 'Processed');
+        showToast(res.data.message || 'Payroll generated successfully', 'success', 'Processed');
         setIsProcessModalOpen(false);
         fetchPayroll();
       }
@@ -180,6 +103,36 @@ export const Payroll = () => {
       showToast(err.response?.data?.message || err.message, 'error', 'Processing Failed');
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleDeletePayroll = async (id, empName) => {
+    if (!window.confirm(`Are you sure you want to remove the payroll entry for ${empName || 'this employee'}?`)) {
+      return;
+    }
+    try {
+      const res = await hrmsAPI.deletePayroll(id);
+      if (res.data.success) {
+        showToast(res.data.message || 'Payroll record removed', 'success', 'Removed');
+        fetchPayroll();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message, 'error', 'Delete Failed');
+    }
+  };
+
+  const handleClearBatch = async () => {
+    if (!window.confirm(`Are you sure you want to remove all payroll entries for period ${selectedPeriod}? This will remove payslips from employee dashboards.`)) {
+      return;
+    }
+    try {
+      const res = await hrmsAPI.deletePayrollBatch(selectedPeriod);
+      if (res.data.success) {
+        showToast(res.data.message || `Cleared payroll entries for ${selectedPeriod}`, 'success', 'Cleared');
+        fetchPayroll();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message, 'error', 'Clear Failed');
     }
   };
 
@@ -294,6 +247,13 @@ export const Payroll = () => {
               Approve
             </button>
           )}
+          <button
+            onClick={() => handleDeletePayroll(row._id, row.employeeName)}
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+            title="Remove Payroll Entry"
+          >
+            <Trash2 size={15} />
+          </button>
         </div>
       )
     }
@@ -317,6 +277,17 @@ export const Payroll = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          {records.length > 0 && (
+            <button
+              onClick={handleClearBatch}
+              className="flex items-center space-x-1.5 px-3 py-2 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              title="Remove all payroll entries for this period"
+            >
+              <Trash2 size={14} />
+              <span>Clear Period Batch</span>
+            </button>
+          )}
+
           <a
             href={hrmsAPI.exportReport('PAYROLL', 'csv')}
             target="_blank"
@@ -394,6 +365,53 @@ export const Payroll = () => {
         subtitle="Calculates gross wages, statutory EPF/ESI, overtime and night differentials"
       >
         <form onSubmit={handleProcessPayroll} className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700">Generation Scope *</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setProcessTarget('ALL')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
+                  processTarget === 'ALL'
+                    ? 'bg-bjk-teal text-white border-bjk-teal shadow-xs'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                All Active Employees
+              </button>
+              <button
+                type="button"
+                onClick={() => setProcessTarget('SPECIFIC')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
+                  processTarget === 'SPECIFIC'
+                    ? 'bg-bjk-teal text-white border-bjk-teal shadow-xs'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                Specific Employee
+              </button>
+            </div>
+          </div>
+
+          {processTarget === 'SPECIFIC' && (
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700">Select Employee *</label>
+              <select
+                value={targetEmployeeId}
+                onChange={(e) => setTargetEmployeeId(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-bjk-teal/20 focus:border-bjk-teal font-medium"
+                required
+              >
+                <option value="">-- Choose Employee --</option>
+                {employeesList.map((emp) => (
+                  <option key={emp._id} value={emp.employeeId}>
+                    {emp.employeeId} - {emp.fullName} ({emp.department || emp.departmentName || 'Operations'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Month *</label>
