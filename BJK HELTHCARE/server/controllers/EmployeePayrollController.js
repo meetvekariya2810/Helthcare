@@ -11,74 +11,35 @@ const { logEmployeeAudit } = require('../middleware/employeeAuth');
 const getCurrentPayroll = async (req, res) => {
   try {
     const employeeId = req.employeeId;
-    const employee = await Employee.findOne({ employeeId });
+    const employee = await Employee.findOne({
+      $or: [
+        { employeeId: employeeId },
+        { employeeId: employeeId?.toUpperCase() },
+        { employeeId: employeeId?.toLowerCase() }
+      ]
+    });
 
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee record not found.' });
     }
 
-    // Try finding latest processed payroll record
-    let payroll = await Payroll.findOne({
-      employeeId: employeeId.toUpperCase()
+    // Try finding latest processed payroll record strictly for this employee
+    const payroll = await Payroll.findOne({
+      $or: [
+        { employee: employee._id },
+        { employeeId: employee.employeeId },
+        { employeeId: employeeId },
+        { employeeId: employeeId?.toUpperCase() }
+      ]
     }).sort({ year: -1, month: -1 });
 
-    // Fallback computed salary structure if no batch run yet
+    // If no payroll run has been executed by HR yet, return null cleanly
     if (!payroll) {
-      const basic = (employee.sensitiveData?.salaryDetails?.basicPay) || (employee.basicSalary) || 45000;
-      const hra = (employee.sensitiveData?.salaryDetails?.hra) || Math.round(basic * 0.4);
-      const special = (employee.sensitiveData?.salaryDetails?.specialAllowance) || 8000;
-      const transport = 3500;
-      const medical = 2500;
-      const gross = basic + hra + special + transport + medical;
-
-      const pf = Math.round(basic * 0.12);
-      const pt = 200;
-      const tds = Math.round(gross * 0.05);
-      const totalDeductions = pf + pt + tds;
-      const netPay = gross - totalDeductions;
-
-      payroll = {
-        month: new Date().getMonth() + 1,
-        year: 2026,
-        payPeriod: '2026-09',
-        employeeId: employee.employeeId,
-        employeeName: employee.fullName,
-        departmentName: employee.departmentName,
-        designationTitle: employee.designationTitle,
-        bankAccountNumber: employee.bankDetails?.accountNumber ? `XXXX-XXXX-${employee.bankDetails.accountNumber.slice(-4)}` : 'XXXX-XXXX-8921',
-        bankName: employee.bankDetails?.bankName || 'HDFC Bank Ltd.',
-        panNumber: employee.panNumber || 'XXXXX1234X',
-        pfNumber: 'GJ/AHD/0048291/000/1046',
-        uanNumber: '100984729184',
-        attendanceSummary: {
-          totalDays: 30,
-          payableDays: 30,
-          presentDays: 26,
-          paidLeaveDays: 0,
-          unpaidLeaveDays: 0,
-          weeklyOffs: 4
-        },
-        earnings: {
-          basic,
-          hra,
-          specialAllowance: special,
-          transportAllowance: transport,
-          medicalAllowance: medical,
-          overtimePay: 0,
-          performanceBonus: 0
-        },
-        grossEarnings: gross,
-        deductions: {
-          providentFund: pf,
-          employeeStateInsurance: 0,
-          professionalTax: pt,
-          taxDeductedAtSource: tds,
-          advanceDeductions: 0
-        },
-        totalDeductions,
-        netPay,
-        status: 'PAID'
-      };
+      return res.status(200).json({
+        success: true,
+        payroll: null,
+        message: 'No payroll records have been generated yet for this account.'
+      });
     }
 
     await logEmployeeAudit({
@@ -104,41 +65,31 @@ const getCurrentPayroll = async (req, res) => {
 const getPayslips = async (req, res) => {
   try {
     const employeeId = req.employeeId;
-    let records = await Payroll.find({
-      employeeId: employeeId.toUpperCase()
-    }).sort({ year: -1, month: -1 });
+    const employee = await Employee.findOne({
+      $or: [
+        { employeeId: employeeId },
+        { employeeId: employeeId?.toUpperCase() },
+        { employeeId: employeeId?.toLowerCase() }
+      ]
+    });
 
-    // Generate sample past payslips if database is empty
-    if (!records || records.length === 0) {
-      const employee = await Employee.findOne({ employeeId });
-      const months = [
-        { month: 9, year: 2026, period: 'September 2026', gross: 65000, net: 58800, date: '2026-09-30' },
-        { month: 8, year: 2026, period: 'August 2026', gross: 65000, net: 58800, date: '2026-08-31' },
-        { month: 7, year: 2026, period: 'July 2026', gross: 62000, net: 56100, date: '2026-07-31' },
-        { month: 6, year: 2026, period: 'June 2026', gross: 62000, net: 56100, date: '2026-06-30' }
-      ];
-
-      return res.status(200).json({
-        success: true,
-        payslips: months.map((m, idx) => ({
-          _id: `demo-slip-${idx}`,
-          id: `demo-slip-${idx}`,
-          employeeId: employeeId.toUpperCase(),
-          payPeriod: m.period,
-          month: m.month,
-          year: m.year,
-          disbursementDate: m.date,
-          grossEarnings: m.gross,
-          totalDeductions: m.gross - m.net,
-          netPay: m.net,
-          status: 'PAID'
-        }))
-      });
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'Employee not found.' });
     }
 
+    const records = await Payroll.find({
+      $or: [
+        { employee: employee._id },
+        { employeeId: employee.employeeId },
+        { employeeId: employeeId },
+        { employeeId: employeeId?.toUpperCase() }
+      ]
+    }).sort({ year: -1, month: -1 });
+
+    // Return strictly real records; never fabricate fake sample slips
     return res.status(200).json({
       success: true,
-      payslips: records
+      payslips: records || []
     });
   } catch (err) {
     console.error('[Get Payslips Error]:', err);
@@ -154,51 +105,54 @@ const downloadPayslip = async (req, res) => {
     const employeeId = req.employeeId;
     const slipId = req.params.id;
 
+    const employee = await Employee.findOne({
+      $or: [
+        { employeeId: employeeId },
+        { employeeId: employeeId?.toUpperCase() },
+        { employeeId: employeeId?.toLowerCase() }
+      ]
+    });
+
     let payroll = null;
     if (mongoose.isValidObjectId(slipId)) {
-      payroll = await Payroll.findOne({ _id: slipId, employeeId: employeeId.toUpperCase() });
+      payroll = await Payroll.findOne({
+        _id: slipId,
+        $or: [
+          { employee: employee?._id },
+          { employeeId: employeeId },
+          { employeeId: employeeId?.toUpperCase() }
+        ]
+      });
+    } else if (slipId === 'current') {
+      payroll = await Payroll.findOne({
+        $or: [
+          { employee: employee?._id },
+          { employeeId: employeeId },
+          { employeeId: employeeId?.toUpperCase() }
+        ]
+      }).sort({ year: -1, month: -1 });
     }
 
-    const employee = await Employee.findOne({ employeeId });
+    if (!payroll) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payslip record not found for this period.'
+      });
+    }
 
     await logEmployeeAudit({
       employeeId,
       action: 'DOWNLOAD_PAYSLIP',
-      details: { slipId }
+      details: { slipId: payroll._id }
     });
-
-    const slipData = payroll || {
-      payPeriod: 'September 2026',
-      month: 9,
-      year: 2026,
-      employeeId: employee?.employeeId || employeeId,
-      employeeName: employee?.fullName || 'BJK Employee',
-      designation: employee?.designationTitle || 'Healthcare Specialist',
-      department: employee?.departmentName || 'Operations',
-      grossEarnings: 65000,
-      totalDeductions: 6200,
-      netPay: 58800,
-      status: 'PAID',
-      earnings: {
-        basic: 45000,
-        hra: 10000,
-        specialAllowance: 6000,
-        medicalAllowance: 2500,
-        transportAllowance: 1500
-      },
-      deductions: {
-        providentFund: 5400,
-        professionalTax: 200,
-        taxDeductedAtSource: 600
-      }
-    };
 
     return res.status(200).json({
       success: true,
-      message: 'Payslip generated.',
-      slip: slipData
+      message: 'Payslip retrieved successfully.',
+      slip: payroll
     });
   } catch (err) {
+    console.error('[Download Payslip Error]:', err);
     return res.status(500).json({ success: false, message: 'Failed to download payslip.' });
   }
 };

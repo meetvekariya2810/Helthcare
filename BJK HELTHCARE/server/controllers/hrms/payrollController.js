@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Payroll, PayrollRule } = require('../../models/hrms/Payroll');
 const Employee = require('../../models/hrms/Employee');
 const Attendance = require('../../models/hrms/Attendance');
@@ -93,22 +94,40 @@ const getPayslipById = async (req, res) => {
 // POST /api/hrms/payroll/process (Execute Payroll Run)
 const processPayroll = async (req, res) => {
   try {
-    const { month, year } = req.body;
+    const { month, year, employeeId } = req.body;
     if (!month || !year) {
       return res.status(400).json({ success: false, message: 'Month and year required' });
     }
 
     const payPeriod = `${year}-${String(month).padStart(2, '0')}`;
-    const activeEmployees = await Employee.find({ status: 'ACTIVE' });
+    const empQuery = { status: 'ACTIVE' };
+    if (employeeId && employeeId !== 'ALL') {
+      const orConditions = [
+        { employeeId: employeeId },
+        { employeeId: employeeId.toUpperCase() }
+      ];
+      if (mongoose.isValidObjectId(employeeId)) {
+        orConditions.push({ _id: employeeId });
+      }
+      empQuery.$or = orConditions;
+    }
+
+    const activeEmployees = await Employee.find(empQuery);
+    if (!activeEmployees || activeEmployees.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: employeeId ? `No active employee found matching '${employeeId}'.` : 'No active employees found to process.'
+      });
+    }
 
     const createdRecords = [];
 
     for (const emp of activeEmployees) {
-      const basic = emp.sensitiveData?.salaryDetails?.basicPay || 25000;
-      const hra = emp.sensitiveData?.salaryDetails?.hra || 10000;
-      const special = emp.sensitiveData?.salaryDetails?.specialAllowance || 5000;
-      const transport = emp.sensitiveData?.salaryDetails?.transportAllowance || 2000;
-      const medical = emp.sensitiveData?.salaryDetails?.medicalAllowance || 1500;
+      const basic = (emp.sensitiveData?.salaryDetails?.basicPay) || (emp.basicSalary) || 0;
+      const hra = (emp.sensitiveData?.salaryDetails?.hra) || (basic > 0 ? Math.round(basic * 0.4) : 0);
+      const special = (emp.sensitiveData?.salaryDetails?.specialAllowance) || (basic > 0 ? Math.round(basic * 0.1) : 0);
+      const transport = (emp.sensitiveData?.salaryDetails?.transportAllowance) || (basic > 0 ? 2000 : 0);
+      const medical = (emp.sensitiveData?.salaryDetails?.medicalAllowance) || (basic > 0 ? 1500 : 0);
 
       // Pull real overtime and night hours from attendance for this month
       const attendances = await Attendance.find({
@@ -132,18 +151,27 @@ const processPayroll = async (req, res) => {
         totalDaysInMonth: 30
       });
 
+      const rawBankAcc = emp.sensitiveData?.bankDetails?.accountNumber || emp.bankDetails?.accountNumber;
+      const maskedBank = rawBankAcc ? '••••' + rawBankAcc.slice(-4) : (emp.bankAccountNumber || '••••5678');
+      const bankName = emp.sensitiveData?.bankDetails?.bankName || emp.bankDetails?.bankName || 'HDFC Bank Ltd.';
+      const panNum = emp.sensitiveData?.panNumber || emp.panNumber || 'XXXXX1234X';
+      const uanNum = emp.sensitiveData?.uanNumber || emp.uanNumber || '100984729184';
+
       const record = await Payroll.findOneAndUpdate(
         { employee: emp._id, payPeriod },
         {
-          month,
-          year,
+          month: Number(month),
+          year: Number(year),
           payPeriod,
           employee: emp._id,
           employeeId: emp.employeeId,
           employeeName: emp.fullName,
-          departmentName: emp.departmentName,
-          designationTitle: emp.designationTitle,
-          bankAccountNumber: emp.sensitiveData?.bankDetails?.accountNumber ? '••••' + emp.sensitiveData.bankDetails.accountNumber.slice(-4) : '••••5678',
+          departmentName: emp.departmentName || emp.department || 'Operations',
+          designationTitle: emp.designationTitle || emp.designation || 'Specialist',
+          bankAccountNumber: maskedBank,
+          bankName: bankName,
+          panNumber: panNum,
+          uanNumber: uanNum,
           attendanceSummary: {
             totalDays: 30,
             payableDays: presentDays > 0 ? Math.min(30, presentDays + 4) : 30,
@@ -161,9 +189,11 @@ const processPayroll = async (req, res) => {
           netPay: calc.netPay,
           employerContributions: calc.employerContributions,
           totalCompanyCost: calc.totalCompanyCost,
-          status: 'CALCULATED',
+          status: 'APPROVED',
           calculatedAt: new Date(),
-          isDemo: emp.isDemo
+          approvedBy: req.user ? req.user.name : 'Authorized Signatory',
+          approvedAt: new Date(),
+          isDemo: false
         },
         { upsert: true, new: true }
       );
@@ -175,13 +205,14 @@ const processPayroll = async (req, res) => {
       req,
       action: 'PAYROLL_PROCESSED',
       module: 'PAYROLL',
-      details: `Processed payroll batch for period ${payPeriod} (${createdRecords.length} employees calculated)`
+      details: `Processed payroll batch for period ${payPeriod} (${createdRecords.length} payslips generated${employeeId ? ` for ${employeeId}` : ''})`
     });
 
     res.json({
       success: true,
-      message: `Payroll processed for ${payPeriod}. ${createdRecords.length} payslips generated.`,
-      recordsCount: createdRecords.length
+      message: `Payroll processed for ${payPeriod}. ${createdRecords.length} payslip(s) generated successfully.`,
+      recordsCount: createdRecords.length,
+      records: createdRecords
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -209,6 +240,55 @@ const approvePayroll = async (req, res) => {
     });
 
     res.json({ success: true, message: `Payroll status updated to ${status}`, record });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// DELETE /api/hrms/payroll/:id
+const deletePayrollRecord = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Payroll.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Payroll record not found.' });
+    }
+
+    await recordAudit({
+      req,
+      action: 'PAYROLL_DELETED',
+      module: 'PAYROLL',
+      details: `Deleted payslip record for employee ${deleted.employeeId} (${deleted.payPeriod})`
+    });
+
+    res.json({
+      success: true,
+      message: `Payroll entry for ${deleted.employeeName} (${deleted.payPeriod}) removed successfully.`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// DELETE /api/hrms/payroll/batch/:payPeriod
+const deletePayrollBatch = async (req, res) => {
+  try {
+    const { payPeriod } = req.params;
+    const query = payPeriod && payPeriod !== 'ALL' ? { payPeriod } : {};
+    const result = await Payroll.deleteMany(query);
+
+    await recordAudit({
+      req,
+      action: 'PAYROLL_BATCH_DELETED',
+      module: 'PAYROLL',
+      details: `Cleared payroll batch for period: ${payPeriod}. Deleted ${result.deletedCount} records.`
+    });
+
+    res.json({
+      success: true,
+      message: `Removed ${result.deletedCount} payroll record(s) for period ${payPeriod}.`,
+      deletedCount: result.deletedCount
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -262,6 +342,8 @@ module.exports = {
   getPayslipById,
   processPayroll,
   approvePayroll,
+  deletePayrollRecord,
+  deletePayrollBatch,
   getPayrollRules,
   downloadPayslipPDF
 };
