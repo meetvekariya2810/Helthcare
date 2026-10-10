@@ -7,7 +7,36 @@ import { MainLayout } from './components/layout/MainLayout';
 import { EmployeeLayout } from './components/employee/EmployeeLayout';
 import { EmployeeProtectedRoute } from './components/employee/EmployeeProtectedRoute';
 
-const lazyPage = (importFn, name) => React.lazy(() => importFn().then(m => ({ default: m[name] || m.default })));
+// Resilient module loader with automatic chunk retry on deployment updates
+const lazyPage = (importFn, name) =>
+  React.lazy(() => {
+    return new Promise((resolve, reject) => {
+      const retryKey = `bjk_lazy_retry_${name || 'module'}`;
+      const alreadyRetried = sessionStorage.getItem(retryKey);
+
+      importFn()
+        .then((module) => {
+          sessionStorage.removeItem(retryKey);
+          resolve({ default: module[name] || module.default });
+        })
+        .catch((error) => {
+          const isChunkError =
+            error?.message?.includes('Failed to fetch dynamically imported module') ||
+            error?.message?.includes('dynamically imported module') ||
+            error?.name === 'ChunkLoadError' ||
+            error?.message?.includes('Loading chunk');
+
+          if (isChunkError && !alreadyRetried) {
+            console.warn(`[Module Loader] Updated deployment detected for ${name}. Refreshing application assets...`);
+            sessionStorage.setItem(retryKey, 'true');
+            window.location.reload();
+          } else {
+            sessionStorage.removeItem(retryKey);
+            reject(error);
+          }
+        });
+    });
+  });
 
 
 // Employee Portal Pages
@@ -155,10 +184,55 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('[BJK ErrorBoundary Caught Error]:', error, errorInfo);
+    const msg = error?.message || error?.toString() || '';
+    const isChunkError =
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      error?.name === 'ChunkLoadError';
+
+    if (isChunkError) {
+      const now = Date.now();
+      const lastReload = Number(sessionStorage.getItem('bjk_eb_chunk_reload') || 0);
+      if (now - lastReload > 8000) {
+        sessionStorage.setItem('bjk_eb_chunk_reload', String(now));
+        window.location.reload();
+      }
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      const msg = this.state.error?.message || this.state.error?.toString() || '';
+      const isChunkError =
+        msg.includes('Failed to fetch dynamically imported module') ||
+        msg.includes('dynamically imported module') ||
+        msg.includes('Loading chunk') ||
+        this.state.error?.name === 'ChunkLoadError';
+
+      if (isChunkError) {
+        return (
+          <div className="min-h-screen bg-[#070D18] flex flex-col items-center justify-center p-6 text-white text-center">
+            <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center mb-4">
+              <span className="text-2xl text-teal-400 font-bold">↻</span>
+            </div>
+            <h2 className="text-xl font-bold mb-2">Platform Update Complete</h2>
+            <p className="text-xs text-slate-400 mb-4 max-w-md">
+              A newer version of the BJK Healthcare platform is now available. Click below to continue seamlessly.
+            </p>
+            <button
+              onClick={() => {
+                sessionStorage.clear();
+                window.location.reload();
+              }}
+              className="px-5 py-2.5 bg-[#00A896] hover:bg-[#009B8D] text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-[#00A896]/20"
+            >
+              Refresh & Continue
+            </button>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-[#070D18] flex flex-col items-center justify-center p-6 text-white text-center">
           <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-4">
