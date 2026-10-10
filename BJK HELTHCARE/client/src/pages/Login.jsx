@@ -150,8 +150,15 @@ export const Login = () => {
           }
         }
 
-        const targetRoute = getRoleRedirect(res.user?.role, res.user?.dashboard || res.dashboard);
-        navigate(targetRoute, { replace: true });
+        if (res.user?.mustChangePassword || res.mustChangePassword) {
+          navigate('/employee/change-password', {
+            replace: true,
+            state: { user: res.user, identifier: identifier.trim() }
+          });
+        } else {
+          const targetRoute = getRoleRedirect(res.user?.role, res.user?.dashboard || res.dashboard);
+          navigate(targetRoute, { replace: true });
+        }
       } else {
         setError(res.message || 'Invalid Work Email, Employee ID, or password.');
       }

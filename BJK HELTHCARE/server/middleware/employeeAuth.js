@@ -111,6 +111,29 @@ const authenticateEmployee = async (req, res, next) => {
     req.employeeId = (employee.employeeId || decoded.employeeId).toUpperCase();
     req.employeeRole = determinedRole;
 
+    // Enforce mandatory password change on protected endpoints
+    const mustChangePassword = Boolean(
+      (user && user.mustChangePassword) ||
+      (employee && employee.mustChangePassword) ||
+      decoded.mustChangePassword
+    );
+
+    if (mustChangePassword) {
+      const currentUrl = (req.originalUrl || req.url || '').toLowerCase();
+      const isAllowed =
+        currentUrl.includes('/change-password') ||
+        currentUrl.includes('/me') ||
+        currentUrl.includes('/logout');
+
+      if (!isAllowed) {
+        return res.status(403).json({
+          success: false,
+          mustChangePassword: true,
+          message: 'Password change required before accessing employee portal services.'
+        });
+      }
+    }
+
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {

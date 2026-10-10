@@ -69,6 +69,24 @@ const protect = async (req, res, next) => {
       }
 
       req.user = user;
+
+      // Enforce mandatory password change on protected endpoints
+      if (user.mustChangePassword || decoded.mustChangePassword) {
+        const currentUrl = (req.originalUrl || req.url || '').toLowerCase();
+        const isAllowed =
+          currentUrl.includes('/change-password') ||
+          currentUrl.includes('/me') ||
+          currentUrl.includes('/logout');
+
+        if (!isAllowed) {
+          return res.status(403).json({
+            success: false,
+            mustChangePassword: true,
+            message: 'Password change required. Please change your temporary password to continue.'
+          });
+        }
+      }
+
       return next();
     }
 
@@ -84,8 +102,26 @@ const protect = async (req, res, next) => {
         employeeId: decoded.employeeId || null,
         dataScope: decoded.dataScope || 'SELF',
         isActive: true,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        mustChangePassword: Boolean(decoded.mustChangePassword)
       };
+
+      if (decoded.mustChangePassword) {
+        const currentUrl = (req.originalUrl || req.url || '').toLowerCase();
+        const isAllowed =
+          currentUrl.includes('/change-password') ||
+          currentUrl.includes('/me') ||
+          currentUrl.includes('/logout');
+
+        if (!isAllowed) {
+          return res.status(403).json({
+            success: false,
+            mustChangePassword: true,
+            message: 'Password change required. Please change your temporary password to continue.'
+          });
+        }
+      }
+
       return next();
     }
 

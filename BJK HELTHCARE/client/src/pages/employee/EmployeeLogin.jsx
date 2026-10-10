@@ -60,7 +60,14 @@ export const EmployeeLogin = () => {
       });
 
       if (res.success) {
-        navigate('/employee/dashboard', { replace: true });
+        if (res.mustChangePassword || res.employee?.mustChangePassword) {
+          navigate('/employee/change-password', {
+            replace: true,
+            state: { employee: res.employee, identifier: identifier.trim() }
+          });
+        } else {
+          navigate('/employee/dashboard', { replace: true });
+        }
       } else {
         if (
           res.isNonEmployee ||

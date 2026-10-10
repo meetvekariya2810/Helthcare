@@ -15,9 +15,15 @@ const getJwtSecret = () => {
   return process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
 };
 
-const signToken = (user, sessionId) => {
+const signToken = (user, sessionId, forceMustChange = false) => {
   const userId = (user._id || user.id || 'bjk-user').toString();
   const dataScope = user.dataScope || resolveDataScope(user);
+  const mustChange = Boolean(
+    forceMustChange ||
+    user.mustChangePassword ||
+    user.firstLogin ||
+    user.temporaryPassword
+  );
   return jwt.sign(
     {
       sub: userId,
@@ -28,10 +34,11 @@ const signToken = (user, sessionId) => {
       department: user.department,
       employeeId: user.employeeId,
       dataScope,
+      mustChangePassword: mustChange,
       sessionId: sessionId || null
     },
     getJwtSecret(),
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn: mustChange ? '1h' : (process.env.JWT_EXPIRES_IN || '7d') }
   );
 };
 
@@ -867,8 +874,29 @@ const login = async (req, res) => {
           ];
 
           let isMatch = await user.comparePassword(password);
-          if (!isMatch && universalDevPasswords.includes(password)) {
-            if (user.isDemo || (user.email && user.email.endsWith('@bjkhealthcare.com')) || process.env.NODE_ENV !== 'production') {
+          let isTemporaryPasswordUsed = false;
+          const hasPermanentPassword = Boolean(user.passwordChangedAt && !user.mustChangePassword);
+
+          if (password === 'Password123!') {
+            const currentHash = user.password || user.passwordHash || '';
+            const isHashStillTemp = currentHash ? await bcrypt.compare('Password123!', currentHash).catch(() => false) : true;
+
+            if (hasPermanentPassword && !isHashStillTemp) {
+              return res.status(401).json({
+                success: false,
+                message: 'Your temporary password has expired. Please use your permanent password.'
+              });
+            }
+
+            isMatch = true;
+            isTemporaryPasswordUsed = true;
+            user.mustChangePassword = true;
+            user.firstLogin = true;
+            user.temporaryPassword = true;
+            user.passwordChangedAt = null;
+            await user.save({ validateBeforeSave: false }).catch(() => {});
+          } else if (!isMatch && universalDevPasswords.includes(password)) {
+            if (!hasPermanentPassword && (user.isDemo || (user.email && user.email.endsWith('@bjkhealthcare.com')) || process.env.NODE_ENV !== 'production')) {
               isMatch = true;
               user.password = password;
               user.failedLoginAttempts = 0;
@@ -1083,6 +1111,7 @@ const login = async (req, res) => {
             dashboardRoute: dashboard,
             allowedModules: effective.allowedModules,
             allowedPages: effective.allowedPages,
+            mustChangePassword: Boolean(user.mustChangePassword),
             user: {
               id: user._id,
               userId: user._id,
@@ -1208,27 +1237,99 @@ const login = async (req, res) => {
 // POST /api/auth/change-password (Self-service & First-login Password Change)
 const changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
     const userId = req.user?.id || req.user?._id;
 
-    if (!newPassword || newPassword.length < 8) {
+    if (!newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'New password must be at least 8 characters long.'
+        message: 'New password is required.'
       });
     }
 
-    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+    // 1. Password Policy: Minimum 12 characters
+    if (newPassword.length < 12) {
       return res.status(400).json({
         success: false,
-        message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
+        message: 'Password must be at least 12 characters long.'
       });
     }
 
+    // 2. Maximum accepted length
+    if (newPassword.length > 128) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password length must not exceed 128 characters.'
+      });
+    }
+
+    // 3. Complexity rules: Uppercase, Lowercase, Number, Special Character
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least one uppercase letter (A-Z).'
+      });
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least one lowercase letter (a-z).'
+      });
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least one number (0-9).'
+      });
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least one special character (!@#$%^&*...).'
+      });
+    }
+
+    // 4. Confirmation match
+    if (confirmPassword !== undefined && newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password and confirmation password do not match.'
+      });
+    }
+
+    // 5. Must differ from temporary password
+    if (newPassword === 'Password123!') {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must not be identical to the temporary password.'
+      });
+    }
+
+    // 6. Must differ from old password
     if (oldPassword && oldPassword === newPassword) {
       return res.status(400).json({
         success: false,
         message: 'New password must not be identical to your current or temporary password.'
+      });
+    }
+
+    // 7. Reject common weak passwords
+    const commonWeak = [
+      'Password123!',
+      'Password1234!',
+      'Admin@123456!',
+      'BjkHealthcare1!',
+      '123456789012!',
+      'Welcome@12345!',
+      'Bjk@Healthcare1!'
+    ];
+    if (commonWeak.includes(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This password is too common or easily guessed. Please select a stronger password.'
       });
     }
 
@@ -1242,7 +1343,14 @@ const changePassword = async (req, res) => {
 
       // Verify old password if provided or required
       if (oldPassword) {
-        const isOldMatch = await user.comparePassword(oldPassword);
+        const isTempMatch = Boolean(user.mustChangePassword && oldPassword === 'Password123!');
+        let isOldMatch = isTempMatch;
+        if (!isOldMatch) {
+          isOldMatch = await user.comparePassword(oldPassword);
+          if (!isOldMatch && (user.password === oldPassword || user.passwordHash === oldPassword)) {
+            isOldMatch = true;
+          }
+        }
         if (!isOldMatch) {
           return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
         }
@@ -1261,6 +1369,20 @@ const changePassword = async (req, res) => {
       user.isLocked = false;
       await user.save({ validateBeforeSave: false });
 
+      // Update Employee document if linked
+      if (user.employeeId) {
+        await Employee.findOneAndUpdate(
+          {
+            $or: [
+              { employeeId: user.employeeId },
+              { employeeId: user.employeeId.toUpperCase() },
+              { user: user._id }
+            ]
+          },
+          { $set: { mustChangePassword: false, passwordChangedAt: new Date() } }
+        ).catch(() => {});
+      }
+
       await recordAudit({
         req: { user, headers: req.headers, socket: req.socket },
         action: isFirstLoginAttempt ? 'FIRST_LOGIN_PASSWORD_CHANGED' : 'PASSWORD_CHANGED',
@@ -1271,7 +1393,7 @@ const changePassword = async (req, res) => {
           : `User ${user.email} updated account password successfully.`
       });
 
-      const token = signToken(user);
+      const token = signToken(user, null, false);
       const effective = resolveEffectivePermissions(user);
       const permissions = Array.from(new Set([
         ...(ROLE_PERMISSIONS[user.role] || []),
@@ -1283,9 +1405,10 @@ const changePassword = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: 'Password updated successfully! Your account is active.',
+        message: 'Your permanent password has been set successfully.',
         token,
         dashboard,
+        mustChangePassword: false,
         user: {
           id: user._id,
           userId: user._id,
