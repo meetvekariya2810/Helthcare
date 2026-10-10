@@ -39,9 +39,13 @@ const lazyPage = (importFn, name) =>
   });
 
 
-// Employee Portal Pages
-const EmployeeLogin = lazyPage(() => import('./pages/employee/EmployeeLogin'), 'EmployeeLogin');
-const EmployeeDashboard = lazyPage(() => import('./pages/employee/EmployeeDashboard'), 'EmployeeDashboard');
+// Core Essential Employee & Authentication Pages (Statically imported for 100% chunk reliability across Vercel deployments)
+import { EmployeeLogin } from './pages/employee/EmployeeLogin';
+import { EmployeeDashboard } from './pages/employee/EmployeeDashboard';
+import { Login } from './pages/Login';
+import { ChangePasswordPage } from './pages/auth/ChangePasswordPage';
+
+// Employee Portal Pages (Lazy Loaded)
 const EmployeeProfilePage = lazyPage(() => import('./pages/employee/EmployeeProfilePage'), 'EmployeeProfilePage');
 const EmployeeAttendancePage = lazyPage(() => import('./pages/employee/EmployeeAttendancePage'), 'EmployeeAttendancePage');
 const EmployeeFaceAttendancePage = lazyPage(() => import('./pages/employee/EmployeeFaceAttendancePage'), 'EmployeeFaceAttendancePage');
@@ -61,10 +65,6 @@ const EmployeeCanteenPage = lazyPage(() => import('./pages/employee/EmployeeCant
 const EmployeeCalendarPage = lazyPage(() => import('./pages/employee/EmployeeCalendarPage'), 'EmployeeCalendarPage');
 const EmployeeIDCardManager = lazyPage(() => import('./pages/hrms/EmployeeIDCardManager'), 'EmployeeIDCardManager');
 const PublicEmployeeVerification = lazyPage(() => import('./pages/PublicEmployeeVerification'), 'PublicEmployeeVerification');
-
-// Digital Brain Pages
-import { Login } from './pages/Login';
-const ChangePasswordPage = lazyPage(() => import('./pages/auth/ChangePasswordPage'), 'ChangePasswordPage');
 
 // Dedicated Canteen Portal Pages
 const CanteenLogin = lazyPage(() => import('./pages/canteen/CanteenLogin'), 'CanteenLogin');
