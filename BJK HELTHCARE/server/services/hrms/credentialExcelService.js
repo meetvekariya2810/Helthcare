@@ -770,13 +770,15 @@ async function syncExcelToDatabase() {
         user.department = dept;
         user.subDepartment = subDept;
         user.designation = desig;
-        user.password = tempPwd;
+        if (!user.passwordChangedAt && (user.mustChangePassword === true || !user.password)) {
+          user.password = tempPwd;
+          user.mustChangePassword = true;
+          user.temporaryPassword = true;
+          user.firstLogin = true;
+        }
         user.status = 'ACTIVE';
         user.isActive = true;
         user.isLocked = false;
-        user.mustChangePassword = false;
-        user.temporaryPassword = false;
-        user.firstLogin = false;
         if (!user.role || user.role === 'EMPLOYEE') user.role = role;
         await user.save();
       } else {
@@ -795,9 +797,9 @@ async function syncExcelToDatabase() {
           status: 'ACTIVE',
           isActive: true,
           isLocked: false,
-          mustChangePassword: false,
-          temporaryPassword: false,
-          firstLogin: false
+          mustChangePassword: true,
+          temporaryPassword: true,
+          firstLogin: true
         });
         await user.save();
       }

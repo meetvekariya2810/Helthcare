@@ -44,6 +44,7 @@ employeeApiClient.interceptors.response.use(
 // Auth Service
 export const employeeAuthAPI = {
   login: (data) => employeeApiClient.post('/employee/auth/login', data),
+  changePassword: (data) => employeeApiClient.post('/employee/auth/change-password', data),
   sendOtp: (identifier) => employeeApiClient.post('/employee/auth/send-otp', { identifier }),
   verifyOtp: (identifier, otp) => employeeApiClient.post('/employee/auth/verify-otp', { identifier, otp }),
   forgotPassword: (identifier) => employeeApiClient.post('/employee/auth/forgot-password', { identifier }),

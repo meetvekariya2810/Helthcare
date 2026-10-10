@@ -73,7 +73,9 @@ if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
       if (!user) {
         user = new User({ ...u, email, permissions });
       } else {
-        user.password = u.password;
+        if (!user.passwordChangedAt && (user.mustChangePassword === true || !user.password)) {
+          user.password = u.password;
+        }
         user.role = u.role;
         user.department = u.department || user.department;
         user.employeeId = u.employeeId || user.employeeId;

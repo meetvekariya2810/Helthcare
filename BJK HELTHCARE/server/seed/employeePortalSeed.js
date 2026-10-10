@@ -154,14 +154,21 @@ const seedEmployeePortalUsers = async () => {
         department: acc.department,
         employeeId: acc.employeeId,
         isActive: true,
-        dataScope: 'SELF'
+        dataScope: 'SELF',
+        mustChangePassword: true,
+        temporaryPassword: true,
+        firstLogin: true
       });
       await user.save();
     } else {
       user.role = acc.userRole;
       user.employeeId = acc.employeeId;
-      user.password = passwordHash;
-      user.passwordHash = passwordHash;
+      // Preserve established permanent password
+      if (!user.passwordChangedAt && (user.mustChangePassword === true || !user.password)) {
+        user.password = passwordHash;
+        user.passwordHash = passwordHash;
+        user.mustChangePassword = true;
+      }
       await user.save();
     }
 

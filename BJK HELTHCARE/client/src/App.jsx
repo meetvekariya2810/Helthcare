@@ -207,6 +207,10 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.mustChangePassword) {
+    return <Navigate to="/employee/change-password" replace />;
+  }
+
   if (user.role === 'CANTEEN_ADMIN') {
     return <Navigate to="/canteen/dashboard" replace />;
   }
@@ -302,6 +306,7 @@ export const App = () => {
               {/* Public Auth & QR Verification Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
+              <Route path="/employee/change-password" element={<ChangePasswordPage />} />
               <Route path="/employee/login" element={<EmployeeLogin />} />
               <Route path="/canteen/login" element={<CanteenLogin />} />
               <Route path="/verify/employee/:employeeCode" element={<PublicEmployeeVerification />} />

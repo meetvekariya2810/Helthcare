@@ -112,18 +112,55 @@ export const EmployeeAuthProvider = ({ children }) => {
     try {
       const res = await employeeAuthAPI.login(credentials);
       if (res.data?.success) {
-        const { token, employee } = res.data;
+        const { token, employee, mustChangePassword } = res.data;
         setEmployeeToken(token);
         setEmployeeUser(employee);
         sessionStorage.setItem('bjk_employee_token', token);
         sessionStorage.setItem('bjk_employee_user', JSON.stringify(employee));
-        return { success: true, employee };
+        return {
+          success: true,
+          employee,
+          mustChangePassword: Boolean(mustChangePassword || employee?.mustChangePassword)
+        };
       }
       return { success: false, message: res.data?.message || 'Login failed.' };
     } catch (err) {
       return {
         success: false,
         message: err.response?.data?.message || 'Authentication error. Please check credentials.'
+      };
+    }
+  }, []);
+
+  const changePassword = useCallback(async (data) => {
+    try {
+      const res = await employeeAuthAPI.changePassword(data);
+      if (res.data?.success) {
+        const { token, employee } = res.data;
+        if (token) {
+          setEmployeeToken(token);
+          sessionStorage.setItem('bjk_employee_token', token);
+          sessionStorage.setItem('authToken', token);
+          sessionStorage.setItem('bjk_token', token);
+          sessionStorage.setItem('bjk_auth_token', token);
+          localStorage.setItem('bjk_employee_token', token);
+          localStorage.setItem('authToken', token);
+        }
+        if (employee) {
+          const updated = { ...employee, mustChangePassword: false };
+          setEmployeeUser(updated);
+          sessionStorage.setItem('bjk_employee_user', JSON.stringify(updated));
+          sessionStorage.setItem('authUser', JSON.stringify(updated));
+          localStorage.setItem('bjk_employee_user', JSON.stringify(updated));
+          localStorage.setItem('authUser', JSON.stringify(updated));
+        }
+        return { success: true, ...res.data };
+      }
+      return { success: false, message: res.data?.message || 'Password update failed.' };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || err.message || 'Password update failed.'
       };
     }
   }, []);
@@ -231,6 +268,7 @@ export const EmployeeAuthProvider = ({ children }) => {
     setEmployeeUser,
     setEmployeeToken,
     login,
+    changePassword,
     sendOtp,
     verifyOtp,
     forgotPassword,
@@ -244,6 +282,7 @@ export const EmployeeAuthProvider = ({ children }) => {
     loading,
     setEmployeeSession,
     login,
+    changePassword,
     sendOtp,
     verifyOtp,
     forgotPassword,

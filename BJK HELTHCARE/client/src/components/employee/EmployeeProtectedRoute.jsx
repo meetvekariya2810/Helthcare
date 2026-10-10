@@ -34,5 +34,19 @@ export const EmployeeProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  let userMustChange = Boolean(employeeUser?.mustChangePassword || authUser?.mustChangePassword);
+  if (!userMustChange) {
+    try {
+      const storedEmp = sessionStorage.getItem('bjk_employee_user') || localStorage.getItem('bjk_employee_user');
+      const storedAuth = sessionStorage.getItem('authUser') || localStorage.getItem('authUser');
+      if (storedEmp) userMustChange = Boolean(JSON.parse(storedEmp).mustChangePassword);
+      if (!userMustChange && storedAuth) userMustChange = Boolean(JSON.parse(storedAuth).mustChangePassword);
+    } catch (_) {}
+  }
+
+  if (userMustChange && location.pathname !== '/employee/change-password' && location.pathname !== '/change-password') {
+    return <Navigate to="/employee/change-password" replace />;
+  }
+
   return children;
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   login,
+  changePassword,
   sendOtp,
   verifyOtp,
   forgotPassword,
@@ -20,6 +21,7 @@ router.post('/reset-password', resetPassword);
 
 // Authenticated Employee Identity Routes
 router.get('/me', authenticateEmployee, getMe);
+router.post('/change-password', authenticateEmployee, changePassword);
 router.post('/logout', authenticateEmployee, logout);
 
 module.exports = router;

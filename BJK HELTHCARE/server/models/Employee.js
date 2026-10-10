@@ -713,6 +713,8 @@ const EmployeeSchema = new mongoose.Schema({
 
   createdBy: { type: String, default: 'System' },
   updatedBy: { type: String, default: 'System' },
+  mustChangePassword: { type: Boolean, default: false },
+  passwordChangedAt: { type: Date, default: null },
   isDemo: { type: Boolean, default: false }
 }, {
   timestamps: true
