@@ -14,4 +14,17 @@ export default defineConfig({
   legacy: {
     skipWebSocketTokenCheck: true,
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-export': ['jspdf', 'html2canvas', 'qrcode']
+        }
+      }
+    }
+  }
 });
