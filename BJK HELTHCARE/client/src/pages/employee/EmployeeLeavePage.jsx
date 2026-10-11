@@ -64,17 +64,24 @@ export const EmployeeLeavePage = () => {
   const loadLeaveData = async () => {
     setIsLoading(true);
     try {
-      const [balRes, leaveRes, attRes] = await Promise.all([
-        employeeLeaveAPI.getBalance(),
-        employeeLeaveAPI.getLeaves(),
-        employeeAttendanceAPI.getSummary().catch(() => ({ data: { summary: null } }))
+      const [balRes, leaveRes, attRes, ledgerRes] = await Promise.all([
+        employeeLeaveAPI.getBalance().catch(err => {
+          console.warn('[Leave Balance Error]:', err?.response?.data || err.message);
+          return { data: { success: false } };
+        }),
+        employeeLeaveAPI.getLeaves().catch(() => ({ data: { success: false, leaves: [] } })),
+        employeeAttendanceAPI.getSummary().catch(() => ({ data: { summary: null } })),
+        employeeLeaveAPI.getLedger().catch(() => ({ data: { success: false, ledger: null } }))
       ]);
 
       if (balRes.data?.success) {
         setBalances(balRes.data.balances || []);
-        setLedger(balRes.data.ledger || null);
+        setLedger(balRes.data.ledger || ledgerRes.data?.ledger || null);
         setSummary(balRes.data.summary || null);
+      } else if (ledgerRes.data?.ledger) {
+        setLedger(ledgerRes.data.ledger);
       }
+
       if (leaveRes.data?.success) {
         setMyLeaves(leaveRes.data.leaves || []);
       }

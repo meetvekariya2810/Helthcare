@@ -111,11 +111,17 @@ const authenticateEmployee = async (req, res, next) => {
     req.employeeId = (employee.employeeId || decoded.employeeId).toUpperCase();
     req.employeeRole = determinedRole;
 
+    // Sync employee.mustChangePassword with user account if user already established password
+    if (user && user.mustChangePassword === false && employee && employee.mustChangePassword === true) {
+      employee.mustChangePassword = false;
+      if (typeof employee.save === 'function') {
+        employee.save().catch(() => {});
+      }
+    }
+
     // Enforce mandatory password change on protected endpoints
     const mustChangePassword = Boolean(
-      (user && user.mustChangePassword) ||
-      (employee && employee.mustChangePassword) ||
-      decoded.mustChangePassword
+      user ? user.mustChangePassword : (employee?.mustChangePassword || decoded.mustChangePassword)
     );
 
     if (mustChangePassword) {

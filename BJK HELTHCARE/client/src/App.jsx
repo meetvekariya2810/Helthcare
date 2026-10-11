@@ -26,7 +26,7 @@ const lazyPage = (importFn, name) =>
             error?.name === 'ChunkLoadError' ||
             error?.message?.includes('Loading chunk');
 
-          if (isChunkError && !alreadyRetried) {
+          if (isChunkError && !alreadyRetried && !import.meta.env.DEV) {
             console.warn(`[Module Loader] Updated deployment detected for ${name}. Refreshing application assets...`);
             sessionStorage.setItem(retryKey, 'true');
             window.location.reload();
@@ -191,7 +191,7 @@ class ErrorBoundary extends React.Component {
       msg.includes('Loading chunk') ||
       error?.name === 'ChunkLoadError';
 
-    if (isChunkError) {
+    if (isChunkError && !import.meta.env.DEV) {
       const now = Date.now();
       const lastReload = Number(sessionStorage.getItem('bjk_eb_chunk_reload') || 0);
       if (now - lastReload > 8000) {

@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5000,
-    strictPort: true,
+    strictPort: false,
     hmr: {
-      clientPort: 5000,
+      overlay: true,
     },
   },
   legacy: {
