@@ -5,6 +5,7 @@ const Employee = require('../models/Employee');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const LoginActivity = require('../models/LoginActivity');
+const UserSession = require('../models/UserSession');
 const { isDBConnected } = require('../config/db');
 const { recordAudit } = require('../middleware/audit');
 const bcrypt = require('bcryptjs');
@@ -22,6 +23,93 @@ const {
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[0-9+\-\s()]{7,20}$/;
+const crypto = require('crypto');
+const { getScopeQuery, canAccessRecord, resolveDataScope } = require('../services/hrms/dataScopeService');
+const {
+  ROLES,
+  ROLE_HIERARCHY,
+  PROTECTED_ROLES,
+  getRoleRank,
+  canManageCredentials,
+  canAssignRole,
+  generateSecureRandomPassword
+} = require('../config/rbac');
+
+/**
+ * Strict Field Allow-Lists for Role-Based Projections
+ */
+const MANAGER_ALLOWED_FIELDS = [
+  '_id', 'employeeId', 'employeeCode', 'srNo', 'employeeSerialNumber',
+  'firstName', 'middleName', 'lastName', 'fullName', 'gender', 'photo', 'profilePhoto',
+  'designation', 'designationTitle', 'department', 'departmentName', 'subDepartment',
+  'grade', 'skillLevel', 'branch', 'facility', 'workLocation', 'jobLocation',
+  'team', 'shift', 'shiftName', 'assignedShift', 'status', 'employmentStatus',
+  'employmentType', 'employeeCategory', 'staffCategory', 'isNonTechnical',
+  'joiningDate', 'dateOfJoining', 'probationPeriod', 'workingHours', 'weeklyWorkingDays',
+  'workEmail', 'workPhone', 'officialMobile',
+  'reportingManager', 'reportingManagerName', 'managerName', 'teamStructure',
+  'createdAt', 'updatedAt'
+];
+
+const FINANCE_ALLOWED_FIELDS = [
+  ...MANAGER_ALLOWED_FIELDS,
+  'basicSalary', 'basicPay', 'grossSalary', 'netSalary', 'ctc', 'monthlyCtc', 'annualCtc',
+  'salary', 'compensation', 'salaryStructure', 'salaryBreakdown', 'allowances', 'deductions',
+  'pfNumber', 'esiNumber', 'uanNumber',
+  'bankName', 'bankAccountNumber', 'accountNumber', 'ifscCode', 'branchName', 'bankDetails'
+];
+
+/**
+ * Pure projection function for Department Managers (Strict Allow-List)
+ * Strips all compensation, banking, identity numbers, DOB, address, family, documents.
+ */
+const sanitizeForManager = (emp) => {
+  if (!emp) return null;
+  const raw = typeof emp.toObject === 'function' ? emp.toObject() : { ...emp };
+  const allowed = {};
+  for (const field of MANAGER_ALLOWED_FIELDS) {
+    if (raw[field] !== undefined) {
+      allowed[field] = raw[field];
+    }
+  }
+  return allowed;
+};
+
+/**
+ * Pure projection function for Finance / Payroll (Strict Allow-List)
+ * Retains compensation structure and banking needed for payroll; strips PII identity, DOB, address, family, documents.
+ */
+const sanitizeForFinance = (emp) => {
+  if (!emp) return null;
+  const raw = typeof emp.toObject === 'function' ? emp.toObject() : { ...emp };
+  const allowed = {};
+  for (const field of FINANCE_ALLOWED_FIELDS) {
+    if (raw[field] !== undefined) {
+      allowed[field] = raw[field];
+    }
+  }
+  return allowed;
+};
+
+/**
+ * Explicit list of Department Head and Manager Roles for Scoping and Projections
+ */
+const DEPARTMENT_HEAD_ROLES = [
+  'DEPARTMENT_HEAD',
+  'DEPARTMENT_MANAGER',
+  'OPERATIONS_MANAGER',
+  'PRODUCTION_MANAGER',
+  'QC_MANAGER',
+  'QA_MANAGER',
+  'REGULATORY_MANAGER',
+  'WAREHOUSE_MANAGER',
+  'SALES_MANAGER',
+  'CRM_MANAGER',
+  'EXPORT_MANAGER',
+  'SUPPLY_CHAIN_MANAGER',
+  'DOCUMENT_CONTROLLER',
+  'MANAGER'
+];
 
 /**
  * Generate next unique BJK Healthcare Employee ID (BHK0001, BHK0002, etc.)
@@ -90,8 +178,8 @@ const logEmployeeAudit = async (employee, user, action, details, changedFields =
 // =========================================================================
 const getEmployees = async (req, res) => {
   try {
-    const userRole = req.user?.role || 'EMPLOYEE';
-    const isAuthorized = [
+    const userRole = (req.user?.role || 'EMPLOYEE').toUpperCase();
+    const isHR = [
       'SUPER_ADMIN',
       'DIRECTOR',
       'HR_ADMIN',
@@ -101,22 +189,17 @@ const getEmployees = async (req, res) => {
       'IT_ADMIN',
       'SYSTEM_ADMINISTRATOR',
       'AUDITOR',
-      'EXECUTIVE_VIEWER',
-      'DEPARTMENT_MANAGER',
-      'OPERATIONS_MANAGER',
-      'PRODUCTION_MANAGER',
-      'QC_MANAGER',
-      'QA_MANAGER',
-      'REGULATORY_MANAGER',
-      'WAREHOUSE_MANAGER',
-      'SALES_MANAGER',
-      'CRM_MANAGER',
-      'EXPORT_MANAGER',
-      'FINANCE_MANAGER',
-      'DOCUMENT_CONTROLLER'
+      'EXECUTIVE_VIEWER'
     ].includes(userRole);
 
-    if (!isAuthorized) {
+    const isFinance = [
+      'FINANCE_MANAGER',
+      'PAYROLL_ADMIN'
+    ].includes(userRole);
+
+    const isManager = DEPARTMENT_HEAD_ROLES.includes(userRole);
+
+    if (!isHR && !isFinance && !isManager) {
       return res.status(403).json({
         success: false,
         message: 'Access Denied: You do not have permission to view all employees.'
@@ -145,6 +228,14 @@ const getEmployees = async (req, res) => {
     } = req.query;
 
     const andClauses = [];
+
+    // Apply department scope boundary for department managers
+    if (isManager) {
+      const scopeFilter = getScopeQuery(req.user, 'employee');
+      if (scopeFilter && Object.keys(scopeFilter).length > 0) {
+        andClauses.push(scopeFilter);
+      }
+    }
 
     // Strict Employee Category Separation (Requirement 4, 5, 6, 7)
     const effectiveCategory = employeeCategory || category || staffCategory;
@@ -225,7 +316,14 @@ const getEmployees = async (req, res) => {
       .skip(skip)
       .limit(limitNum);
 
-    const sanitized = rawEmployees.map(emp => (typeof emp.getSanitizedForRole === 'function' ? emp.getSanitizedForRole(userRole) : emp));
+    let sanitized;
+    if (isHR) {
+      sanitized = rawEmployees;
+    } else if (isFinance) {
+      sanitized = rawEmployees.map(sanitizeForFinance);
+    } else {
+      sanitized = rawEmployees.map(sanitizeForManager);
+    }
 
     // Department-wise summary for quick grouping (strictly category-scoped)
     const deptMatch = {};
@@ -312,13 +410,16 @@ const getEmployeeById = async (req, res) => {
       'AUDITOR'
     ].includes(userRole);
 
-    if (!isHR) {
-      const isSelf = 
-        (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
-        (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
-        (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+    const isFinance = ['FINANCE_MANAGER', 'PAYROLL_ADMIN'].includes(userRole);
+    const isManager = DEPARTMENT_HEAD_ROLES.includes(userRole);
 
-      if (!isSelf) {
+    const isSelf = 
+      (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
+      (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
+      (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+
+    if (!isHR && !isFinance && !isSelf) {
+      if (!isManager || !canAccessRecord(req.user, employee, 'employee')) {
         return res.status(403).json({
           success: false,
           message: 'Access Denied: You do not have permission to view other employee details.'
@@ -326,7 +427,14 @@ const getEmployeeById = async (req, res) => {
       }
     }
 
-    const sanitized = typeof employee.getSanitizedForRole === 'function' ? employee.getSanitizedForRole(userRole) : employee;
+    let sanitized;
+    if (isHR) {
+      sanitized = employee;
+    } else if (isFinance) {
+      sanitized = sanitizeForFinance(employee);
+    } else {
+      sanitized = sanitizeForManager(employee);
+    }
 
     res.json({
       success: true,
@@ -356,7 +464,7 @@ const getEmployeeQuickView = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Employee not found' });
     }
 
-    const userRole = req.user?.role || 'EMPLOYEE';
+    const userRole = (req.user?.role || 'EMPLOYEE').toUpperCase();
     const isHR = [
       'SUPER_ADMIN',
       'DIRECTOR',
@@ -369,13 +477,16 @@ const getEmployeeQuickView = async (req, res) => {
       'AUDITOR'
     ].includes(userRole);
 
-    if (!isHR) {
-      const isSelf = 
-        (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
-        (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
-        (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+    const isFinance = ['FINANCE_MANAGER', 'PAYROLL_ADMIN'].includes(userRole);
+    const isManager = DEPARTMENT_HEAD_ROLES.includes(userRole);
 
-      if (!isSelf) {
+    const isSelf = 
+      (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
+      (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
+      (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+
+    if (!isHR && !isFinance && !isSelf) {
+      if (!isManager || !canAccessRecord(req.user, employee, 'employee')) {
         return res.status(403).json({
           success: false,
           message: 'Access Denied: You do not have permission to view other employee details.'
@@ -452,13 +563,16 @@ const getEmployeeFullProfile = async (req, res) => {
       'AUDITOR'
     ].includes(userRole);
 
-    if (!isHR) {
-      const isSelf = 
-        (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
-        (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
-        (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+    const isFinance = ['FINANCE_MANAGER', 'PAYROLL_ADMIN'].includes(userRole);
+    const isManager = DEPARTMENT_HEAD_ROLES.includes(userRole);
 
-      if (!isSelf) {
+    const isSelf = 
+      (req.user?.employeeId && (req.user.employeeId.toUpperCase() === (employee.employeeId || '').toUpperCase() || req.user.employeeId.toUpperCase() === (employee.employeeCode || '').toUpperCase())) ||
+      (employee.user && req.user?._id && employee.user.toString() === req.user._id.toString()) ||
+      (req.user?.email && employee.email && req.user.email.toLowerCase() === employee.email.toLowerCase());
+
+    if (!isHR && !isFinance && !isSelf) {
+      if (!isManager || !canAccessRecord(req.user, employee, 'employee')) {
         return res.status(403).json({
           success: false,
           message: 'Access Denied: You do not have permission to view other employee details.'
@@ -466,7 +580,14 @@ const getEmployeeFullProfile = async (req, res) => {
       }
     }
 
-    const sanitized = typeof employee.getSanitizedForRole === 'function' ? employee.getSanitizedForRole(userRole) : employee;
+    let sanitized;
+    if (isHR) {
+      sanitized = employee;
+    } else if (isFinance) {
+      sanitized = sanitizeForFinance(employee);
+    } else {
+      sanitized = sanitizeForManager(employee);
+    }
 
     res.json({ success: true, data: sanitized, employee: sanitized });
   } catch (error) {
@@ -1462,12 +1583,23 @@ const getMasterImportHistory = async (req, res) => {
   }
 };
 
+
 /**
  * POST /api/employees/:id/reset-password
  */
 const resetEmployeePassword = async (req, res) => {
   try {
     const { id } = req.params;
+    const { reason: rawReason } = req.body;
+
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory reason (minimum 5 characters) is required for password reset.'
+      });
+    }
+    const reason = rawReason.trim();
+
     let employee = await Employee.findOne({
       $or: [{ employeeId: id }, { employeeCode: id }, ...(mongoose.isValidObjectId(id) ? [{ _id: id }] : [])]
     });
@@ -1476,7 +1608,6 @@ const resetEmployeePassword = async (req, res) => {
     }
 
     const empCode = employee.employeeCode || employee.employeeId;
-    const tempPassword = `BJK@${empCode}!${Math.floor(1000 + Math.random() * 9000)}`;
 
     let user = null;
     if (employee.user) {
@@ -1489,35 +1620,100 @@ const resetEmployeePassword = async (req, res) => {
     }
 
     if (!user) {
-      user = new User({
-        name: employee.fullName,
-        email: employee.email || `${empCode.toLowerCase()}@bjkhealthcare.com`,
-        workEmail: employee.email || `${empCode.toLowerCase()}@bjkhealthcare.com`,
-        employeeId: empCode,
-        employeeCode: empCode,
-        role: employee.systemRole || 'EMPLOYEE',
-        department: employee.departmentName || employee.department
+      return res.status(409).json({
+        success: false,
+        message: 'Conflict: Employee record has no linked user account to reset.'
       });
     }
 
-    user.password = tempPassword; // Pre-save hook hashes with bcrypt
+    // Role Hierarchy Authorization Checks
+    const callerRole = (req.user?.role || '').toUpperCase();
+    const targetRole = (user.role || employee.systemRole || 'EMPLOYEE').toUpperCase();
+
+    // 1. Prevent self-reset via HR flow
+    const isSelf = (user && req.user?.id && user._id.toString() === req.user.id.toString()) ||
+      (req.user?.email && user?.email && req.user.email.toLowerCase() === user.email.toLowerCase()) ||
+      (req.user?.employeeId && employee.employeeId && req.user.employeeId.toUpperCase() === employee.employeeId.toUpperCase());
+    if (isSelf) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Self-reset of password is not permitted via HR reset flow.'
+      });
+    }
+
+    // 2. Strict Role Hierarchy & Protected Roles Check
+    const authCheck = canManageCredentials(callerRole, targetRole);
+    if (!authCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied: ${authCheck.reason}`
+      });
+    }
+
+    // Step A: Write AuditLog BEFORE updating user credentials (without logging temporary password)
+    // Abort if audit logging fails (Strict Audit Log)
+    try {
+      await AuditLog.logActionStrict({
+        user: req.user,
+        action: 'PASSWORD_RESET',
+        module: 'SECURITY',
+        resource: 'Employee',
+        resourceId: empCode,
+        targetUserId: user._id ? user._id.toString() : null,
+        reason,
+        details: `Password reset by ${req.user?.name || req.user?.email || 'Authorized HR'} for ${employee.fullName} (${empCode}). Forced password change required. Reason: ${reason}`,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+      });
+    } catch (auditErr) {
+      console.error('[Audit Write Failure in employeeController.resetEmployeePassword]:', auditErr.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Security error: Mandatory audit log write failed. Password reset aborted.'
+      });
+    }
+
+    // Step B: Set temporary password (random 20-char cryptographically secure)
+    const tempPassword = generateSecureRandomPassword(20);
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(tempPassword, salt);
+
+    user.password = hash;
+    user.passwordHash = hash;
     user.mustChangePassword = true;
     user.temporaryPassword = true;
     user.firstLogin = true;
-    await user.save();
+    user.failedLoginAttempts = 0;
+    user.isLocked = false;
+    user.lockedReason = '';
+    user.lockUntil = null;
+    user.passwordChangedAt = null;
+    await user.save({ validateBeforeSave: false });
 
-    employee.user = user._id;
-    await employee.save();
+    // Revoke target active sessions using real UserSession schema fields
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const sessionQuery = [];
+        if (mongoose.isValidObjectId(user._id)) {
+          sessionQuery.push({ userId: user._id });
+        }
+        if (empCode) {
+          sessionQuery.push({ employeeId: empCode });
+        }
+        if (sessionQuery.length > 0) {
+          await UserSession.updateMany(
+            { $or: sessionQuery, status: 'ACTIVE' },
+            { status: 'REVOKED', terminatedAt: new Date(), terminatedBy: req.user?.email || 'Password Reset' }
+          );
+        }
+      } catch (sessionErr) {
+        console.warn('[UserSession Revoke Warning]:', sessionErr.message);
+      }
+    }
 
-    await AuditLog.create({
-      action: 'PASSWORD_RESET',
-      module: 'HRMS',
-      resource: 'Employee',
-      resourceId: empCode,
-      targetUserId: user._id.toString(),
-      details: `Password reset by ${req.user?.name || 'HR Admin'} for ${employee.fullName} (${empCode}). Forced password change required.`,
-      status: 'SUCCESS'
-    });
+    if (!employee.user || employee.user.toString() !== user._id.toString()) {
+      employee.user = user._id;
+      await employee.save();
+    }
 
     res.json({
       success: true,
@@ -1582,10 +1778,19 @@ const forcePasswordChange = async (req, res) => {
 const updateEmployeeRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role, reason: rawReason } = req.body;
+
     if (!role) {
       return res.status(400).json({ success: false, message: 'Role is required.' });
     }
+
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory reason (minimum 5 characters) is required to update an employee role.'
+      });
+    }
+    const reason = rawReason.trim();
 
     let employee = await Employee.findOne({
       $or: [{ employeeId: id }, { employeeCode: id }, ...(mongoose.isValidObjectId(id) ? [{ _id: id }] : [])]
@@ -1593,10 +1798,6 @@ const updateEmployeeRole = async (req, res) => {
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' });
     }
-
-    const oldRole = employee.systemRole || 'EMPLOYEE';
-    employee.systemRole = role.toUpperCase();
-    await employee.save();
 
     const empCode = employee.employeeCode || employee.employeeId;
     let user = employee.user ? await User.findById(employee.user) : null;
@@ -1606,26 +1807,89 @@ const updateEmployeeRole = async (req, res) => {
       });
     }
 
-    if (user) {
-      user.role = role.toUpperCase();
-      user.dataScope = role.toUpperCase() === 'SUPER_ADMIN' ? 'SYSTEM' : (role.toUpperCase().includes('MANAGER') ? 'DEPARTMENT' : 'SELF');
-      const { ROLE_PERMISSIONS } = require('../config/rbac');
-      user.permissions = ROLE_PERMISSIONS[role.toUpperCase()] || [];
-      await user.save({ validateBeforeSave: false });
+    const callerRole = (req.user?.role || '').toUpperCase();
+    const targetCurrentRole = (user?.role || employee.systemRole || 'EMPLOYEE').toUpperCase();
+    const targetNewRole = String(role).toUpperCase();
+
+    // 1. Prevent self-escalation or self-modification
+    const isSelf = (user && req.user?.id && user._id.toString() === req.user.id.toString()) ||
+      (req.user?.email && user?.email && req.user.email.toLowerCase() === user.email.toLowerCase()) ||
+      (req.user?.employeeId && employee.employeeId && req.user.employeeId.toUpperCase() === employee.employeeId.toUpperCase());
+    if (isSelf) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Self-modification of RBAC roles is strictly prohibited.'
+      });
     }
 
-    await AuditLog.create({
-      action: 'ROLE_CHANGED',
-      module: 'HRMS',
-      resource: 'Employee',
-      resourceId: empCode,
-      details: `Role changed from ${oldRole} to ${role} by ${req.user?.name || 'HR Admin'}.`,
-      status: 'SUCCESS'
-    });
+    // 2. Strict Role Assignment Authorization Check
+    const authCheck = canAssignRole(callerRole, targetCurrentRole, targetNewRole);
+    if (!authCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied: ${authCheck.reason}`
+      });
+    }
+
+    const oldRole = targetCurrentRole;
+
+    // Step A: Write AuditLog entry FIRST. Abort role update if audit logging fails.
+    try {
+      await AuditLog.logActionStrict({
+        user: req.user,
+        action: 'EMPLOYEE_ROLE_CHANGE',
+        module: 'HRMS',
+        resource: 'Employee',
+        resourceId: empCode,
+        targetUserId: user ? user._id.toString() : null,
+        reason,
+        details: `Role updated from ${oldRole} to ${targetNewRole} for ${employee.fullName} (${empCode}). Reason: ${reason}. Caller: ${req.user?.email || callerRole}`,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+      });
+    } catch (auditErr) {
+      console.error('[Audit Write Failure in updateEmployeeRole]:', auditErr.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Security error: Mandatory audit log write failed. Role update aborted.'
+      });
+    }
+
+    // Step B: Apply database updates
+    employee.systemRole = targetNewRole;
+    await employee.save();
+
+    if (user) {
+      user.role = targetNewRole;
+      user.dataScope = targetNewRole === 'SUPER_ADMIN' ? 'SYSTEM' : (targetNewRole.includes('MANAGER') ? 'DEPARTMENT' : 'SELF');
+      const { ROLE_PERMISSIONS } = require('../config/rbac');
+      user.permissions = ROLE_PERMISSIONS[targetNewRole] || [];
+      await user.save({ validateBeforeSave: false });
+
+      // Revoke target active sessions using real UserSession schema fields
+      if (mongoose.connection.readyState === 1) {
+        try {
+          const sessionQuery = [];
+          if (mongoose.isValidObjectId(user._id)) {
+            sessionQuery.push({ userId: user._id });
+          }
+          if (empCode) {
+            sessionQuery.push({ employeeId: empCode });
+          }
+          if (sessionQuery.length > 0) {
+            await UserSession.updateMany(
+              { $or: sessionQuery, status: 'ACTIVE' },
+              { status: 'REVOKED', terminatedAt: new Date(), terminatedBy: req.user?.email || 'Role Change' }
+            );
+          }
+        } catch (sessionErr) {
+          console.warn('[UserSession Revoke Warning]:', sessionErr.message);
+        }
+      }
+    }
 
     res.json({
       success: true,
-      message: `Role successfully updated to ${role} for ${employee.fullName}.`,
+      message: `Role successfully updated to ${targetNewRole} for ${employee.fullName}.`,
       employee
     });
   } catch (error) {
@@ -1976,6 +2240,8 @@ module.exports = {
   bulkGenerateIdCards,
   getUnclassifiedEmployees,
   classifyEmployee,
-  bulkClassifyEmployees
+  bulkClassifyEmployees,
+  sanitizeForManager,
+  sanitizeForFinance
 };
 

@@ -26,6 +26,7 @@ import {
   generateBulkIdCardPdf,
   printEmployeeIdCard
 } from '../../components/hrms/idcard/idCardUtils';
+import { apiClient } from '../../services/api';
 
 export const EmployeeIDCardManager = () => {
   const [cards, setCards] = useState([]);
@@ -60,13 +61,13 @@ export const EmployeeIDCardManager = () => {
   const fetchIdCards = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (searchQuery.trim()) params.append('search', searchQuery.trim());
-      if (selectedDept !== 'All') params.append('department', selectedDept);
-      if (selectedStatus !== 'All') params.append('status', selectedStatus);
+      const params = {};
+      if (searchQuery.trim()) params.search = searchQuery.trim();
+      if (selectedDept !== 'All') params.department = selectedDept;
+      if (selectedStatus !== 'All') params.status = selectedStatus;
 
-      const res = await fetch(`/api/employees/id-cards?${params.toString()}`);
-      const data = await res.json();
+      const res = await apiClient.get('/employees/id-cards', { params });
+      const data = res.data;
 
       if (data.success) {
         setCards(data.cards || []);
@@ -110,12 +111,8 @@ export const EmployeeIDCardManager = () => {
 
     setIsBulkGenerating(true);
     try {
-      const res = await fetch('/api/employees/id-cards/bulk-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ all: true })
-      });
-      const data = await res.json();
+      const res = await apiClient.post('/employees/id-cards/bulk-generate', { all: true });
+      const data = res.data;
       if (data.success) {
         alert(data.message || 'All ID cards successfully generated!');
         fetchIdCards();
@@ -133,12 +130,10 @@ export const EmployeeIDCardManager = () => {
     if (selectedIds.size === 0) return;
     setIsBulkGenerating(true);
     try {
-      const res = await fetch('/api/employees/id-cards/bulk-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employeeIds: Array.from(selectedIds) })
+      const res = await apiClient.post('/employees/id-cards/bulk-generate', {
+        employeeIds: Array.from(selectedIds)
       });
-      const data = await res.json();
+      const data = res.data;
       if (data.success) {
         alert(data.message || `Generated ID cards for ${selectedIds.size} employees!`);
         fetchIdCards();
@@ -206,12 +201,11 @@ export const EmployeeIDCardManager = () => {
 
   const handleRegenerateIndividual = async (employee) => {
     try {
-      const res = await fetch(`/api/employees/${employee._id}/id-card`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardTemplate: 'BJK-ID-2026-V1', status: 'ACTIVE' })
+      const res = await apiClient.post(`/employees/${employee._id}/id-card`, {
+        cardTemplate: 'BJK-ID-2026-V1',
+        status: 'ACTIVE'
       });
-      const data = await res.json();
+      const data = res.data;
       if (data.success) {
         fetchIdCards();
       }

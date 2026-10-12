@@ -10,7 +10,18 @@ const {
   LoginActivity,
   UserSession
 } = require('../models');
-const { ROLES, PERMISSIONS, ROLE_PERMISSIONS, hasPermission } = require('../config/rbac');
+const {
+  ROLES,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  hasPermission,
+  ROLE_HIERARCHY,
+  PROTECTED_ROLES,
+  getRoleRank,
+  canManageCredentials,
+  canAssignRole,
+  generateSecureRandomPassword
+} = require('../config/rbac');
 const {
   resolveDataScope,
   getScopeQuery,
@@ -649,11 +660,20 @@ const updateEmployeeStatus = async (req, res) => {
   }
 };
 
+
 // POST /api/hr/employees/:id/reset-password
 const resetEmployeePassword = async (req, res) => {
   try {
     const { id } = req.params;
-    const { newPassword, forcePasswordChange = true } = req.body;
+    const { newPassword, forcePasswordChange = true, reason: rawReason } = req.body;
+
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory reason (minimum 5 characters) is required for password reset.'
+      });
+    }
+    const reason = rawReason.trim();
 
     let employee = null;
     if (mongoose.isValidObjectId(id)) employee = await Employee.findById(id);
@@ -668,45 +688,101 @@ const resetEmployeePassword = async (req, res) => {
       : await User.findOne({ email: employee.email });
 
     if (!userToReset) {
-      return res.status(404).json({ success: false, message: 'Linked user login account not found for this employee.' });
+      return res.status(409).json({ success: false, message: 'Conflict: Linked user login account not found for this employee.' });
     }
 
-    const rawTempPassword = newPassword || `BJK@${crypto.randomBytes(3).toString('hex')}!`;
+    // Role Hierarchy Authorization Checks
+    const callerRole = (req.user?.role || '').toUpperCase();
+    const targetRole = (userToReset.role || employee.systemRole || 'EMPLOYEE').toUpperCase();
+
+    // 1. Prevent self-reset via HR flow
+    const isSelf = (req.user?.id && userToReset._id.toString() === req.user.id.toString()) ||
+      (req.user?.email && userToReset.email && req.user.email.toLowerCase() === userToReset.email.toLowerCase()) ||
+      (req.user?.employeeId && employee.employeeId && req.user.employeeId.toUpperCase() === employee.employeeId.toUpperCase());
+    if (isSelf) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Self-reset of password is not permitted via HR reset flow.'
+      });
+    }
+
+    // 2. Strict Role Hierarchy & Protected Roles Check
+    const authCheck = canManageCredentials(callerRole, targetRole);
+    if (!authCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied: ${authCheck.reason}`
+      });
+    }
+
+    // Step A: Write audit entry BEFORE applying updates (without logging temporary password)
+    // Abort if audit logging fails (Strict Audit Log)
+    try {
+      await AuditLog.logActionStrict({
+        user: req.user,
+        action: 'USER_RESET_PASSWORD',
+        module: 'SECURITY',
+        resource: 'User',
+        resourceId: userToReset._id,
+        targetUserId: userToReset._id ? userToReset._id.toString() : null,
+        reason,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+        details: `HR Administrator reset password and revoked all sessions for employee [${employee.employeeId} - ${userToReset.email}]. Reason: ${reason}`
+      });
+    } catch (auditErr) {
+      console.error('[Audit Write Failure in hrController.resetEmployeePassword]:', auditErr.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Security error: Mandatory audit log write failed. Password reset aborted.'
+      });
+    }
+
+    // Step B: Generate temporary credentials (random 20-char cryptographically secure)
+    const rawTempPassword = generateSecureRandomPassword(20);
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(rawTempPassword, salt);
 
     userToReset.password = hash;
     userToReset.passwordHash = hash;
-    userToReset.mustChangePassword = Boolean(forcePasswordChange);
+    userToReset.mustChangePassword = true;
     userToReset.temporaryPassword = true;
+    userToReset.firstLogin = true;
+    userToReset.failedLoginAttempts = 0;
     userToReset.isLocked = false;
     userToReset.lockedReason = '';
-    userToReset.passwordChangedAt = new Date();
+    userToReset.lockUntil = null;
+    userToReset.passwordChangedAt = null;
     await userToReset.save({ validateBeforeSave: false });
 
-    // Invalidate all existing sessions
-    await UserSession.updateMany(
-      { userId: userToReset._id, status: 'ACTIVE' },
-      { status: 'REVOKED', terminatedAt: new Date(), terminatedBy: req.user?.email || 'HR Reset' }
-    );
-
-    await AuditLog.logAction({
-      user: req.user,
-      action: 'USER_RESET_PASSWORD',
-      module: 'SECURITY',
-      resource: 'User',
-      resourceId: userToReset._id,
-      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
-      details: `HR Administrator reset password and revoked all sessions for employee [${employee.employeeId} - ${userToReset.email}].`
-    });
+    // Invalidate all existing sessions using real UserSession schema fields
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const sessionQuery = [];
+        if (mongoose.isValidObjectId(userToReset._id)) {
+          sessionQuery.push({ userId: userToReset._id });
+        }
+        if (employee.employeeId) {
+          sessionQuery.push({ employeeId: employee.employeeId });
+        }
+        if (sessionQuery.length > 0) {
+          await UserSession.updateMany(
+            { $or: sessionQuery, status: 'ACTIVE' },
+            { status: 'REVOKED', terminatedAt: new Date(), terminatedBy: req.user?.email || 'Password Reset' }
+          );
+        }
+      } catch (sessionErr) {
+        console.warn('[UserSession Revoke Warning]:', sessionErr.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,
       message: 'Password reset successfully. Active sessions revoked.',
+      temporaryPassword: rawTempPassword,
       credentialInfo: {
         employeeId: employee.employeeId,
         email: userToReset.email,
-        temporaryPassword: rawTempPassword, // Securely returned to HR to convey to user
+        temporaryPassword: rawTempPassword, // Securely returned in response body only
         mustChangePassword: userToReset.mustChangePassword
       }
     });
@@ -1442,45 +1518,106 @@ const getPermissions = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role, reason: rawReason } = req.body;
 
     if (!role || !ROLES[role]) {
       return res.status(400).json({ success: false, message: `Invalid role [${role}]. Valid roles: ${Object.keys(ROLES).join(', ')}` });
     }
+
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory reason (minimum 5 characters) is required to update an employee role.'
+      });
+    }
+    const reason = rawReason.trim();
 
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
-    const oldRole = user.role;
-    user.role = role;
+    const callerRole = (req.user?.role || '').toUpperCase();
+    const targetCurrentRole = (user.role || 'EMPLOYEE').toUpperCase();
+    const targetNewRole = String(role).toUpperCase();
 
-    // Recalculate default dataScope
-    if (['SUPER_ADMIN', 'DIRECTOR'].includes(role)) user.dataScope = 'SYSTEM';
-    else if (['HR_ADMIN', 'HR_MANAGER', 'IT_ADMIN'].includes(role)) user.dataScope = 'GLOBAL';
-    else if (['HR_EXECUTIVE', 'FINANCE_MANAGER', 'PAYROLL_ADMIN', 'AUDITOR'].includes(role)) user.dataScope = 'COMPANY';
-    else if (['QA_MANAGER', 'QC_MANAGER', 'PRODUCTION_MANAGER', 'DEPARTMENT_MANAGER', 'WAREHOUSE_MANAGER', 'SALES_MANAGER', 'EXPORT_MANAGER'].includes(role)) user.dataScope = 'DEPARTMENT';
-    else if (role === 'TEAM_LEAD') user.dataScope = 'TEAM';
+    // 1. Prevent self-escalation or self-modification
+    const isSelf = (req.user?.id && user._id.toString() === req.user.id.toString()) ||
+      (req.user?.email && user.email && req.user.email.toLowerCase() === user.email.toLowerCase());
+    if (isSelf) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Self-modification of RBAC roles is strictly prohibited.'
+      });
+    }
+
+    // 2. Strict Role Assignment Authorization Check
+    const authCheck = canAssignRole(callerRole, targetCurrentRole, targetNewRole);
+    if (!authCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied: ${authCheck.reason}`
+      });
+    }
+
+    const oldRole = user.role;
+
+    // Step A: Write AuditLog entry FIRST. Abort role update if audit logging fails.
+    try {
+      await AuditLog.logActionStrict({
+        user: req.user,
+        action: 'USER_ROLE_CHANGE',
+        module: 'SECURITY',
+        resource: 'User',
+        resourceId: user._id.toString(),
+        targetUserId: user._id.toString(),
+        reason,
+        details: `HR changed role of user [${user.email}] from [${oldRole}] to [${targetNewRole}]. Reason: ${reason}. Operator: ${req.user?.email || callerRole}`,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+      });
+    } catch (auditErr) {
+      console.error('[Audit Write Failure in updateUserRole]:', auditErr.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Security error: Mandatory audit log write failed. Role update aborted.'
+      });
+    }
+
+    // Step B: Recalculate default dataScope and save
+    user.role = targetNewRole;
+    if (['SUPER_ADMIN', 'DIRECTOR'].includes(targetNewRole)) user.dataScope = 'SYSTEM';
+    else if (['HR_ADMIN', 'HR_MANAGER', 'IT_ADMIN'].includes(targetNewRole)) user.dataScope = 'GLOBAL';
+    else if (['HR_EXECUTIVE', 'FINANCE_MANAGER', 'PAYROLL_ADMIN', 'AUDITOR'].includes(targetNewRole)) user.dataScope = 'COMPANY';
+    else if (['QA_MANAGER', 'QC_MANAGER', 'PRODUCTION_MANAGER', 'DEPARTMENT_MANAGER', 'WAREHOUSE_MANAGER', 'SALES_MANAGER', 'EXPORT_MANAGER'].includes(targetNewRole)) user.dataScope = 'DEPARTMENT';
+    else if (targetNewRole === 'TEAM_LEAD') user.dataScope = 'TEAM';
     else user.dataScope = 'SELF';
 
     await user.save({ validateBeforeSave: false });
 
-    await AuditLog.logAction({
-      user: req.user,
-      action: 'USER_ROLE_CHANGE',
-      module: 'SECURITY',
-      resource: 'User',
-      resourceId: user._id,
-      oldData: { role: oldRole },
-      newData: { role: user.role, dataScope: user.dataScope },
-      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
-      details: `HR changed role of user [${user.email}] from [${oldRole}] to [${role}]. Scope updated to [${user.dataScope}].`
-    });
+    // Revoke target active sessions using real UserSession schema fields
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const sessionQuery = [];
+        if (mongoose.isValidObjectId(user._id)) {
+          sessionQuery.push({ userId: user._id });
+        }
+        if (user.employeeId) {
+          sessionQuery.push({ employeeId: user.employeeId });
+        }
+        if (sessionQuery.length > 0) {
+          await UserSession.updateMany(
+            { $or: sessionQuery, status: 'ACTIVE' },
+            { status: 'REVOKED', terminatedAt: new Date(), terminatedBy: req.user?.email || 'Role Change' }
+          );
+        }
+      } catch (sessionErr) {
+        console.warn('[UserSession Revoke Warning]:', sessionErr.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,
-      message: `User role updated to [${role}].`,
+      message: `User role updated to [${targetNewRole}].`,
       user: {
         id: user._id,
         email: user.email,

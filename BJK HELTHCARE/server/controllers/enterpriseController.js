@@ -50,10 +50,10 @@ const getFacilities = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// Departments
+// Departments (minimal public projection)
 const getDepartments = async (req, res, next) => {
   try {
-    const departments = await Department.find({}).sort({ name: 1 }).lean();
+    const departments = await Department.find({}, 'name code division').sort({ name: 1 }).lean();
     res.json({ success: true, count: departments.length, data: departments });
   } catch (err) { next(err); }
 };

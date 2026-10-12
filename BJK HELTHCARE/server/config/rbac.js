@@ -2,6 +2,7 @@
  * BJK Healthcare Enterprise Role-Based Access Control (RBAC)
  * Master Granular Permissions & Role Hierarchy for Pharmaceutical Operations
  */
+const crypto = require('crypto');
 
 const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
@@ -460,9 +461,230 @@ const hasPermission = (userRole, requiredPermission) => {
   return false;
 };
 
+/**
+ * Enterprise Numerical Role Hierarchy
+ * Standardized direction: LOWER NUMBERS = HIGHER PRIVILEGE (Rank 1 is highest authority).
+ * 
+ * Authorization rule:
+ * - To manage credentials or modify/assign a role, caller rank must strictly outrank the target (callerRank < targetRank).
+ * - Equal rank or lower authority (callerRank >= targetRank) is strictly DENIED.
+ * - Missing or unknown roles return Infinity and are strictly DENIED (never allowed to act, never a valid target).
+ * - PROTECTED_ROLES (SUPER_ADMIN, DIRECTOR, AUDITOR, PAYROLL_ADMIN, FINANCE_MANAGER, IT_ADMIN)
+ *   may ONLY be reset or re-roled by SUPER_ADMIN.
+ */
+const ROLE_HIERARCHY = {
+  [ROLES.SUPER_ADMIN]: 1,
+  [ROLES.DIRECTOR]: 2,
+  [ROLES.AUDITOR]: 3,
+  [ROLES.SYSTEM_ADMINISTRATOR]: 4,
+  [ROLES.IT_ADMIN]: 5,
+  [ROLES.HR_ADMIN]: 6,
+  [ROLES.PAYROLL_ADMIN]: 7,
+  [ROLES.HR_MANAGER]: 8,
+  [ROLES.FINANCE_MANAGER]: 9,
+  [ROLES.REGULATORY_MANAGER]: 10,
+  [ROLES.QA_MANAGER]: 11,
+  [ROLES.QC_MANAGER]: 12,
+  [ROLES.PRODUCTION_MANAGER]: 13,
+  [ROLES.OPERATIONS_MANAGER]: 14,
+  [ROLES.WAREHOUSE_MANAGER]: 15,
+  [ROLES.SUPPLY_CHAIN_MANAGER]: 16,
+  [ROLES.SALES_MANAGER]: 17,
+  [ROLES.CRM_MANAGER]: 18,
+  [ROLES.EXPORT_MANAGER]: 19,
+  [ROLES.DEPARTMENT_MANAGER]: 20,
+  [ROLES.MANAGER]: 21,
+  [ROLES.HR_EXECUTIVE]: 22,
+  [ROLES.DOCUMENT_CONTROLLER]: 23,
+  [ROLES.RECRUITER]: 24,
+  [ROLES.CANTEEN_ADMIN]: 25,
+  [ROLES.TEAM_LEAD]: 26,
+  [ROLES.SENIOR_EMPLOYEE]: 27,
+  [ROLES.REGULATORY_VIEWER]: 28,
+  [ROLES.EXECUTIVE_VIEWER]: 29,
+  [ROLES.EMPLOYEE]: 30
+};
+
+/**
+ * Protected Roles List: Only SUPER_ADMIN may reset credentials or assign/re-role these accounts.
+ */
+const PROTECTED_ROLES = [
+  ROLES.SUPER_ADMIN,
+  ROLES.DIRECTOR,
+  ROLES.AUDITOR,
+  ROLES.PAYROLL_ADMIN,
+  ROLES.FINANCE_MANAGER,
+  ROLES.IT_ADMIN
+];
+
+/**
+ * Check whether a role string is a recognized canonical enterprise role.
+ */
+const isKnownRole = (role) => {
+  if (!role || typeof role !== 'string') return false;
+  return Object.prototype.hasOwnProperty.call(ROLE_HIERARCHY, role.toUpperCase().trim());
+};
+
+/**
+ * Get numerical role rank. Lower numbers = higher privilege (SUPER_ADMIN = 1, EMPLOYEE = 30).
+ * Unknown or missing roles return Infinity (DENY).
+ */
+const getRoleRank = (role) => {
+  if (!isKnownRole(role)) return Infinity;
+  return ROLE_HIERARCHY[role.toUpperCase().trim()];
+};
+
+/**
+ * Authorize credential management (password reset, account lock/unlock).
+ * 
+ * Rules:
+ * 1. Caller and target roles must both be known valid roles (unknown/missing role DENIES).
+ * 2. SUPER_ADMIN may reset credentials for any known target.
+ * 3. Accounts with a role in PROTECTED_ROLES may ONLY be reset by SUPER_ADMIN.
+ * 4. Caller rank must strictly outrank target rank (callerRank < targetRank, since lower numbers = higher privilege).
+ *    Equal or lower authority (callerRank >= targetRank) is DENIED.
+ */
+const canManageCredentials = (callerRole, targetRole) => {
+  if (!isKnownRole(callerRole) || !isKnownRole(targetRole)) {
+    return {
+      allowed: false,
+      reason: 'Unknown or missing role is not permitted (access denied).'
+    };
+  }
+
+  const normCaller = callerRole.toUpperCase().trim();
+  const normTarget = targetRole.toUpperCase().trim();
+
+  // SUPER_ADMIN has full credential management authority across known targets
+  if (normCaller === ROLES.SUPER_ADMIN) {
+    return { allowed: true };
+  }
+
+  // Target role is in PROTECTED_ROLES: only SUPER_ADMIN is permitted
+  if (PROTECTED_ROLES.includes(normTarget)) {
+    return {
+      allowed: false,
+      reason: `Role '${normTarget}' is protected. Only SUPER_ADMIN may manage credentials for protected accounts.`
+    };
+  }
+
+  // Lower number = higher privilege: caller must strictly outrank target (callerRank < targetRank)
+  const callerRank = ROLE_HIERARCHY[normCaller];
+  const targetRank = ROLE_HIERARCHY[normTarget];
+
+  if (callerRank >= targetRank) {
+    return {
+      allowed: false,
+      reason: `Caller role '${normCaller}' (rank ${callerRank}) does not strictly outrank target role '${normTarget}' (rank ${targetRank}).`
+    };
+  }
+
+  return { allowed: true };
+};
+
+/**
+ * Authorize role modification / assignment (re-role).
+ * 
+ * Rules:
+ * 1. Caller, current target role, and new role must all be known valid roles.
+ * 2. SUPER_ADMIN may assign any valid role.
+ * 3. Accounts with a current role in PROTECTED_ROLES may only be re-roled by SUPER_ADMIN.
+ * 4. A role in PROTECTED_ROLES may only be granted by SUPER_ADMIN.
+ * 5. Caller rank must strictly outrank both the target's current rank and the new role rank:
+ *    callerRank < currentRank && callerRank < newRank.
+ */
+const canAssignRole = (callerRole, currentRole, newRole) => {
+  if (!isKnownRole(callerRole) || !isKnownRole(currentRole) || !isKnownRole(newRole)) {
+    return {
+      allowed: false,
+      reason: 'Unknown or missing role is not permitted (access denied).'
+    };
+  }
+
+  const normCaller = callerRole.toUpperCase().trim();
+  const normCurrent = currentRole.toUpperCase().trim();
+  const normNew = newRole.toUpperCase().trim();
+
+  // SUPER_ADMIN can assign any recognized role
+  if (normCaller === ROLES.SUPER_ADMIN) {
+    return { allowed: true };
+  }
+
+  // Protected current or new role can only be assigned/changed by SUPER_ADMIN
+  if (PROTECTED_ROLES.includes(normCurrent)) {
+    return {
+      allowed: false,
+      reason: `Current role '${normCurrent}' is protected. Only SUPER_ADMIN may modify accounts with protected roles.`
+    };
+  }
+  if (PROTECTED_ROLES.includes(normNew)) {
+    return {
+      allowed: false,
+      reason: `Role '${normNew}' is protected. Only SUPER_ADMIN may grant protected roles.`
+    };
+  }
+
+  // Caller must strictly outrank both current role and new role (lower number = higher privilege)
+  const callerRank = ROLE_HIERARCHY[normCaller];
+  const currentRank = ROLE_HIERARCHY[normCurrent];
+  const newRank = ROLE_HIERARCHY[normNew];
+
+  if (callerRank >= currentRank) {
+    return {
+      allowed: false,
+      reason: `Caller role '${normCaller}' (rank ${callerRank}) does not strictly outrank current role '${normCurrent}' (rank ${currentRank}).`
+    };
+  }
+  if (callerRank >= newRank) {
+    return {
+      allowed: false,
+      reason: `Caller role '${normCaller}' (rank ${callerRank}) cannot grant equal or higher role '${normNew}' (rank ${newRank}).`
+    };
+  }
+
+  return { allowed: true };
+};
+
+/**
+ * Shared Cryptographically Secure Temporary Password Generator
+ * Guarantees upper, lower, digit, and symbol with Fisher-Yates shuffle. No padEnd('X').
+ */
+const generateSecureRandomPassword = (length = 20) => {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnopqrstuvwxyz';
+  const digits = '23456789';
+  const symbols = '!@#$%^&*()-_=+';
+  const allChars = upper + lower + digits + symbols;
+
+  const pwd = [
+    upper[crypto.randomInt(0, upper.length)],
+    lower[crypto.randomInt(0, lower.length)],
+    digits[crypto.randomInt(0, digits.length)],
+    symbols[crypto.randomInt(0, symbols.length)]
+  ];
+
+  for (let i = pwd.length; i < length; i++) {
+    pwd.push(allChars[crypto.randomInt(0, allChars.length)]);
+  }
+
+  for (let i = pwd.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [pwd[i], pwd[j]] = [pwd[j], pwd[i]];
+  }
+
+  return pwd.join('');
+};
+
 module.exports = {
   ROLES,
   PERMISSIONS,
   ROLE_PERMISSIONS,
-  hasPermission
+  hasPermission,
+  ROLE_HIERARCHY,
+  PROTECTED_ROLES,
+  isKnownRole,
+  getRoleRank,
+  canManageCredentials,
+  canAssignRole,
+  generateSecureRandomPassword
 };

@@ -20,7 +20,7 @@ const { protect } = require('../middleware/auth');
 router.get('/company', getCompany);
 router.get('/facilities', getFacilities);
 router.get('/departments', getDepartments);
-router.get('/dashboard/summary', getDashboardSummary);
+router.get('/dashboard/summary', protect, getDashboardSummary);
 
 // CRM Enquiry endpoint
 router.get('/crm/enquiries', protect, getEnquiries);

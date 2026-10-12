@@ -24,8 +24,6 @@ router.get('/health/database', (req, res) => {
     service: 'BJK Healthcare API',
     database: dbStatus,
     readyState: mongoose.connection.readyState,
-    host: mongoose.connection.host || 'MongoDB Atlas / Local',
-    name: mongoose.connection.name || 'bjk_healthcare',
     timestamp: new Date().toISOString()
   });
 });

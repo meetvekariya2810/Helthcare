@@ -17,31 +17,17 @@ const {
   syncGeneratedCredentials
 } = require('../../controllers/loginCredentialsController');
 
-// Allow authenticated HR / Super Admin, OR internal server script with x-bjk-internal-key, or browser download in dev
-const allowInternalOrHR = (req, res, next) => {
-  const internalKey = req.headers['x-bjk-internal-key'] || req.query.key;
-  if (internalKey === 'bjk_healthcare_credential_sync_internal_2026' || internalKey === 'admin' || process.env.NODE_ENV !== 'production') {
-    return next();
-  }
+// Allow bearer token in query parameter for browser downloads, then enforce strict auth
+const allowQueryToken = (req, res, next) => {
   if (req.query.token && !req.headers.authorization) {
     req.headers.authorization = `Bearer ${req.query.token}`;
   }
-  return protect(req, res, () => {
-    requireRole(
-      'SUPER_ADMIN',
-      'DIRECTOR',
-      'HR_ADMIN',
-      'HR_MANAGER',
-      'HR',
-      'IT_ADMIN',
-      'SYSTEM_ADMINISTRATOR'
-    )(req, res, next);
-  });
+  next();
 };
 
-// Excel Download & Internal / Admin Credential Sync
-router.get('/download-excel', allowInternalOrHR, downloadCredentialWorkbook);
-router.post('/sync-generated', allowInternalOrHR, syncGeneratedCredentials);
+// Excel Download & Internal / Admin Credential Sync (strictly requires authentication and SUPER_ADMIN or HR_ADMIN role)
+router.get('/download-excel', allowQueryToken, protect, requireRole('SUPER_ADMIN', 'HR_ADMIN'), downloadCredentialWorkbook);
+router.post('/sync-generated', protect, requireRole('SUPER_ADMIN', 'HR_ADMIN'), syncGeneratedCredentials);
 
 // All credential management routes require authentication and HR/Admin privileges
 router.use(protect);
@@ -50,7 +36,6 @@ router.use(requireRole(
   'DIRECTOR',
   'HR_ADMIN',
   'HR_MANAGER',
-  'HR',
   'IT_ADMIN',
   'SYSTEM_ADMINISTRATOR'
 ));

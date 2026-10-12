@@ -4,7 +4,10 @@ const User = require('../models/User');
 const { hasPermission, ROLES } = require('../config/rbac');
 
 const getJwtSecret = () => {
-  return process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
+  return process.env.JWT_SECRET;
 };
 
 /**
@@ -12,6 +15,14 @@ const getJwtSecret = () => {
  * Enforces active account status and account lockout.
  */
 const protect = async (req, res, next) => {
+  if (!process.env.JWT_SECRET) {
+    console.error('[AUTH CONFIG ERROR] Authentication failed: JWT_SECRET environment variable is missing.');
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server configuration error.'
+    });
+  }
+
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
@@ -30,6 +41,16 @@ const protect = async (req, res, next) => {
     let user = null;
     if (mongoose.connection.readyState === 1) {
       try {
+        if (decoded.sessionId) {
+          const UserSession = require('../models/UserSession');
+          const session = await UserSession.findOne({ sessionId: decoded.sessionId });
+          if (session && session.status !== 'ACTIVE') {
+            return res.status(401).json({
+              success: false,
+              message: 'Session has been revoked or expired. Please log in again.'
+            });
+          }
+        }
         if (mongoose.isValidObjectId(decoded.id)) {
           user = await User.findById(decoded.id).select('-password -passwordHash');
         }
@@ -130,6 +151,13 @@ const protect = async (req, res, next) => {
       message: 'User session not found or inactive.'
     });
   } catch (error) {
+    if (!process.env.JWT_SECRET || (error.message && error.message.includes('JWT_SECRET'))) {
+      console.error('[AUTH CONFIG ERROR] Authentication failed due to missing secret:', error.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server configuration error.'
+      });
+    }
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
@@ -238,9 +266,28 @@ const restrictFinance = (req, res, next) => {
   next();
 };
 
+const rateLimit = require('express-rate-limit');
+
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // max 10 password reset attempts per IP/key
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = req.ip || req.connection?.remoteAddress || '127.0.0.1';
+    const userId = req.user?._id || req.user?.id || '';
+    return userId ? `${ip}_${userId}` : ip;
+  },
+  message: {
+    success: false,
+    message: 'Too many password reset requests from this client. Please wait 15 minutes before retrying.'
+  }
+});
+
 module.exports = {
   protect,
   requireRole,
   checkPermission,
-  restrictFinance
+  restrictFinance,
+  passwordResetLimiter
 };

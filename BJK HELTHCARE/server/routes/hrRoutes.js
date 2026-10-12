@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, passwordResetLimiter } = require('../middleware/auth');
 const { requirePermission, requireRole } = require('../middleware/rbac');
 const { PERMISSIONS, ROLES } = require('../config/rbac');
 
@@ -91,7 +91,7 @@ router.patch('/employees/:id', requirePermission(PERMISSIONS.EMPLOYEE_UPDATE), u
 router.patch('/employees/:id/status', requireRole(ROLES.SUPER_ADMIN, ROLES.DIRECTOR, ROLES.HR_ADMIN, ROLES.HR_MANAGER), updateEmployeeStatus);
 
 // Account Actions
-router.post('/employees/:id/reset-password', requireRole(ROLES.SUPER_ADMIN, ROLES.HR_ADMIN, ROLES.HR_MANAGER), resetEmployeePassword);
+router.post('/employees/:id/reset-password', passwordResetLimiter, requireRole(ROLES.SUPER_ADMIN, ROLES.HR_ADMIN, ROLES.HR_MANAGER), resetEmployeePassword);
 router.post('/employees/:id/force-logout', requireRole(ROLES.SUPER_ADMIN, ROLES.DIRECTOR, ROLES.HR_ADMIN, ROLES.HR_MANAGER), forceLogoutEmployee);
 router.post('/employees/:id/lock', requireRole(ROLES.SUPER_ADMIN, ROLES.HR_ADMIN), toggleLockEmployee);
 

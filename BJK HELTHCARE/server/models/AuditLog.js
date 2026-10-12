@@ -126,9 +126,9 @@ AuditLogSchema.statics.logAction = async function({
     const entry = new this({
       user: {
         id: user?._id || user?.id || null,
-        name: user?.name || 'Authorized Operator',
-        email: user?.email || 'operator@bjkhealthcare.com',
-        role: user?.role || 'SUPER_ADMIN'
+        name: user?.name || (user ? 'Authorized Operator' : 'System'),
+        email: user?.email || '',
+        role: user?.role || 'UNKNOWN'
       },
       action: String(action).toUpperCase(),
       module: String(module).toUpperCase(),
@@ -159,6 +159,57 @@ AuditLogSchema.statics.logAction = async function({
     console.error('[AuditLog] Failed to persist audit log:', err.message);
     return null;
   }
+};
+
+// Strict Audit Logger: Throws on database failure so caller can abort security operations
+AuditLogSchema.statics.logActionStrict = async function({
+  user,
+  action,
+  module,
+  resource,
+  resourceId,
+  oldData,
+  newData,
+  targetUser,
+  targetUserId,
+  reason = '',
+  ipAddress,
+  userAgent,
+  status = 'SUCCESS',
+  details = ''
+}) {
+  const entry = new this({
+    user: {
+      id: user?._id || user?.id || null,
+      name: user?.name || (user ? 'Authorized Operator' : 'System'),
+      email: user?.email || '',
+      role: user?.role || 'UNKNOWN'
+    },
+    action: String(action).toUpperCase(),
+    module: String(module).toUpperCase(),
+    resource: resource || module,
+    resourceId: resourceId ? String(resourceId) : null,
+    recordId: resourceId ? String(resourceId) : null,
+    targetUser: targetUser ? {
+      id: mongoose.Types.ObjectId.isValid(targetUser.id || targetUser._id) ? (targetUser.id || targetUser._id) : null,
+      name: targetUser.name || '',
+      employeeId: targetUser.employeeId || '',
+      email: targetUser.email || ''
+    } : (mongoose.Types.ObjectId.isValid(targetUserId) ? { id: targetUserId } : null),
+    targetUserId: targetUserId ? String(targetUserId) : (targetUser?.id ? String(targetUser.id) : (targetUser?._id ? String(targetUser._id) : null)),
+    reason: reason || details || '',
+    oldData: oldData || null,
+    before: oldData || null,
+    newData: newData || null,
+    after: newData || null,
+    ipAddress: ipAddress || '127.0.0.1',
+    ip: ipAddress || '127.0.0.1',
+    userAgent: userAgent || 'BJK-API/2.0',
+    status,
+    details: details || reason || '',
+    timestamp: new Date()
+  });
+  return await entry.save();
 };
 
 module.exports = mongoose.models.AuditLog || mongoose.model('AuditLog', AuditLogSchema);

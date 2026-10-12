@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck } from 'lucide-react';
 import { EmployeeIDCardPreview } from './idcard/EmployeeIDCardPreview';
+import { apiClient } from '../../services/api';
 
 export const EmployeeIdCardModal = ({ isOpen, onClose, employee, onCardUpdated }) => {
   if (!isOpen || !employee) return null;
@@ -10,15 +11,11 @@ export const EmployeeIdCardModal = ({ isOpen, onClose, employee, onCardUpdated }
   const handleRegenerate = async () => {
     setIsRegenerating(true);
     try {
-      const res = await fetch(`/api/employees/${employee._id || employee.employeeId}/id-card`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cardTemplate: 'BJK-ID-2026-V1',
-          status: 'ACTIVE'
-        })
+      const res = await apiClient.post(`/employees/${employee._id || employee.employeeId}/id-card`, {
+        cardTemplate: 'BJK-ID-2026-V1',
+        status: 'ACTIVE'
       });
-      const data = await res.json();
+      const data = res.data;
       if (data.success && onCardUpdated) {
         onCardUpdated(data.employee || employee);
       }
