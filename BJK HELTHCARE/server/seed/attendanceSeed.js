@@ -9,11 +9,15 @@ const SavedReportTemplate = require('../models/hrms/SavedReportTemplate');
 const AttendanceReportHistory = require('../models/hrms/AttendanceReportHistory');
 const AttendanceRegularization = require('../models/hrms/AttendanceRegularization');
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 async function seedAttendance() {
+  assertNonProduction();
   try {
     if (mongoose.connection.readyState !== 1) {
       await connectDB();
     }
+    assertConnectedDbAllowed();
     console.log('[Attendance Seed]: Connected to DB.');
 
     // 1. Ensure Department records exist

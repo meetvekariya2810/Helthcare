@@ -1,14 +1,17 @@
 const { connectDB } = require('../config/db');
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
 const User = require('../models/User');
 const Employee = require('../models/Employee');
 
 async function unlockAndFixCredentials() {
+  assertNonProduction();
   console.log('[Credential Fixer] Connecting to MongoDB...');
   const conn = await connectDB();
   if (!conn) {
     console.error('[Credential Fixer] Could not connect to database.');
     process.exit(1);
   }
+  assertConnectedDbAllowed(conn);
 
   // 1. Unlock all locked users, reset failedLoginAttempts, and clear forced password change flags for ease of testing
   await User.updateMany(

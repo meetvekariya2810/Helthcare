@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./config/requiredEnv');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -47,10 +48,17 @@ const ensureDatabaseConnection = async () => {
   return dbInitPromise;
 };
 
-// Auto-init for standalone server mode
-if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+// Auto-init for standalone server mode (DISABLED in production; requires ENABLE_AUTO_INIT=true in non-production)
+const isProduction = process.env.NODE_ENV === 'production';
+const isAutoInitEnabled = process.env.ENABLE_AUTO_INIT === 'true';
+const isServerless = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+
+if (!isProduction && isAutoInitEnabled && !isServerless) {
   (async function initDatabase() {
-    await ensureDatabaseConnection();
+    const { assertNonProduction, assertConnectedDbAllowed } = require('./config/safetyGuards');
+    assertNonProduction();
+    const conn = await ensureDatabaseConnection();
+    assertConnectedDbAllowed(conn);
 
 
   try {
@@ -148,6 +156,12 @@ if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
     console.warn('[Server Auto-Init] Bank details initialization note:', bankErr.message);
   }
   })();
+} else {
+  if (isProduction) {
+    console.log('[Server Init] Auto-init is DISABLED in production environment (NODE_ENV=production).');
+  } else if (!isAutoInitEnabled && !isServerless) {
+    console.log('[Server Init] Auto-init is DISABLED by default. Set ENABLE_AUTO_INIT=true in dev/staging to run.');
+  }
 }
 
 // Ensure database connection for incoming API requests

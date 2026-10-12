@@ -277,9 +277,13 @@ const sampleNonTechStaff = [
   }
 ];
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 async function seed() {
+  assertNonProduction();
   console.log('Connecting to MongoDB via connectDB...');
   await connectDB(0, 3, true);
+  assertConnectedDbAllowed();
   console.log('MongoDB connected.');
 
   const todayStr = new Date().toISOString().split('T')[0];

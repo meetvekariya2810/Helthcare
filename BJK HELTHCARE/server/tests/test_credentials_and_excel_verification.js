@@ -160,7 +160,7 @@ async function runTests() {
   // 3. Test HTTP Download Endpoint
   await test('6. GET /api/credentials/download-excel - Authorized Download', async () => {
     const res = await request('/credentials/download-excel', {
-      headers: { 'x-bjk-internal-key': 'bjk_healthcare_credential_sync_internal_2026' }
+      headers: { 'Authorization': process.env.TEST_ADMIN_TOKEN ? `Bearer ${process.env.TEST_ADMIN_TOKEN}` : '' }
     });
     if (res.status !== 200) throw new Error(`Expected 200 OK, got ${res.status}`);
   });

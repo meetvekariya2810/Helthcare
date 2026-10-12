@@ -351,7 +351,7 @@ export const hrmsAPI = {
   processPayroll: (data) => api.post('/hrms/payroll/process', data),
   approvePayroll: (id, data) => api.put(`/hrms/payroll/${id}/approve`, data),
   deletePayroll: (id) => api.delete(`/hrms/payroll/${id}`),
-  deletePayrollBatch: (payPeriod) => api.delete(`/hrms/payroll/batch/${payPeriod}`),
+  deletePayrollBatch: (payPeriod, reason) => api.delete(`/hrms/payroll/batch/${payPeriod}`, { data: { reason }, params: { reason } }),
   getPayrollRules: () => api.get('/hrms/payroll/rules'),
 
   // Recruitment & Onboarding

@@ -220,7 +220,11 @@ const DEPARTMENT_TEST_ACCOUNTS = [
   }
 ];
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedDepartmentTestAccounts = async () => {
+  assertNonProduction();
+  assertConnectedDbAllowed();
   console.log('[Seed] Initializing Department-Wise Test Accounts (Password: Bjk@2026)...');
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(COMMON_PASSWORD, salt);

@@ -8,7 +8,11 @@ const Attendance = require('../models/hrms/Attendance');
 const EmployeeTask = require('../models/EmployeeTask');
 const EmployeeFaceAttendance = require('../models/EmployeeFaceAttendance');
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedEmployeePortalUsers = async () => {
+  assertNonProduction();
+  assertConnectedDbAllowed();
   const commonPassword = 'Password123!';
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(commonPassword, salt);

@@ -259,15 +259,17 @@ export const EmployeeLeavePage = () => {
     }
   };
 
-  const clOpen = ledger?.openingBalance?.cl ?? 7;
-  const slOpen = ledger?.openingBalance?.sl ?? 7;
-  const clTaken = ledger?.totalLeaveTaken?.cl ?? 0;
-  const slTaken = ledger?.totalLeaveTaken?.sl ?? 0;
-  const lwpTaken = ledger?.totalLeaveTaken?.lwp ?? 0;
-  const totalTaken = ledger?.totalLeaveTaken?.total ?? (clTaken + slTaken + lwpTaken);
-  const clClose = ledger?.closingBalance?.cl ?? Math.max(0, clOpen - clTaken);
-  const slClose = ledger?.closingBalance?.sl ?? Math.max(0, slOpen - slTaken);
-  const closeTotal = ledger?.closingBalance?.total ?? (clClose + slClose);
+  const hasRealLedger = Boolean(ledger && (ledger._id || (ledger.sourceType && ledger.sourceType !== 'none')));
+  const clOpen = hasRealLedger && ledger?.openingBalance?.cl !== undefined ? ledger.openingBalance.cl : '--';
+  const slOpen = hasRealLedger && ledger?.openingBalance?.sl !== undefined ? ledger.openingBalance.sl : '--';
+  const clTaken = hasRealLedger && ledger?.totalLeaveTaken?.cl !== undefined ? ledger.totalLeaveTaken.cl : '--';
+  const slTaken = hasRealLedger && ledger?.totalLeaveTaken?.sl !== undefined ? ledger.totalLeaveTaken.sl : '--';
+  const lwpTaken = hasRealLedger && ledger?.totalLeaveTaken?.lwp !== undefined ? ledger.totalLeaveTaken.lwp : '--';
+  const totalTaken = hasRealLedger && ledger?.totalLeaveTaken?.total !== undefined ? ledger.totalLeaveTaken.total : '--';
+  const clClose = hasRealLedger && ledger?.closingBalance?.cl !== undefined ? ledger.closingBalance.cl : '--';
+  const slClose = hasRealLedger && ledger?.closingBalance?.sl !== undefined ? ledger.closingBalance.sl : '--';
+  const closeTotal = hasRealLedger && ledger?.closingBalance?.total !== undefined ? ledger.closingBalance.total : '--';
+  const paidTaken = (typeof clTaken === 'number' && typeof slTaken === 'number') ? (clTaken + slTaken) : '--';
 
   return (
     <div className="space-y-6">
@@ -339,7 +341,7 @@ export const EmployeeLeavePage = () => {
             <span>My Leave Balances (Year 2026)</span>
           </h2>
           <span className="text-[11px] font-mono font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
-            Closing Balance: {closeTotal} Days
+            Closing Balance: {closeTotal === '--' ? '--' : `${closeTotal} Days`}
           </span>
         </div>
 
@@ -407,7 +409,7 @@ export const EmployeeLeavePage = () => {
               </div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px] text-slate-500 font-mono">
-              <span>Paid: {clTaken + slTaken}</span>
+              <span>Paid: {paidTaken}</span>
               <span>LWP: {lwpTaken}</span>
             </div>
           </div>

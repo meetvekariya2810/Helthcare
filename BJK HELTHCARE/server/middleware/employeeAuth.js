@@ -4,7 +4,12 @@ const User = require('../models/User');
 const Employee = require('../models/Employee');
 const AuditLog = require('../models/AuditLog');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+const getJwtSecret = () => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
+  return process.env.JWT_SECRET;
+};
 
 /**
  * Normalizes roles into standard uppercase tokens
@@ -23,6 +28,14 @@ const normalizeRole = (role) => {
  * Extracts employeeId, role, userId from token and verifies database presence.
  */
 const authenticateEmployee = async (req, res, next) => {
+  if (!process.env.JWT_SECRET) {
+    console.error('[AUTH CONFIG ERROR] Authentication failed: JWT_SECRET environment variable is missing.');
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server configuration error.'
+    });
+  }
+
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
@@ -36,7 +49,7 @@ const authenticateEmployee = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
 
     // Verify token type (if specified) or presence of identity
     const employeeId = decoded.employeeId || decoded.empId;
@@ -142,6 +155,13 @@ const authenticateEmployee = async (req, res, next) => {
 
     next();
   } catch (err) {
+    if (!process.env.JWT_SECRET || (err.message && err.message.includes('JWT_SECRET'))) {
+      console.error('[AUTH CONFIG ERROR] Authentication failed due to missing secret:', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server configuration error.'
+      });
+    }
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,

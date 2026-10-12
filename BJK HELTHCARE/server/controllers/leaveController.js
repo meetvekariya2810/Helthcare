@@ -1817,7 +1817,6 @@ const {
   getDepartmentAnalytics,
   getLeaveKPIs,
   parseLeave2026CSV,
-  syncLeaveLedgerFromSeed,
   MONTH_NAMES
 } = require('../services/hrms/leaveLedgerService');
 
@@ -1865,7 +1864,8 @@ const getEmployeeLeaveDetail = async (req, res) => {
       $or: [{ employeeId: employeeCode }, { employeeCode: employeeCode }]
     }).sort({ attendanceDate: -1, dateString: -1, date: -1 }).limit(30);
 
-    if (!ledger && !balanceDoc) {
+    const hasRealRecord = Boolean((ledger && (ledger._id || ledger.sourceType !== 'none')) || balanceDoc);
+    if (!hasRealRecord) {
       return res.status(404).json({ success: false, message: `No leave records found for employee [${employeeCode}]` });
     }
 

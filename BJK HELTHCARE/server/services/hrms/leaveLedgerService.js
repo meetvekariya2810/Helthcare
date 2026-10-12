@@ -142,6 +142,8 @@ function parseLeave2026CSV(csvContent) {
  * Sync Leave Ledger and LeaveBalance collections from the 2026 CSV file
  */
 async function syncLeaveLedgerFromSeed(filePath) {
+  const { assertNonProduction } = require('../../config/safetyGuards');
+  assertNonProduction();
   try {
     const csvPath = filePath || path.join(__dirname, '..', '..', 'seed', 'Leave 2026(Sheet1).csv');
     if (!fs.existsSync(csvPath)) {
@@ -245,17 +247,36 @@ async function syncLeaveLedgerFromSeed(filePath) {
   }
 }
 
+function getEmptyLedger(employeeCode = '', year = 2026) {
+  return {
+    srNo: 0,
+    employeeCode: employeeCode ? String(employeeCode).toUpperCase().trim() : '',
+    employeeName: '',
+    department: '',
+    doj: '',
+    year: Number(year),
+    openingBalance: { cl: 0, sl: 0, total: 0 },
+    monthlyBreakdown: [],
+    totalLeaveTaken: { cl: 0, sl: 0, lwp: 0, total: 0 },
+    closingBalance: { cl: 0, sl: 0, total: 0 },
+    extraNotes: '',
+    extraValues: {},
+    sourceType: 'none',
+    sourceYear: Number(year),
+    sourceRow: 0,
+    rawValues: {}
+  };
+}
+
 /**
  * Get single employee's complete 2026 leave ledger
  */
 async function getEmployeeLedger(employeeCode, year = 2026) {
   if (!employeeCode) return null;
   const empCode = String(employeeCode).toUpperCase().trim();
-  let ledger = await LeaveLedger.findOne({ employeeCode: empCode, year: Number(year) });
+  const ledger = await LeaveLedger.findOne({ employeeCode: empCode, year: Number(year) });
   if (!ledger) {
-    // Try syncing if not found
-    await syncLeaveLedgerFromSeed();
-    ledger = await LeaveLedger.findOne({ employeeCode: empCode, year: Number(year) });
+    return getEmptyLedger(empCode, year);
   }
   return ledger;
 }
@@ -454,6 +475,7 @@ module.exports = {
   parseLeave2026CSV,
   syncLeaveLedgerFromSeed,
   getEmployeeLedger,
+  getEmptyLedger,
   getAllLedgers,
   getMonthlyMatrix,
   getDepartmentAnalytics,

@@ -2350,13 +2350,36 @@ exports.updateCanteenSettings = async (req, res) => {
  */
 exports.resetAllCanteenData = async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production' && process.env.ENABLE_CANTEEN_RESET !== 'true') {
+      return res.status(403).json({
+        success: false,
+        message: 'Canteen data reset is disabled in production unless ENABLE_CANTEEN_RESET=true.'
+      });
+    }
+
+    const userRole = String(req.user?.role || req.employee?.systemRole || '').toUpperCase();
+    if (userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Only SUPER_ADMIN can execute canteen data reset.'
+      });
+    }
+
+    const confirmationToken = req.body?.confirmationToken || req.body?.confirmToken;
+    if (confirmationToken !== 'CONFIRM_RESET_ALL_CANTEEN_DATA') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or missing confirmation token. Body must include confirmationToken="CONFIRM_RESET_ALL_CANTEEN_DATA".'
+      });
+    }
+
     const deleteRes = await CanteenLunchRecord.deleteMany({});
 
     await recordCanteenAudit({
       req,
       action: 'ALL_CANTEEN_DATA_CLEARED',
-      details: `Canteen Department user ${req.user?.name || 'Admin'} cleared all canteen lunch records (${deleteRes.deletedCount} records deleted). System reset to clean state for live employee Lunch IN/OUT.`,
-      newData: { deletedCount: deleteRes.deletedCount }
+      details: `SUPER_ADMIN ${req.user?.name || 'Administrator'} (${req.user?.email || 'N/A'}) cleared all canteen lunch records (${deleteRes.deletedCount} records deleted). System reset to clean state.`,
+      newData: { deletedCount: deleteRes.deletedCount, operator: req.user?.email, confirmedAt: new Date() }
     });
 
     return res.status(200).json({

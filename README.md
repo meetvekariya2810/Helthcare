@@ -70,7 +70,7 @@ Configure the following in your hosting provider's dashboard:
 - `NODE_ENV`: `production`
 - `PORT`: Provided by host (e.g. `5000` or `10000`)
 - `CLIENT_URL`: `https://your-bjk-frontend.vercel.app` (your frontend domain)
-- `MONGODB_URI`: `mongodb+srv://<username>:<password>@cluster28.bj0ygan.mongodb.net/bjk_healthcare?retryWrites=true&w=majority`
+- `MONGODB_URI`: `mongodb+srv://<username>:<password>@<cluster-host>/bjk_healthcare?retryWrites=true&w=majority`
 - `DATABASE_NAME`: `bjk_healthcare`
 - `JWT_SECRET`: Your 64-character production random secret key
 - `JWT_EXPIRES_IN`: `1d`

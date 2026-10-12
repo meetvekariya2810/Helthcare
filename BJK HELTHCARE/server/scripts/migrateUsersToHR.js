@@ -36,7 +36,10 @@ const ENTERPRISE_DEPARTMENTS = [
   { name: 'Management', code: 'DEPT-MGMT', division: 'Executive Directorate', description: 'Board of Directors, corporate vision, executive leadership, and strategic investments.' }
 ];
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const migrateUsersToHR = async () => {
+  assertNonProduction();
   console.log('========================================================');
   console.log('BJK HEALTHCARE - USER & HR ENTERPRISE MIGRATION ENGINE');
   console.log('========================================================');
@@ -45,6 +48,7 @@ const migrateUsersToHR = async () => {
   if (!conn) {
     throw new Error('Database connection failed. Migration aborted.');
   }
+  assertConnectedDbAllowed(conn);
 
   const dbName = getDBName();
   console.log(`[Migration] Connected to database: ${dbName}`);

@@ -125,8 +125,13 @@ export const Payroll = () => {
     if (!window.confirm(`Are you sure you want to remove all payroll entries for period ${selectedPeriod}? This will remove payslips from employee dashboards.`)) {
       return;
     }
+    const reason = window.prompt(`Please enter a mandatory audit reason for deleting payroll batch ${selectedPeriod}:`);
+    if (!reason || reason.trim().length === 0) {
+      showToast('A mandatory deletion reason is required to remove payroll entries.', 'warning', 'Reason Required');
+      return;
+    }
     try {
-      const res = await hrmsAPI.deletePayrollBatch(selectedPeriod);
+      const res = await hrmsAPI.deletePayrollBatch(selectedPeriod, reason.trim());
       if (res.data.success) {
         showToast(res.data.message || `Cleared payroll entries for ${selectedPeriod}`, 'success', 'Cleared');
         fetchPayroll();

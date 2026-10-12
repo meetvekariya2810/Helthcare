@@ -6,8 +6,10 @@ const {
   processEmployeeCredentials,
   buildCredentialWorkbook
 } = require('../services/hrms/credentialExcelService');
+const { assertNonProduction } = require('../config/safetyGuards');
 
 async function main() {
+  assertNonProduction();
   console.log('===============================================================');
   console.log(' BJK HEALTHCARE — EMPLOYEE LOGIN CREDENTIAL GENERATOR');
   console.log('===============================================================\n');
@@ -89,7 +91,7 @@ async function main() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-bjk-internal-key': 'bjk_healthcare_credential_sync_internal_2026'
+        'Authorization': process.env.ADMIN_BEARER_TOKEN ? `Bearer ${process.env.ADMIN_BEARER_TOKEN}` : ''
       },
       body: JSON.stringify({
         activeCredentials: credentialsPayload,

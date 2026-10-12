@@ -6,15 +6,17 @@ const Employee = require('../models/Employee');
 const EmployeeLoginHistory = require('../models/EmployeeLoginHistory');
 const { logEmployeeAudit, normalizeRole } = require('../middleware/employeeAuth');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+const getJwtSecret = () => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
+  return process.env.JWT_SECRET;
+};
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 
 // Temporary in-memory OTP cache for demo & resilient verification
 const otpCache = new Map();
 
-/**
- * Generate standard JWT for employee session
- */
 /**
  * Generate standard JWT for employee session
  */
@@ -32,7 +34,7 @@ const generateEmployeeToken = (user, employee, mustChangePassword = false) => {
       portal: 'EMPLOYEE_SELF_SERVICE',
       mustChangePassword: Boolean(mustChangePassword)
     },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: mustChangePassword ? '1h' : JWT_EXPIRES_IN }
   );
 };
@@ -313,14 +315,16 @@ const sendOtp = async (req, res) => {
     // Also save under employeeId
     otpCache.set(employeeId.toLowerCase(), { otp, expiresAt, employeeId });
 
-    console.log(`[BJK Healthcare OTP Service] Generated OTP for ${cleanId} (${employeeId}): ${otp}`);
+    const isDemoOtpAllowed = process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEMO_OTP === 'true';
+    if (isDemoOtpAllowed) {
+      console.log(`[BJK Healthcare OTP Service] Generated OTP for ${cleanId} (${employeeId}): ${otp}`);
+    }
 
     return res.status(200).json({
       success: true,
       message: `OTP sent successfully to registered contact for ${employeeId}.`,
       expiresIn: '10 minutes',
-      // For developer & demo testing convenience:
-      demoOtp: otp
+      ...(isDemoOtpAllowed ? { demoOtp: otp } : {})
     });
   } catch (err) {
     console.error('[Send OTP Error]:', err);
@@ -349,11 +353,7 @@ const verifyOtp = async (req, res) => {
 
     const cached = otpCache.get(cleanId);
     let isValid = false;
-
-    // Test bypass code 123456 or cached OTP
-    if (otp === '123456') {
-      isValid = true;
-    } else if (cached && cached.otp === otp && Date.now() <= cached.expiresAt) {
+    if (cached && cached.otp === otp && Date.now() <= cached.expiresAt) {
       isValid = true;
       otpCache.delete(cleanId);
     }
@@ -445,12 +445,15 @@ const forgotPassword = async (req, res) => {
     const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
     otpCache.set(`reset_${cleanId}`, { otp: resetOtp, expiresAt: Date.now() + 15 * 60 * 1000 });
 
-    console.log(`[BJK Healthcare Password Reset] Reset code for ${cleanId}: ${resetOtp}`);
+    const isDemoResetAllowed = process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEMO_OTP === 'true';
+    if (isDemoResetAllowed) {
+      console.log(`[BJK Healthcare Password Reset] Reset code for ${cleanId}: ${resetOtp}`);
+    }
 
     return res.status(200).json({
       success: true,
       message: 'Password reset code has been sent to your registered official contact.',
-      demoResetCode: resetOtp
+      ...(isDemoResetAllowed ? { demoResetCode: resetOtp } : {})
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Server error in forgot password.' });
@@ -473,7 +476,7 @@ const resetPassword = async (req, res) => {
     }
 
     const cached = otpCache.get(`reset_${cleanId}`);
-    let isMatch = (resetCode === '123456');
+    let isMatch = false;
     if (cached && cached.otp === resetCode && Date.now() <= cached.expiresAt) {
       isMatch = true;
       otpCache.delete(`reset_${cleanId}`);

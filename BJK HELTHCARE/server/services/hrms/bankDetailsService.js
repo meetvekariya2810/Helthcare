@@ -31,6 +31,8 @@ const maskPAN = (pan) => {
  * without deleting or modifying existing collections.
  */
 const syncExistingEmployeeBankDetailsToCollection = async () => {
+  const { assertNonProduction } = require('../../config/safetyGuards');
+  assertNonProduction();
   try {
     const employees = await Employee.find({
       $or: [

@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 const http = require('http');
 const { connectDB } = require('../config/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function makeRequest({ method, path, token, body }) {
   return new Promise((resolve, reject) => {

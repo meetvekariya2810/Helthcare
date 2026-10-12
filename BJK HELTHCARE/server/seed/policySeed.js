@@ -532,7 +532,11 @@ const PUBLIC_HOLIDAYS_2026_27 = [
   { name: 'Holi', dateString: '2027-03-22', date: new Date('2027-03-22'), type: 'FESTIVAL', description: 'Dhuleti / Festival of Colors' }
 ];
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedPoliciesAndRules = async () => {
+  assertNonProduction();
+  assertConnectedDbAllowed();
   console.log('[PolicySeed] Seeding Central Policy Rules...');
   for (const rule of DEFAULT_POLICY_RULES) {
     await PolicyRule.findOneAndUpdate(

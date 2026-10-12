@@ -292,7 +292,11 @@ const getSeedUsers = async () => {
   ];
 };
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedAuthUsers = async () => {
+  assertNonProduction();
+  assertConnectedDbAllowed();
   const usersToSeed = await getSeedUsers();
   const createdUsers = [];
 

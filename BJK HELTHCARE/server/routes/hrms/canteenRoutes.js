@@ -29,13 +29,26 @@ const {
   resetAllCanteenData
 } = require('../../controllers/hrms/canteenController');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+const getJwtSecret = () => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
+  return process.env.JWT_SECRET;
+};
 
 /**
  * Unified Canteen Authentication Middleware
  * Supports both Employee Portal JWT and Admin/HR JWT sessions
  */
 const canteenAuth = async (req, res, next) => {
+  if (!process.env.JWT_SECRET) {
+    console.error('[AUTH CONFIG ERROR] Authentication failed: JWT_SECRET environment variable is missing.');
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server configuration error.'
+    });
+  }
+
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
@@ -49,7 +62,7 @@ const canteenAuth = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     const userId = decoded.userId || decoded.id || decoded.sub;
     const employeeId = (decoded.employeeId || decoded.empId || '').toUpperCase();
 
@@ -89,6 +102,13 @@ const canteenAuth = async (req, res, next) => {
 
     next();
   } catch (error) {
+    if (!process.env.JWT_SECRET || (error.message && error.message.includes('JWT_SECRET'))) {
+      console.error('[AUTH CONFIG ERROR] Canteen authentication failed due to missing secret:', error.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server configuration error.'
+      });
+    }
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired session token.'
@@ -165,8 +185,19 @@ router.get('/settings', requireCanteenOrHR, getCanteenSettings);
 router.put('/settings', requireCanteenOrHR, updateCanteenSettings);
 router.post('/settings', requireCanteenOrHR, updateCanteenSettings);
 
-// Reset / Clear All Canteen Data Endpoint
-router.delete('/reset-all-data', requireCanteenOrHR, resetAllCanteenData);
-router.post('/reset-all-data', requireCanteenOrHR, resetAllCanteenData);
+const requireSuperAdmin = (req, res, next) => {
+  const role = String(req.user?.role || req.employee?.systemRole || '').toUpperCase();
+  if (role === 'SUPER_ADMIN') {
+    return next();
+  }
+  return res.status(403).json({
+    success: false,
+    message: 'Forbidden: Only SUPER_ADMIN is authorized for this operation.'
+  });
+};
+
+// Reset / Clear All Canteen Data Endpoint (canteenAuth populates req.user, requireSuperAdmin enforces role)
+router.delete('/reset-all-data', canteenAuth, requireSuperAdmin, resetAllCanteenData);
+router.post('/reset-all-data', canteenAuth, requireSuperAdmin, resetAllCanteenData);
 
 module.exports = router;

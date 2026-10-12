@@ -24,13 +24,17 @@ const { seedAuthUsers } = require('./authSeed');
 const { seedPoliciesAndRules } = require('./policySeed');
 const { connectDB } = require('../config/db');
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedData = async () => {
+  assertNonProduction();
   try {
     if (mongoose.connection.readyState !== 1) {
       console.log('Connecting to MongoDB via BJK db config...');
       await connectDB();
       console.log('MongoDB Connected successfully for Seeding.');
     }
+    assertConnectedDbAllowed();
 
     console.log('Clearing existing demo records (isDemo: true)...');
     await User.deleteMany({ isDemo: true });

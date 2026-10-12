@@ -684,6 +684,8 @@ async function buildCredentialWorkbook({ credentialList, deptStats, summary, exc
  * Synchronize the credentials in BJK_Employee_Login_Credentials.xlsx into the active database
  */
 async function syncExcelToDatabase() {
+  const { assertNonProduction } = require('../../config/safetyGuards');
+  assertNonProduction();
   const User = require('../../models/User');
   const Employee = require('../../models/Employee');
 

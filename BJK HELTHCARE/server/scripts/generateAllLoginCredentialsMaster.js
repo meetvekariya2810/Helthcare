@@ -6,6 +6,7 @@ const {
   readEmployeeMasterRecords,
   processEmployeeCredentials
 } = require('../services/hrms/credentialExcelService');
+const { assertNonProduction } = require('../config/safetyGuards');
 
 // Styling Constants
 const THEME = {
@@ -140,6 +141,7 @@ function autoFitColumns(ws) {
 }
 
 async function buildMasterCredentialsExcel() {
+  assertNonProduction();
   const wb = new ExcelJS.Workbook();
   wb.creator = 'BJK Healthcare Digital Brain Platform';
   wb.created = new Date();

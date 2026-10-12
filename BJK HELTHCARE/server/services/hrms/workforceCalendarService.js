@@ -28,6 +28,8 @@ function toDateString(d) {
  * Initialize Default Company Calendar, Standard Shifts, Holidays, and Events
  */
 async function initWorkforceCalendarMaster() {
+  const { assertNonProduction } = require('../../config/safetyGuards');
+  assertNonProduction();
   try {
     // 1. Ensure Standard Shifts
     const standardShifts = [

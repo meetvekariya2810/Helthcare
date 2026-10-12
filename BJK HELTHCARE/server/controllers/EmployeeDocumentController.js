@@ -362,6 +362,13 @@ const deleteDocument = async (req, res) => {
  */
 const resetAllMyDocuments = async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({
+        success: false,
+        message: 'Resetting employee documents is disabled in production environments.'
+      });
+    }
+
     const employeeId = req.employeeId;
     const employee = await Employee.findOne({
       $or: [{ employeeId }, { employeeCode: employeeId }]

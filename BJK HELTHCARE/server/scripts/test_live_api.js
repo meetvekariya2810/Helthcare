@@ -67,9 +67,12 @@ async function run() {
   const hrUser = await User.findOne({ role: 'HR_ADMIN' }) || await User.findOne();
   console.log('Using User:', hrUser.email, 'Role:', hrUser.role);
 
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
   const token = jwt.sign(
     { id: hrUser._id, role: hrUser.role, email: hrUser.email },
-    process.env.JWT_SECRET || 'bjk-healthcare-enterprise-secret-key-2026',
+    process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 

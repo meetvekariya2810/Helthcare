@@ -61,7 +61,10 @@ const CATEGORIES_METADATA = [
   { name: 'Sachets', code: 'CAT-SCH', sourcePages: '15', description: 'Electrolyte rehydration, amino acids, and granular nutraceutical sachets.' }
 ];
 
+const { assertNonProduction, assertConnectedDbAllowed } = require('../config/safetyGuards');
+
 const seedDatabase = async () => {
+  assertNonProduction();
   console.log('====================================================');
   console.log('BJK HEALTHCARE DIGITAL BRAIN - ENTERPRISE SEED ENGINE');
   console.log('====================================================');
@@ -70,6 +73,7 @@ const seedDatabase = async () => {
   if (!conn) {
     throw new Error('Database connection failed. Seed aborted.');
   }
+  assertConnectedDbAllowed(conn);
 
   const dbName = getDBName();
   console.log(`[Seed] Connected to database: ${dbName}`);

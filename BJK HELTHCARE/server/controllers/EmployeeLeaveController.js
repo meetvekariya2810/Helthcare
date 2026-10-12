@@ -128,15 +128,17 @@ const getLeaveBalances = async (req, res) => {
     const totalUsed = balances.reduce((sum, b) => sum + (Number(b.used) || 0), 0);
     const totalPending = balances.reduce((sum, b) => sum + (Number(b.pending) || 0), 0);
 
+    const hasRealLedger = Boolean(ledger && (ledger._id || ledger.sourceType !== 'none'));
+
     return res.status(200).json({
       success: true,
       leaveYear: balanceDoc.leaveYear || 2026,
       employeeId: employee?.employeeId || employeeId,
-      employeeName: employee?.fullName || ledger?.employeeName || req.user?.name,
-      department: employee?.departmentName || employee?.department || ledger?.department,
+      employeeName: (hasRealLedger && ledger?.employeeName) || employee?.fullName || req.user?.name || 'Employee',
+      department: (hasRealLedger && ledger?.department) || employee?.departmentName || employee?.department || 'Operations',
       summary: {
-        totalAvailable: ledger ? (ledger.closingBalance?.total ?? totalAvailable) : totalAvailable,
-        totalUsed: ledger ? (ledger.totalLeaveTaken?.total ?? totalUsed) : totalUsed,
+        totalAvailable: hasRealLedger ? (ledger.closingBalance?.total ?? totalAvailable) : totalAvailable,
+        totalUsed: hasRealLedger ? (ledger.totalLeaveTaken?.total ?? totalUsed) : totalUsed,
         totalPending
       },
       ledger: ledger || null,

@@ -274,14 +274,43 @@ const deletePayrollRecord = async (req, res) => {
 const deletePayrollBatch = async (req, res) => {
   try {
     const { payPeriod } = req.params;
-    const query = payPeriod && payPeriod !== 'ALL' ? { payPeriod } : {};
-    const result = await Payroll.deleteMany(query);
+    const rawReason = req.body?.reason || req.query?.reason;
+
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory deletion reason is required to delete a payroll batch.'
+      });
+    }
+    const reason = rawReason.trim();
+
+    if (!payPeriod || payPeriod === 'ALL' || !/^\d{4}-(?:0[1-9]|1[0-2])$/.test(payPeriod)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payPeriod format. Must be a valid YYYY-MM string and cannot be ALL.'
+      });
+    }
+
+    const lockedRecordsCount = await Payroll.countDocuments({
+      payPeriod,
+      status: { $in: ['APPROVED', 'PROCESSED', 'PAID', 'FINALIZED'] }
+    });
+
+    if (lockedRecordsCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete payroll batch ${payPeriod}: ${lockedRecordsCount} record(s) are already approved, processed, finalized, or paid.`
+      });
+    }
+
+    const result = await Payroll.deleteMany({ payPeriod });
 
     await recordAudit({
       req,
       action: 'PAYROLL_BATCH_DELETED',
       module: 'PAYROLL',
-      details: `Cleared payroll batch for period: ${payPeriod}. Deleted ${result.deletedCount} records.`
+      resource: 'Payroll',
+      details: `Deleted draft payroll batch for period: ${payPeriod}. Reason: ${reason}. Deleted ${result.deletedCount} records.`
     });
 
     res.json({
