@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 const Employee = require('../../models/Employee');
 const User = require('../../models/User');
 const OnboardingApplication = require('../../models/hrms/OnboardingApplication');
 const AuditLog = require('../../models/AuditLog');
 const { getOrInitLeaveBalance } = require('../../services/hrms/leaveService');
+const { generateSecureRandomPassword } = require('../../config/rbac');
 
 /**
  * Helper to generate sequential next BJK Employee ID
@@ -494,7 +496,8 @@ const approveOnboarding = async (req, res) => {
 
     // 2. Automatically Provision or Link User Account for Login
     let user = await User.findOne({ email: workEmail });
-    const tempPassword = data.temporaryPassword || 'Bjk@2026';
+    // Generate secure 20-character temporary password via shared strong generator
+    const tempPassword = generateSecureRandomPassword(20);
 
     if (!user) {
       user = await User.create({

@@ -12,7 +12,10 @@ const { recordAudit } = require('../middleware/audit');
 const { resolveDataScope, getScopeLabel } = require('../services/hrms/dataScopeService');
 
 const getJwtSecret = () => {
-  return process.env.JWT_SECRET || 'bjk_healthcare_digital_brain_ultra_secure_jwt_secret_key_2026_enterprise';
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing.');
+  }
+  return process.env.JWT_SECRET;
 };
 
 const signToken = (user, sessionId, forceMustChange = false) => {
@@ -877,32 +880,35 @@ const login = async (req, res) => {
           let isTemporaryPasswordUsed = false;
           const hasPermanentPassword = Boolean(user.passwordChangedAt && !user.mustChangePassword);
 
-          if (password === 'Password123!') {
-            const currentHash = user.password || user.passwordHash || '';
-            const isHashStillTemp = currentHash ? await bcrypt.compare('Password123!', currentHash).catch(() => false) : true;
+          // In production, developer password bypasses are strictly disabled (strict bcrypt compare only)
+          if (process.env.NODE_ENV !== 'production') {
+            if (password === 'Password123!') {
+              const currentHash = user.password || user.passwordHash || '';
+              const isHashStillTemp = currentHash ? await bcrypt.compare('Password123!', currentHash).catch(() => false) : true;
 
-            if (hasPermanentPassword && !isHashStillTemp) {
-              return res.status(401).json({
-                success: false,
-                message: 'Your temporary password has expired. Please use your permanent password.'
-              });
-            }
+              if (hasPermanentPassword && !isHashStillTemp) {
+                return res.status(401).json({
+                  success: false,
+                  message: 'Your temporary password has expired. Please use your permanent password.'
+                });
+              }
 
-            isMatch = true;
-            isTemporaryPasswordUsed = true;
-            user.mustChangePassword = true;
-            user.firstLogin = true;
-            user.temporaryPassword = true;
-            user.passwordChangedAt = null;
-            await user.save({ validateBeforeSave: false }).catch(() => {});
-          } else if (!isMatch && universalDevPasswords.includes(password)) {
-            if (!hasPermanentPassword && (user.isDemo || (user.email && user.email.endsWith('@bjkhealthcare.com')) || process.env.NODE_ENV !== 'production')) {
               isMatch = true;
-              user.password = password;
-              user.failedLoginAttempts = 0;
-              user.isLocked = false;
-              user.status = 'ACTIVE';
+              isTemporaryPasswordUsed = true;
+              user.mustChangePassword = true;
+              user.firstLogin = true;
+              user.temporaryPassword = true;
+              user.passwordChangedAt = null;
               await user.save({ validateBeforeSave: false }).catch(() => {});
+            } else if (!isMatch && universalDevPasswords.includes(password)) {
+              if (!hasPermanentPassword && (user.isDemo || (user.email && user.email.endsWith('@bjkhealthcare.com')))) {
+                isMatch = true;
+                user.password = password;
+                user.failedLoginAttempts = 0;
+                user.isLocked = false;
+                user.status = 'ACTIVE';
+                await user.save({ validateBeforeSave: false }).catch(() => {});
+              }
             }
           }
 
