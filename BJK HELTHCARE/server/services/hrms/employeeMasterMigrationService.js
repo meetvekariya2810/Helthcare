@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const ExcelJS = require('exceljs');
@@ -512,6 +513,10 @@ const executeEmployeeMasterImport = async ({
   dryRun = false,
   defaultPassword = process.env.SEED_EMPLOYEE_PASSWORD || 'Password123!'
 }) => {
+  if (process.env.NODE_ENV === 'production' && !dryRun) {
+    throw new Error('SECURITY REFUSAL: Bulk employee account creation is disabled in production without an automated credential delivery method (email/SMS activation token). Direct creation with inaccessible passwords is prohibited. Dry-run preview and individual employee onboarding remain available.');
+  }
+
   const startTime = Date.now();
   const importBatchId = `IMP-BJK-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
@@ -791,7 +796,7 @@ const executeEmployeeMasterImport = async ({
     // Standard company login email
     const workEmail = `${rec.employeeCode.toLowerCase()}@bjkhealthcare.com`;
 
-    // Secure temporary password generation: e.g. BJK@BH1022!2026
+    // Secure temporary password generation per employee (non-production only)
     const temporaryPassword = `BJK@${rec.employeeCode}!2026`;
 
     // Prepare Employee Model Payload
