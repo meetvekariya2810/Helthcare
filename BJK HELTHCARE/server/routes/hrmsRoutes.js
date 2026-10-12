@@ -74,7 +74,25 @@ const {
   getMyAttendance
 } = require('../controllers/hrms/coreHrmsController');
 
-// All HRMS routes require authentication
+// 0. Biometric Hardware Webhook (Authenticated via x-biometric-secret header + rate limited)
+const rateLimit = require('express-rate-limit');
+const biometricLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = req.ip || req.connection?.remoteAddress || '127.0.0.1';
+    const deviceId = req.headers['x-device-id'] || req.headers['x-biometric-device'] || req.body?.deviceId || req.body?.[0]?.deviceId || '';
+    return deviceId ? `${ip}_${deviceId}` : ip;
+  },
+  message: { success: false, message: 'Too many requests from biometric device. Please retry in 1 minute.' }
+});
+
+router.post('/attendance/biometric', biometricLimiter, biometricWebhook);
+router.post('/attendance/biometric-webhook', biometricLimiter, biometricWebhook);
+
+// All other HRMS routes require user authentication
 router.use(protect);
 
 // Strict HR Role Enforcement
@@ -152,7 +170,6 @@ router.post('/attendance/regularization', submitRegularization);
 router.put('/attendance/regularization/:id/approve', requirePermission(PERMISSIONS.ATTENDANCE_VIEW), approveRegularization);
 router.put('/attendance/regularization/:id/reject', requirePermission(PERMISSIONS.ATTENDANCE_VIEW), rejectRegularization);
 router.post('/attendance/punch', markPunch); // Web & Mobile check-in/out
-router.post('/attendance/biometric', biometricWebhook); // Biometric adapter
 router.post('/attendance/correction', requestCorrection);
 
 // 5. Shifts

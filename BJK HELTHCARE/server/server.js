@@ -24,6 +24,7 @@ const errorHandler = require('./middleware/errorHandler');
 const { initLeaveMaster } = require('./services/hrms/leaveService');
 
 const app = express();
+app.set('trust proxy', 1);
 const httpServer = http.createServer(app);
 const PORT = Number(process.env.PORT || 5000);
 

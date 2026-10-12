@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Attendance = require('../../models/hrms/Attendance');
 const Employee = require('../../models/hrms/Employee');
 const Shift = require('../../models/hrms/Shift');
@@ -196,6 +197,36 @@ const markPunch = async (req, res) => {
 // POST /api/hrms/attendance/biometric-webhook (Biometric Hardware Adapter)
 const biometricWebhook = async (req, res) => {
   try {
+    const configuredSecret = process.env.BIOMETRIC_WEBHOOK_SECRET;
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // In production, secret MUST be configured; otherwise respond 503 and log
+    if (!configuredSecret || configuredSecret.trim() === '') {
+      if (isProduction) {
+        console.error('[SECURITY ALERT] BIOMETRIC_WEBHOOK_SECRET is not configured in production environment. Webhook disabled.');
+        return res.status(503).json({
+          success: false,
+          message: 'Biometric webhook service unavailable. Configuration required.'
+        });
+      }
+      return res.status(401).json({
+        success: false,
+        message: 'BIOMETRIC_WEBHOOK_SECRET is not configured in development environment.'
+      });
+    }
+
+    // Require shared secret header: x-biometric-secret or x-webhook-secret with timing-safe compare
+    const incomingHeader = req.headers['x-biometric-secret'] || req.headers['x-webhook-secret'] || '';
+    const incomingBuf = Buffer.from(String(incomingHeader).trim());
+    const expectedBuf = Buffer.from(configuredSecret.trim());
+
+    if (incomingBuf.length === 0 || incomingBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(incomingBuf, expectedBuf)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Invalid or missing biometric webhook secret header.'
+      });
+    }
+
     const { deviceId, punches } = req.body;
     if (!punches || !Array.isArray(punches)) {
       return res.status(400).json({ success: false, message: 'Invalid payload: Array of punches required' });
