@@ -101,9 +101,7 @@ const requireHRRole = requireRole(
   ROLES.DIRECTOR,
   ROLES.HR_ADMIN,
   ROLES.HR_MANAGER,
-  ROLES.HR_EXECUTIVE,
-  ROLES.HR,
-  'ADMIN'
+  ROLES.HR_EXECUTIVE
 );
 
 // 0. Core HRMS (Non-Technical Staff & Daily Manual Attendance)

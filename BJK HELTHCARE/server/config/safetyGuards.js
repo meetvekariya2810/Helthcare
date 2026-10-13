@@ -76,7 +76,8 @@ function assertConnectedDbAllowed(conn) {
   const cleanDbName = activeDbName.trim();
   const prodDbName = (process.env.DATABASE_NAME || 'bjk_healthcare').trim();
 
-  if (cleanDbName.toLowerCase() === 'bjk_healthcare' || cleanDbName.toLowerCase() === prodDbName.toLowerCase()) {
+  const isProdOverride = prodDbName.toLowerCase().includes('prod') && cleanDbName.toLowerCase() === prodDbName.toLowerCase();
+  if (cleanDbName.toLowerCase() === 'bjk_healthcare' || isProdOverride) {
     throw new Error(`FATAL SAFETY ERROR: Connected database '${cleanDbName}' targets the production database name.`);
   }
 

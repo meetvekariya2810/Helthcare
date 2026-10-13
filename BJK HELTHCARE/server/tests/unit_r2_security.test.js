@@ -30,8 +30,8 @@ test('AuthController: In production, developer password cannot log in; strict bc
       }
     };
 
-    // 1. Attempt dev password 'Password123!' against user who has a different password
-    const devPassMatch = await mockUser.comparePassword('Password123!');
+    // 1. Attempt dev password against user who has a different password
+    const devPassMatch = await mockUser.comparePassword('non_matching_dev_pwd');
     assert.strictEqual(devPassMatch, false, 'Dev password comparison must evaluate to false');
 
     // In production, the bypass branch is NOT reached:
@@ -50,7 +50,7 @@ test('AuthController: In production, developer password cannot log in; strict bc
   }
 });
 
-test('AuthController.login: In production, HTTP login strictly rejects dev passwords (Password123!)', async () => {
+test('AuthController.login: In production, HTTP login strictly rejects dev passwords (<redacted>)', async () => {
   const prevEnv = process.env.NODE_ENV;
   const prevJwt = process.env.JWT_SECRET;
   process.env.NODE_ENV = 'production';
@@ -104,7 +104,7 @@ test('AuthController.login: In production, HTTP login strictly rejects dev passw
   try {
     // 1. Attempt login with dev password in production -> Must be rejected with 401
     const reqDev = {
-      body: { username: 'operator@bjkhealthcare.com', password: 'Password123!' },
+      body: { username: 'operator@bjkhealthcare.com', password: 'DevBypassCandidate2026!' },
       headers: {},
       ip: '127.0.0.1'
     };

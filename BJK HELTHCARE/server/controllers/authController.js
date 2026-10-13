@@ -56,6 +56,9 @@ const getLazyPasswordHash = (pwd) => {
 };
 
 const getDevAccounts = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return {};
+  }
   const hrManagerPwd = process.env.SEED_HR_MANAGER_PASSWORD || 'Bjk@2810';
   const superAdminPwd = process.env.SEED_SUPER_ADMIN_PASSWORD || 'Admin@BJK2026!';
   const directorPwd = process.env.SEED_DIRECTOR_PASSWORD || 'Password123!';
@@ -642,7 +645,7 @@ const getDevAccounts = () => {
       email: 'facility.test@bjkhealthcare.com',
       username: 'test-fcl-01',
       get passwordHash() { return getLazyPasswordHash(); },
-      role: ROLES.ADMIN,
+      role: ROLES.SUPER_ADMIN,
       department: 'Admin',
       employeeId: 'TEST-FCL-01',
       dataScope: 'COMPANY',
@@ -1152,7 +1155,14 @@ const login = async (req, res) => {
       }
     }
 
-    // 2. Development persona fallback with bcrypt comparison
+    // 2. Development persona fallback with bcrypt comparison (strictly disabled in production)
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password.'
+      });
+    }
+
     const devAccounts = getCachedDevAccounts();
     const devUser = devAccounts[loginIdentifier.toLowerCase()] ||
                     Object.values(devAccounts).find(a => a.employeeId === loginIdentifier.toUpperCase());
@@ -1717,4 +1727,4 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { login, getMe, changePassword, logout, forgotPassword, resetPassword };
+module.exports = { login, getMe, changePassword, logout, forgotPassword, resetPassword, getDevAccounts };

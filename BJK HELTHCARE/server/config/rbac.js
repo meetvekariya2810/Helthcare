@@ -313,6 +313,7 @@ const ROLE_PERMISSIONS = {
     'products.view',
     'finance.view', 'finance.create_invoice', 'finance.approve_invoice', 'finance.view_reports',
     'payroll:view_all', 'expense:view', 'expense:approve',
+    'bank_details:view',
     'analytics:view', 'documents.view', 'copilot:access'
   ],
 
@@ -405,6 +406,7 @@ const ROLE_PERMISSIONS = {
   ],
   [ROLES.PAYROLL_ADMIN]: [
     'employee:view', 'employee:view_sensitive', 'payroll:view_all', 'payroll:process', 'payroll:configure',
+    'bank_details:view',
     'expense:view', 'expense:approve', 'audit.view'
   ],
   [ROLES.DEPARTMENT_MANAGER]: [
@@ -506,23 +508,52 @@ const ROLE_HIERARCHY = {
 };
 
 /**
+ * Legacy & Frontend Role Aliases mapping to canonical enterprise roles
+ */
+const ROLE_ALIASES = {
+  ADMIN: ROLES.SUPER_ADMIN,
+  SYSTEM_ADMIN: ROLES.SYSTEM_ADMINISTRATOR,
+  HR: ROLES.HR_ADMIN,
+  FINANCE: ROLES.FINANCE_MANAGER,
+  PAYROLL_OFFICER: ROLES.PAYROLL_ADMIN,
+  ACCOUNTS_EXECUTIVE: ROLES.FINANCE_MANAGER,
+  DEPARTMENT_HEAD: ROLES.DEPARTMENT_MANAGER,
+  TEAM_HEAD: ROLES.TEAM_LEAD
+};
+
+/**
+ * Normalize role string to canonical enterprise role
+ */
+const normalizeRoleString = (role) => {
+  if (!role || typeof role !== 'string') return '';
+  const trimmed = role.toUpperCase().trim();
+  return ROLE_ALIASES[trimmed] || trimmed;
+};
+
+/**
  * Protected Roles List: Only SUPER_ADMIN may reset credentials or assign/re-role these accounts.
+ * Includes all executive, audit, IT administration, HR administration, and compensation/payroll/finance roles.
  */
 const PROTECTED_ROLES = [
   ROLES.SUPER_ADMIN,
   ROLES.DIRECTOR,
   ROLES.AUDITOR,
+  ROLES.SYSTEM_ADMINISTRATOR,
+  ROLES.IT_ADMIN,
+  ROLES.HR_ADMIN,
   ROLES.PAYROLL_ADMIN,
   ROLES.FINANCE_MANAGER,
-  ROLES.IT_ADMIN
+  'PAYROLL_OFFICER',
+  'ACCOUNTS_EXECUTIVE'
 ];
 
 /**
- * Check whether a role string is a recognized canonical enterprise role.
+ * Check whether a role string is a recognized canonical enterprise role (including mapped aliases).
  */
 const isKnownRole = (role) => {
   if (!role || typeof role !== 'string') return false;
-  return Object.prototype.hasOwnProperty.call(ROLE_HIERARCHY, role.toUpperCase().trim());
+  const norm = normalizeRoleString(role);
+  return Object.prototype.hasOwnProperty.call(ROLE_HIERARCHY, norm);
 };
 
 /**
@@ -531,7 +562,8 @@ const isKnownRole = (role) => {
  */
 const getRoleRank = (role) => {
   if (!isKnownRole(role)) return Infinity;
-  return ROLE_HIERARCHY[role.toUpperCase().trim()];
+  const norm = normalizeRoleString(role);
+  return ROLE_HIERARCHY[norm];
 };
 
 /**
@@ -552,8 +584,10 @@ const canManageCredentials = (callerRole, targetRole) => {
     };
   }
 
-  const normCaller = callerRole.toUpperCase().trim();
-  const normTarget = targetRole.toUpperCase().trim();
+  const rawCaller = (callerRole || '').toUpperCase().trim();
+  const rawTarget = (targetRole || '').toUpperCase().trim();
+  const normCaller = normalizeRoleString(callerRole);
+  const normTarget = normalizeRoleString(targetRole);
 
   // SUPER_ADMIN has full credential management authority across known targets
   if (normCaller === ROLES.SUPER_ADMIN) {
@@ -561,10 +595,10 @@ const canManageCredentials = (callerRole, targetRole) => {
   }
 
   // Target role is in PROTECTED_ROLES: only SUPER_ADMIN is permitted
-  if (PROTECTED_ROLES.includes(normTarget)) {
+  if (PROTECTED_ROLES.includes(normTarget) || PROTECTED_ROLES.includes(rawTarget)) {
     return {
       allowed: false,
-      reason: `Role '${normTarget}' is protected. Only SUPER_ADMIN may manage credentials for protected accounts.`
+      reason: `Role '${targetRole}' is protected. Only SUPER_ADMIN may manage credentials for protected accounts.`
     };
   }
 
@@ -601,9 +635,12 @@ const canAssignRole = (callerRole, currentRole, newRole) => {
     };
   }
 
-  const normCaller = callerRole.toUpperCase().trim();
-  const normCurrent = currentRole.toUpperCase().trim();
-  const normNew = newRole.toUpperCase().trim();
+  const rawCaller = (callerRole || '').toUpperCase().trim();
+  const rawCurrent = (currentRole || '').toUpperCase().trim();
+  const rawNew = (newRole || '').toUpperCase().trim();
+  const normCaller = normalizeRoleString(callerRole);
+  const normCurrent = normalizeRoleString(currentRole);
+  const normNew = normalizeRoleString(newRole);
 
   // SUPER_ADMIN can assign any recognized role
   if (normCaller === ROLES.SUPER_ADMIN) {
@@ -611,16 +648,16 @@ const canAssignRole = (callerRole, currentRole, newRole) => {
   }
 
   // Protected current or new role can only be assigned/changed by SUPER_ADMIN
-  if (PROTECTED_ROLES.includes(normCurrent)) {
+  if (PROTECTED_ROLES.includes(normCurrent) || PROTECTED_ROLES.includes(rawCurrent)) {
     return {
       allowed: false,
-      reason: `Current role '${normCurrent}' is protected. Only SUPER_ADMIN may modify accounts with protected roles.`
+      reason: `Current role '${currentRole}' is protected. Only SUPER_ADMIN may modify accounts with protected roles.`
     };
   }
-  if (PROTECTED_ROLES.includes(normNew)) {
+  if (PROTECTED_ROLES.includes(normNew) || PROTECTED_ROLES.includes(rawNew)) {
     return {
       allowed: false,
-      reason: `Role '${normNew}' is protected. Only SUPER_ADMIN may grant protected roles.`
+      reason: `Role '${newRole}' is protected. Only SUPER_ADMIN may grant protected roles.`
     };
   }
 
@@ -682,6 +719,8 @@ module.exports = {
   hasPermission,
   ROLE_HIERARCHY,
   PROTECTED_ROLES,
+  ROLE_ALIASES,
+  normalizeRoleString,
   isKnownRole,
   getRoleRank,
   canManageCredentials,

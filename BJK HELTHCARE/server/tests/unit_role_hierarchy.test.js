@@ -45,11 +45,15 @@ test('RBAC Hierarchy: PROTECTED_ROLES list is explicit and contains all required
     ROLES.SUPER_ADMIN,
     ROLES.DIRECTOR,
     ROLES.AUDITOR,
+    ROLES.SYSTEM_ADMINISTRATOR,
+    ROLES.IT_ADMIN,
+    ROLES.HR_ADMIN,
     ROLES.PAYROLL_ADMIN,
     ROLES.FINANCE_MANAGER,
-    ROLES.IT_ADMIN
+    'PAYROLL_OFFICER',
+    'ACCOUNTS_EXECUTIVE'
   ];
-  assert.strictEqual(PROTECTED_ROLES.length, 6);
+  assert.strictEqual(PROTECTED_ROLES.length, 10, 'PROTECTED_ROLES must contain exactly 10 roles');
   for (const r of expected) {
     assert.ok(PROTECTED_ROLES.includes(r), `Missing protected role: ${r}`);
   }
@@ -70,11 +74,17 @@ test('canManageCredentials: HR_MANAGER can reset EMPLOYEE but cannot reset PROTE
   const allowEmp = canManageCredentials(ROLES.HR_MANAGER, ROLES.EMPLOYEE);
   assert.strictEqual(allowEmp.allowed, true);
 
-  // Cannot reset PROTECTED_ROLES
+  // Cannot reset PROTECTED_ROLES (including Finance and Payroll roles)
   for (const protRole of PROTECTED_ROLES) {
     const res = canManageCredentials(ROLES.HR_MANAGER, protRole);
     assert.strictEqual(res.allowed, false, `HR_MANAGER must not reset ${protRole}`);
   }
+
+  // Explicit verification for finance and payroll roles
+  assert.strictEqual(canManageCredentials(ROLES.HR_MANAGER, ROLES.FINANCE_MANAGER).allowed, false);
+  assert.strictEqual(canManageCredentials(ROLES.HR_MANAGER, ROLES.PAYROLL_ADMIN).allowed, false);
+  assert.strictEqual(canManageCredentials(ROLES.HR_MANAGER, 'PAYROLL_OFFICER').allowed, false);
+  assert.strictEqual(canManageCredentials(ROLES.HR_MANAGER, 'ACCOUNTS_EXECUTIVE').allowed, false);
 
   // Cannot reset equal or higher rank non-protected role (e.g. HR_ADMIN is rank 6, HR_MANAGER is rank 8)
   const resHrAdmin = canManageCredentials(ROLES.HR_MANAGER, ROLES.HR_ADMIN);
@@ -112,9 +122,17 @@ test('canAssignRole: Caller must strictly outrank both current and new role', ()
   const denyAdmin = canAssignRole(ROLES.HR_MANAGER, ROLES.EMPLOYEE, ROLES.HR_ADMIN);
   assert.strictEqual(denyAdmin.allowed, false);
 
+  // HR_MANAGER cannot assign finance/payroll roles (PROTECTED_ROLES)
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, ROLES.EMPLOYEE, ROLES.FINANCE_MANAGER).allowed, false);
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, ROLES.EMPLOYEE, ROLES.PAYROLL_ADMIN).allowed, false);
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, ROLES.EMPLOYEE, 'PAYROLL_OFFICER').allowed, false);
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, ROLES.EMPLOYEE, 'ACCOUNTS_EXECUTIVE').allowed, false);
+
   // Cannot modify protected current role
   const denyModDirector = canAssignRole(ROLES.HR_MANAGER, ROLES.DIRECTOR, ROLES.EMPLOYEE);
   assert.strictEqual(denyModDirector.allowed, false);
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, ROLES.FINANCE_MANAGER, ROLES.EMPLOYEE).allowed, false);
+  assert.strictEqual(canAssignRole(ROLES.HR_MANAGER, 'PAYROLL_OFFICER', ROLES.EMPLOYEE).allowed, false);
 });
 
 test('generateSecureRandomPassword: generates strong 20-char password with 1,000 unique samples', () => {

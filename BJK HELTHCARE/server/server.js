@@ -25,7 +25,20 @@ const errorHandler = require('./middleware/errorHandler');
 const { initLeaveMaster } = require('./services/hrms/leaveService');
 
 const app = express();
-app.set('trust proxy', 1);
+
+// Trust proxy configuration based on TRUST_PROXY_HOPS environment variable
+const resolveTrustProxy = () => {
+  const hops = process.env.TRUST_PROXY_HOPS;
+  if (hops !== undefined && hops !== '') {
+    if (hops === 'true') return true;
+    if (hops === 'false') return false;
+    const num = Number(hops);
+    if (!Number.isNaN(num)) return num;
+    return hops;
+  }
+  return process.env.NODE_ENV === 'production' ? 1 : false;
+};
+app.set('trust proxy', resolveTrustProxy());
 const httpServer = http.createServer(app);
 const PORT = Number(process.env.PORT || 5000);
 
