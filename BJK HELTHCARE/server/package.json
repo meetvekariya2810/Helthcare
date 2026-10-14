@@ -22,7 +22,8 @@
     "db:validate": "node scripts/migration/db_validate.js",
     "db:report": "node scripts/migration/db_validate.js",
     "db:cutover-check": "node scripts/migration/db_cutover_check.js",
-    "db:rollback-check": "node scripts/migration/db_rollback_check.js"
+    "db:rollback-check": "node scripts/migration/db_rollback_check.js",
+    "db:permissions": "node scripts/migration/setup_postgres_permissions.js"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.9",
