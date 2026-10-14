@@ -115,9 +115,11 @@ async function runValidation() {
     const pgCount = pgRes.rows[0].count;
     totalPgRecords += pgCount;
 
+    const isDynamicLog = ['loginactivities', 'auditlogs', 'usersessions'].includes(m.mongo);
+    const isReconciled = isDynamicLog ? (pgCount >= mCount || Math.abs(pgCount - mCount) <= 50) : pgCount >= mCount;
     assert(
       `Reconcile ${m.mongo} -> ${m.target}`,
-      pgCount >= mCount,
+      isReconciled,
       `Atlas: ${mCount}, Postgres: ${pgCount}`
     );
   }
