@@ -249,16 +249,54 @@ const approvePayroll = async (req, res) => {
 const deletePayrollRecord = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Payroll.findByIdAndDelete(id);
-    if (!deleted) {
+    if (!id || !mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid payroll record ID format.' });
+    }
+
+    const rawReason = req.body?.reason || req.query?.reason;
+    if (!rawReason || typeof rawReason !== 'string' || rawReason.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory deletion reason is required to delete a payroll record.'
+      });
+    }
+    const reason = rawReason.trim();
+
+    // 1. Load and validate record exists
+    const record = await Payroll.findById(id);
+    if (!record) {
       return res.status(404).json({ success: false, message: 'Payroll record not found.' });
+    }
+
+    // 2. Reject locked statuses
+    const LOCKED_STATUSES = ['APPROVED', 'PROCESSED', 'PAID', 'FINALIZED'];
+    if (LOCKED_STATUSES.includes(record.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete payroll record: Record is in locked status '${record.status}'. Only DRAFT records may be deleted.`
+      });
+    }
+
+    // 3. Atomic deletion with status precondition to eliminate concurrent status transition race conditions
+    const deleted = await Payroll.findOneAndDelete({
+      _id: id,
+      status: { $nin: LOCKED_STATUSES }
+    });
+
+    if (!deleted) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete payroll record: Record status changed concurrently to a locked status.'
+      });
     }
 
     await recordAudit({
       req,
       action: 'PAYROLL_DELETED',
       module: 'PAYROLL',
-      details: `Deleted payslip record for employee ${deleted.employeeId} (${deleted.payPeriod})`
+      resource: 'Payroll',
+      resourceId: deleted._id.toString(),
+      details: `Deleted draft payslip record for employee ${deleted.employeeId} (${deleted.payPeriod}). Reason: ${reason}`
     });
 
     res.json({

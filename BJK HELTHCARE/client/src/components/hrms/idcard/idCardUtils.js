@@ -43,13 +43,8 @@ export const getEmployeeCardFields = (employee) => {
   const phone = employee.phone || employee.officialMobile || employee.personalMobile || '+91 99000 00000';
   const email = (employee.email || employee.workEmail || employee.personalEmail || `${code.toLowerCase()}@bjkhealthcare.com`).toLowerCase();
   const dob = formatCardDOB(employee.dateOfBirth);
-  
-  // Photo fallback logic:
-  // For Krutika Parmar, default to extracted high-res photo if none in record
+  // Use only a photo explicitly provided by the employee record.
   let photo = employee.photo || employee.profilePhoto || employee.profilePhotoUrl || '';
-  if (!photo && name.includes('KRUTIKA')) {
-    photo = '/idcard-assets/krutika_photo_clean.png';
-  }
 
   // Verification URL for QR code
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://bjkhealthcare.com';

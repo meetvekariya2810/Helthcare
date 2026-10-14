@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { requireRole, requirePermission } = require('../middleware/rbac');
-const { ROLES, PERMISSIONS } = require('../config/rbac');
+const { ROLES, PERMISSIONS, hasPermission } = require('../config/rbac');
 const {
   getHRBankDetailsList,
   getHRBankDetailsByEmployeeId,
@@ -15,27 +15,14 @@ const {
 // All HR Bank Details endpoints require authenticated user session
 router.use(protect);
 
-// Allowed HR roles helper middleware
+// Allowed HR roles helper middleware (requires at minimum bank_details:view)
 const allowHRBankAccess = (req, res, next) => {
   const role = (req.user?.role || '').toUpperCase();
-  const allowed = [
-    ROLES.SUPER_ADMIN,
-    ROLES.DIRECTOR,
-    ROLES.HR_ADMIN,
-    ROLES.HR_MANAGER,
-    ROLES.HR_EXECUTIVE,
-    ROLES.PAYROLL_ADMIN,
-    ROLES.FINANCE_MANAGER,
-    'ADMIN',
-    'HR'
-  ];
-
-  if (allowed.includes(role)) {
-    return next();
-  }
-
-  // Check custom permission
-  if (req.user?.permissions?.includes('bank_details:view') || req.user?.permissions?.includes('*')) {
+  if (
+    hasPermission(role, PERMISSIONS.BANK_DETAILS_VIEW) ||
+    req.user?.permissions?.includes(PERMISSIONS.BANK_DETAILS_VIEW) ||
+    req.user?.permissions?.includes('*')
+  ) {
     return next();
   }
 
@@ -48,17 +35,17 @@ const allowHRBankAccess = (req, res, next) => {
 router.use(allowHRBankAccess);
 
 // 1. Directory and search
-router.get('/', getHRBankDetailsList);
+router.get('/', requirePermission(PERMISSIONS.BANK_DETAILS_VIEW), getHRBankDetailsList);
 
 // 2. Specific employee details
-router.get('/:employeeId', getHRBankDetailsByEmployeeId);
+router.get('/:employeeId', requirePermission(PERMISSIONS.BANK_DETAILS_VIEW), getHRBankDetailsByEmployeeId);
 
 // 3. HR edit
-router.put('/:employeeId', updateHRBankDetailsByEmployeeId);
+router.put('/:employeeId', requirePermission(PERMISSIONS.BANK_DETAILS_MANAGE), updateHRBankDetailsByEmployeeId);
 
 // 4. Verification actions
-router.post('/:employeeId/verify', verifyHRBankDetails);
-router.post('/:employeeId/reject', rejectHRBankDetails);
-router.post('/:employeeId/request-correction', requestCorrectionHRBankDetails);
+router.post('/:employeeId/verify', requirePermission(PERMISSIONS.BANK_DETAILS_VERIFY), verifyHRBankDetails);
+router.post('/:employeeId/reject', requirePermission(PERMISSIONS.BANK_DETAILS_VERIFY), rejectHRBankDetails);
+router.post('/:employeeId/request-correction', requirePermission(PERMISSIONS.BANK_DETAILS_MANAGE), requestCorrectionHRBankDetails);
 
 module.exports = router;

@@ -19,7 +19,7 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.(xlsx|xls|csv|jpg|jpeg|png|gif|webp|svg|ico|pdf|doc|docx|zip|woff|woff2|ttf)$).*)",
       "destination": "/index.html"
     }
   ],

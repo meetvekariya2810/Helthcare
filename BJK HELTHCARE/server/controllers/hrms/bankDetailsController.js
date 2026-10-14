@@ -1,5 +1,6 @@
 const bankDetailsService = require('../../services/hrms/bankDetailsService');
 const AuditLog = require('../../models/AuditLog');
+const { hasPermission, PERMISSIONS } = require('../../config/rbac');
 
 // ==============================================================================
 // EMPLOYEE SELF-SERVICE CONTROLLERS
@@ -187,6 +188,18 @@ const getHRBankDetailsByEmployeeId = async (req, res, next) => {
  */
 const updateHRBankDetailsByEmployeeId = async (req, res, next) => {
   try {
+    const role = (req.user?.role || '').toUpperCase();
+    if (
+      !hasPermission(role, PERMISSIONS.BANK_DETAILS_MANAGE) &&
+      !req.user?.permissions?.includes(PERMISSIONS.BANK_DETAILS_MANAGE) &&
+      !req.user?.permissions?.includes('*')
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Requires bank_details:manage permission to modify employee bank records.'
+      });
+    }
+
     const { employeeId } = req.params;
     const updated = await bankDetailsService.saveOrUpdateEmployeeBankDetails(
       employeeId,
@@ -201,7 +214,7 @@ const updateHRBankDetailsByEmployeeId = async (req, res, next) => {
       data: updated
     });
   } catch (err) {
-    return res.status(400).json({
+    return res.status(err.statusCode || 400).json({
       success: false,
       message: err.message
     });
@@ -214,6 +227,18 @@ const updateHRBankDetailsByEmployeeId = async (req, res, next) => {
  */
 const verifyHRBankDetails = async (req, res, next) => {
   try {
+    const role = (req.user?.role || '').toUpperCase();
+    if (
+      !hasPermission(role, PERMISSIONS.BANK_DETAILS_VERIFY) &&
+      !req.user?.permissions?.includes(PERMISSIONS.BANK_DETAILS_VERIFY) &&
+      !req.user?.permissions?.includes('*')
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Requires bank_details:verify permission to verify employee bank records.'
+      });
+    }
+
     const { employeeId } = req.params;
     const { remarks } = req.body;
     const verified = await bankDetailsService.hrVerifyBankDetails(
@@ -228,7 +253,7 @@ const verifyHRBankDetails = async (req, res, next) => {
       data: verified
     });
   } catch (err) {
-    return res.status(400).json({
+    return res.status(err.statusCode || 400).json({
       success: false,
       message: err.message
     });
@@ -241,6 +266,18 @@ const verifyHRBankDetails = async (req, res, next) => {
  */
 const rejectHRBankDetails = async (req, res, next) => {
   try {
+    const role = (req.user?.role || '').toUpperCase();
+    if (
+      !hasPermission(role, PERMISSIONS.BANK_DETAILS_VERIFY) &&
+      !req.user?.permissions?.includes(PERMISSIONS.BANK_DETAILS_VERIFY) &&
+      !req.user?.permissions?.includes('*')
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Requires bank_details:verify permission to reject employee bank records.'
+      });
+    }
+
     const { employeeId } = req.params;
     const { remarks } = req.body;
     if (!remarks || !remarks.trim()) {
@@ -262,7 +299,7 @@ const rejectHRBankDetails = async (req, res, next) => {
       data: rejected
     });
   } catch (err) {
-    return res.status(400).json({
+    return res.status(err.statusCode || 400).json({
       success: false,
       message: err.message
     });
@@ -275,6 +312,18 @@ const rejectHRBankDetails = async (req, res, next) => {
  */
 const requestCorrectionHRBankDetails = async (req, res, next) => {
   try {
+    const role = (req.user?.role || '').toUpperCase();
+    if (
+      !hasPermission(role, PERMISSIONS.BANK_DETAILS_MANAGE) &&
+      !req.user?.permissions?.includes(PERMISSIONS.BANK_DETAILS_MANAGE) &&
+      !req.user?.permissions?.includes('*')
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Requires bank_details:manage permission to request bank corrections.'
+      });
+    }
+
     const { employeeId } = req.params;
     const { remarks } = req.body;
     if (!remarks || !remarks.trim()) {
@@ -296,7 +345,7 @@ const requestCorrectionHRBankDetails = async (req, res, next) => {
       data: requested
     });
   } catch (err) {
-    return res.status(400).json({
+    return res.status(err.statusCode || 400).json({
       success: false,
       message: err.message
     });

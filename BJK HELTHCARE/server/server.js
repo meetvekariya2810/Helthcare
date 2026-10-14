@@ -225,11 +225,20 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
 }));
 
-app.use(morgan('dev'));
+// Redact sensitive query parameters (token, auth, secret, password) from HTTP access logs
+morgan.token('url', (req) => {
+  const url = req.originalUrl || req.url || '';
+  return url.replace(/([?&](?:token|auth|secret|password)=)[^&]+/gi, '$1[REDACTED]');
+});
+app.use(morgan(':method :url :status :response-time ms - :res[content-length]'));
 
 // JSON Body Parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Protected File Serving & Upload Security (Authentication, RBAC & Extension Blacklist)
+const { secureUploads } = require('./middleware/fileSecurity');
+app.use('/uploads', secureUploads);
 
 // Static Document Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {

@@ -318,8 +318,6 @@ const saveOrUpdateEmployeeBankDetails = async (employeeIdentifier, data, user, i
   bankDetails.verificationStatus = newStatus;
   bankDetails.updatedBy = user?._id || null;
 
-  await bankDetails.save();
-
   // Audit Logging (Section 15, 40) - Do NOT log full account numbers
   const auditAction = isCreate
     ? 'BANK_DETAILS_CREATED'
@@ -327,10 +325,11 @@ const saveOrUpdateEmployeeBankDetails = async (employeeIdentifier, data, user, i
       ? 'BANK_DETAILS_SUBMITTED'
       : 'BANK_DETAILS_UPDATED';
 
+  // Strict Fail-Closed Audit Logging: Must persist audit record before committing mutation
   try {
-    await AuditLog.create({
+    await AuditLog.logActionStrict({
       user: {
-        id: user?._id || null,
+        id: user?._id || user?.id || null,
         name: user?.name || employee.fullName || 'Employee Self-Service',
         email: user?.email || employee.email || 'employee@bjkhealthcare.com',
         role: user?.role || 'EMPLOYEE'
@@ -338,7 +337,7 @@ const saveOrUpdateEmployeeBankDetails = async (employeeIdentifier, data, user, i
       action: auditAction,
       module: 'HRMS',
       resource: 'EmployeeBankDetails',
-      resourceId: bankDetails._id.toString(),
+      resourceId: bankDetails._id ? bankDetails._id.toString() : null,
       recordId: employee.employeeId || employee.employeeCode,
       targetUser: {
         id: employee.user || null,
@@ -355,11 +354,16 @@ const saveOrUpdateEmployeeBankDetails = async (employeeIdentifier, data, user, i
         verificationStatus: bankDetails.verificationStatus
       },
       status: 'SUCCESS',
-      details: `Employee bank details ${auditAction.toLowerCase().replace(/_/g, ' ')} for ${employee.fullName} (${employee.employeeId}).`
+      details: `Employee bank details ${auditAction.toLowerCase().replace(/_/g, ' ')} for ${employee.fullName} (${employee.employeeId || employee.employeeCode}).`
     });
   } catch (auditErr) {
-    console.warn('[Audit Log Warning]:', auditErr.message);
+    console.error('[BankDetails Strict Audit Failure]:', auditErr.message);
+    const err = new Error(`Security Error: Mandatory audit logging failed (${auditErr.message}). Bank detail update aborted.`);
+    err.statusCode = 500;
+    throw err;
   }
+
+  await bankDetails.save();
 
   return bankDetails;
 };
@@ -381,13 +385,11 @@ const hrVerifyBankDetails = async (employeeIdentifier, hrUser, remarks = 'Verifi
   bankDetails.remarks = remarks || 'Verified by HR';
   bankDetails.accountStatus = 'Active';
 
-  await bankDetails.save();
-
-  // Audit Log
+  // Strict Fail-Closed Audit Log
   try {
-    await AuditLog.create({
+    await AuditLog.logActionStrict({
       user: {
-        id: hrUser?._id || null,
+        id: hrUser?._id || hrUser?.id || null,
         name: hrUser?.name || 'HR Admin',
         email: hrUser?.email || 'hr@bjkhealthcare.com',
         role: hrUser?.role || 'HR_ADMIN'
@@ -395,16 +397,21 @@ const hrVerifyBankDetails = async (employeeIdentifier, hrUser, remarks = 'Verifi
       action: 'BANK_DETAILS_VERIFIED',
       module: 'HRMS',
       resource: 'EmployeeBankDetails',
-      resourceId: bankDetails._id.toString(),
+      resourceId: bankDetails._id ? bankDetails._id.toString() : null,
       recordId: bankDetails.employeeCode,
       oldData: { verificationStatus: previousStatus },
       newData: { verificationStatus: 'Verified', verifiedBy: hrUser?.name, verifiedDate: bankDetails.verificationDate },
       status: 'SUCCESS',
-      details: `Bank details verified by ${hrUser?.name}. Remarks: ${remarks}`
+      details: `Bank details verified by ${hrUser?.name || 'HR'}. Remarks: ${remarks}`
     });
   } catch (auditErr) {
-    console.warn('[Audit Log Warning]:', auditErr.message);
+    console.error('[BankDetails Strict Audit Failure]:', auditErr.message);
+    const err = new Error(`Security Error: Mandatory audit logging failed (${auditErr.message}). Bank detail verification aborted.`);
+    err.statusCode = 500;
+    throw err;
   }
+
+  await bankDetails.save();
 
   return bankDetails;
 };
@@ -429,12 +436,11 @@ const hrRejectBankDetails = async (employeeIdentifier, hrUser, remarks) => {
   bankDetails.verifiedByName = hrUser?.name || 'HR Administrator';
   bankDetails.verificationDate = new Date();
 
-  await bankDetails.save();
-
+  // Strict Fail-Closed Audit Log
   try {
-    await AuditLog.create({
+    await AuditLog.logActionStrict({
       user: {
-        id: hrUser?._id || null,
+        id: hrUser?._id || hrUser?.id || null,
         name: hrUser?.name || 'HR Admin',
         email: hrUser?.email || 'hr@bjkhealthcare.com',
         role: hrUser?.role || 'HR_ADMIN'
@@ -442,16 +448,21 @@ const hrRejectBankDetails = async (employeeIdentifier, hrUser, remarks) => {
       action: 'BANK_DETAILS_REJECTED',
       module: 'HRMS',
       resource: 'EmployeeBankDetails',
-      resourceId: bankDetails._id.toString(),
+      resourceId: bankDetails._id ? bankDetails._id.toString() : null,
       recordId: bankDetails.employeeCode,
       oldData: { verificationStatus: previousStatus },
       newData: { verificationStatus: 'Rejected', remarks: remarks.trim() },
       status: 'SUCCESS',
-      details: `Bank details rejected by ${hrUser?.name}. Reason: ${remarks.trim()}`
+      details: `Bank details rejected by ${hrUser?.name || 'HR'}. Reason: ${remarks.trim()}`
     });
   } catch (auditErr) {
-    console.warn('[Audit Log Warning]:', auditErr.message);
+    console.error('[BankDetails Strict Audit Failure]:', auditErr.message);
+    const err = new Error(`Security Error: Mandatory audit logging failed (${auditErr.message}). Bank detail rejection aborted.`);
+    err.statusCode = 500;
+    throw err;
   }
+
+  await bankDetails.save();
 
   return bankDetails;
 };
@@ -476,12 +487,11 @@ const hrRequestCorrection = async (employeeIdentifier, hrUser, remarks) => {
   bankDetails.verifiedByName = hrUser?.name || 'HR Administrator';
   bankDetails.verificationDate = new Date();
 
-  await bankDetails.save();
-
+  // Strict Fail-Closed Audit Log
   try {
-    await AuditLog.create({
+    await AuditLog.logActionStrict({
       user: {
-        id: hrUser?._id || null,
+        id: hrUser?._id || hrUser?.id || null,
         name: hrUser?.name || 'HR Admin',
         email: hrUser?.email || 'hr@bjkhealthcare.com',
         role: hrUser?.role || 'HR_ADMIN'
@@ -489,16 +499,21 @@ const hrRequestCorrection = async (employeeIdentifier, hrUser, remarks) => {
       action: 'BANK_DETAILS_CORRECTION_REQUESTED',
       module: 'HRMS',
       resource: 'EmployeeBankDetails',
-      resourceId: bankDetails._id.toString(),
+      resourceId: bankDetails._id ? bankDetails._id.toString() : null,
       recordId: bankDetails.employeeCode,
       oldData: { verificationStatus: previousStatus },
       newData: { verificationStatus: 'Needs Correction', remarks: remarks.trim() },
       status: 'SUCCESS',
-      details: `Correction requested by ${hrUser?.name}. Remarks: ${remarks.trim()}`
+      details: `Correction requested by ${hrUser?.name || 'HR'}. Remarks: ${remarks.trim()}`
     });
   } catch (auditErr) {
-    console.warn('[Audit Log Warning]:', auditErr.message);
+    console.error('[BankDetails Strict Audit Failure]:', auditErr.message);
+    const err = new Error(`Security Error: Mandatory audit logging failed (${auditErr.message}). Correction request aborted.`);
+    err.statusCode = 500;
+    throw err;
   }
+
+  await bankDetails.save();
 
   return bankDetails;
 };
