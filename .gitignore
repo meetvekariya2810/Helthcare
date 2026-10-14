@@ -45,3 +45,14 @@ BJK_Employee_Login_Credentials.xlsx
 .env.*
 !.env.example
 **/.env.example
+
+# Local PostgreSQL staging storage and database dumps
+.postgres_staging_data/
+*/.postgres_staging_data/
+.postgres_data/
+*/.postgres_data/
+*.dump
+*.sql.gz
+migration_dumps/
+*/migration_dumps/
+

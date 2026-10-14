@@ -15,7 +15,15 @@
     "test:hrms": "npm run test:hrms --prefix \"BJK HELTHCARE/server\"",
     "test:policies": "npm run test:policies --prefix \"BJK HELTHCARE/server\"",
     "test:onboarding": "npm run test:onboarding --prefix \"BJK HELTHCARE/server\"",
-    "install:all": "npm install && npm install --prefix \"BJK HELTHCARE/server\" && npm install --prefix \"BJK HELTHCARE/client\""
+    "install:all": "npm install && npm install --prefix \"BJK HELTHCARE/server\" && npm install --prefix \"BJK HELTHCARE/client\"",
+    "db:inspect": "npm run db:inspect --prefix \"BJK HELTHCARE/server\"",
+    "db:schema": "npm run db:schema --prefix \"BJK HELTHCARE/server\"",
+    "db:migrate:dry": "npm run db:migrate:dry --prefix \"BJK HELTHCARE/server\"",
+    "db:migrate": "npm run db:migrate --prefix \"BJK HELTHCARE/server\"",
+    "db:validate": "npm run db:validate --prefix \"BJK HELTHCARE/server\"",
+    "db:report": "npm run db:report --prefix \"BJK HELTHCARE/server\"",
+    "db:cutover-check": "npm run db:cutover-check --prefix \"BJK HELTHCARE/server\"",
+    "db:rollback-check": "npm run db:rollback-check --prefix \"BJK HELTHCARE/server\""
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

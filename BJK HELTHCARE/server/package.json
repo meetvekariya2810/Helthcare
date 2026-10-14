@@ -14,9 +14,18 @@
     "verify": "node scripts/verifyDatabase.js",
     "test:hrms": "node tests/hr/hrmsMasterTestSuite.js",
     "test:policies": "node tests/hr/policyEngineTestSuite.js",
-    "test:onboarding": "node testHRGuidedOnboarding.js"
+    "test:onboarding": "node testHRGuidedOnboarding.js",
+    "db:inspect": "node scripts/migration/db_inspect.js",
+    "db:schema": "node scripts/migration/schema_migrator.js",
+    "db:migrate:dry": "node scripts/migration/etl_engine.js --dry",
+    "db:migrate": "node scripts/migration/etl_engine.js",
+    "db:validate": "node scripts/migration/db_validate.js",
+    "db:report": "node scripts/migration/db_validate.js",
+    "db:cutover-check": "node scripts/migration/db_cutover_check.js",
+    "db:rollback-check": "node scripts/migration/db_rollback_check.js"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.9",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "docx": "^9.7.2",
@@ -29,7 +38,9 @@
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "pdfkit": "^0.20.2"
+    "pdfkit": "^0.20.2",
+    "pg": "^8.23.1",
+    "pglite-server": "^0.1.5"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.3.0",

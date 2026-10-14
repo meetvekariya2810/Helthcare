@@ -1,0 +1,91 @@
+name: BJK Healthcare — CI/CD Pipeline & Azure Deployment
+
+on:
+  push:
+    branches: [ main, migration/postgres ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-validate:
+    name: Build, Lint & PostgreSQL Validation Suite
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bjk_migrator
+          POSTGRES_PASSWORD: TestPassword123!
+          POSTGRES_DB: bjk_healthcare
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install --prefix "BJK HELTHCARE/server"
+          npm install --prefix "BJK HELTHCARE/client"
+
+      - name: Execute PostgreSQL Migrations (10/10)
+        env:
+          DATABASE_URL: postgresql://bjk_migrator:TestPassword123!@localhost:5432/bjk_healthcare
+          DATABASE_SSL: false
+        run: |
+          cd "BJK HELTHCARE/server"
+          node scripts/migration/schema_migrator.js
+
+      - name: Build Web Frontend (React 18 / Vite 5)
+        run: |
+          npm --prefix "BJK HELTHCARE/client" run build
+
+  deploy-azure:
+    name: Azure Container App Deployment
+    needs: test-and-validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login via Service Principal
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and Push Docker Image to ACR
+        run: |
+          az acr build \
+            --registry ${{ secrets.ACR_NAME }} \
+            --image bjk-api:${{ github.sha }} \
+            --image bjk-api:latest \
+            "BJK HELTHCARE/server"
+
+      - name: Run Database Migration Task on Azure
+        run: |
+          az containerapp job start \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name "job-bjk-db-migrate"
+
+      - name: Deploy Updated Image to Azure Container Apps
+        run: |
+          az containerapp update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name "app-bjk-api" \
+            --image ${{ secrets.ACR_NAME }}.azurecr.io/bjk-api:${{ github.sha }}
