@@ -2,15 +2,21 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { getDBStatus } = require('../config/db');
+const { isDBConnected: isPgConnected } = require('../config/postgres');
 
 // GET /api/health
-router.get('/health', (req, res) => {
-  const dbStatus = getDBStatus();
+router.get('/health', async (req, res) => {
+  const mongoStatus = getDBStatus();
+  const pgStatus = await isPgConnected();
   res.json({
     success: true,
     service: 'BJK Healthcare API',
-    database: dbStatus,
-    status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+    database: {
+      postgres: pgStatus ? 'connected' : 'disconnected',
+      mongo: mongoStatus
+    },
+    engine: 'PostgreSQL 16 (Relational Staging / Production Ready)',
+    status: (pgStatus || mongoStatus === 'connected') ? 'healthy' : 'degraded',
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString()
   });
