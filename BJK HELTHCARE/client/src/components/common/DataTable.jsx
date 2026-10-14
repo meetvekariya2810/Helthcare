@@ -76,7 +76,11 @@ export const DataTable = ({
                 <tr key={row._id || row.id || rowIdx} className="hover:bg-slate-50/70 transition-colors">
                   {columns.map((col, colIdx) => (
                     <td key={colIdx} className={`py-3.5 px-4 ${col.cellClassName || ''}`}>
-                      {col.render ? col.render(row, rowIdx) : row[col.accessor] ?? '--'}
+                      {col.render
+                        ? col.render(row, rowIdx)
+                        : typeof col.accessor === 'function'
+                        ? col.accessor(row, rowIdx)
+                        : row[col.accessor] ?? '--'}
                     </td>
                   ))}
                 </tr>
