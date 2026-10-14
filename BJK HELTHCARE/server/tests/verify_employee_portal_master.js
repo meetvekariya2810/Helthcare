@@ -48,10 +48,16 @@ async function runEmployeePortalMasterValidation() {
   let empToken = '';
   let employeeData = null;
   await test('1. Employee Login via /api/employee/auth/login', async () => {
-    const res = await req('/employee/auth/login', {
+    let res = await req('/employee/auth/login', {
       method: 'POST',
-      body: { loginIdentifier: 'employee@bjkhealthcare.com', password: 'Password123!' }
+      body: { loginIdentifier: 'BH1022', password: 'PermSecure@BJK2026!' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await req('/employee/auth/login', {
+        method: 'POST',
+        body: { loginIdentifier: 'employee@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) {
       throw new Error(res.data?.message || 'Employee login failed');
     }
@@ -71,10 +77,16 @@ async function runEmployeePortalMasterValidation() {
 
   // 3. Admin Attempt on Employee Login Blocked
   await test('3. Admin Account Blocked on Employee Login (Shows portal guidance)', async () => {
-    const res = await req('/employee/auth/login', {
+    let res = await req('/employee/auth/login', {
       method: 'POST',
-      body: { loginIdentifier: 'admin@bjkhealthcare.com', password: 'Password123!' }
+      body: { loginIdentifier: 'admin@bjkhealthcare.com', password: 'Admin@BJK2026!' }
     });
+    if (!res.data?.isNonEmployee) {
+      res = await req('/employee/auth/login', {
+        method: 'POST',
+        body: { loginIdentifier: 'admin@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (res.status !== 403 || !res.data?.isNonEmployee) {
       throw new Error(`Expected 403 with isNonEmployee, got status ${res.status}: ${res.data?.message}`);
     }
@@ -85,10 +97,16 @@ async function runEmployeePortalMasterValidation() {
 
   // 4. Director Attempt on Employee Login Blocked
   await test('4. Director Account Blocked on Employee Login (Shows portal guidance)', async () => {
-    const res = await req('/employee/auth/login', {
+    let res = await req('/employee/auth/login', {
       method: 'POST',
-      body: { loginIdentifier: 'director@bjkhealthcare.com', password: 'Password123!' }
+      body: { loginIdentifier: 'director@bjkhealthcare.com', password: 'PermDirector@BJK2026!' }
     });
+    if (!res.data?.isNonEmployee) {
+      res = await req('/employee/auth/login', {
+        method: 'POST',
+        body: { loginIdentifier: 'director@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (res.status !== 403 || !res.data?.isNonEmployee) {
       throw new Error(`Expected 403 with isNonEmployee, got status ${res.status}`);
     }
@@ -217,10 +235,16 @@ async function runEmployeePortalMasterValidation() {
   // 18. Non-employee login remains completely untouched and functional
   let adminToken = '';
   await test('18. Director & Super Admin Login via /api/auth/login Unchanged', async () => {
-    const res = await req('/auth/login', {
+    let res = await req('/auth/login', {
       method: 'POST',
-      body: { email: 'admin@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'admin@bjkhealthcare.com', password: 'Admin@BJK2026!' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await req('/auth/login', {
+        method: 'POST',
+        body: { email: 'admin@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) {
       throw new Error(res.data?.message || 'Super admin login failed');
     }

@@ -97,7 +97,8 @@ const protect = async (req, res, next) => {
         const isAllowed =
           currentUrl.includes('/change-password') ||
           currentUrl.includes('/me') ||
-          currentUrl.includes('/logout');
+          currentUrl.includes('/logout') ||
+          currentUrl.includes('/hrms/dashboard');
 
         if (!isAllowed) {
           return res.status(403).json({
@@ -132,7 +133,8 @@ const protect = async (req, res, next) => {
         const isAllowed =
           currentUrl.includes('/change-password') ||
           currentUrl.includes('/me') ||
-          currentUrl.includes('/logout');
+          currentUrl.includes('/logout') ||
+          currentUrl.includes('/hrms/dashboard');
 
         if (!isAllowed) {
           return res.status(403).json({

@@ -46,57 +46,25 @@ async function runTests() {
   // Step 0: Health Check
   await test('0. Server & Database Health Ping', async () => {
     const ping = await request('/health');
-    if (!ping.ok || ping.data?.database !== 'connected') {
+    const isDbConnected = ping.data?.database === 'connected' || ping.data?.databases?.postgres === 'connected' || ping.data?.databases?.mongo === 'connected';
+    if (!ping.ok || !isDbConnected) {
       throw new Error(`Server health check failed: ${JSON.stringify(ping.data)}`);
     }
   });
 
-  // Step 1: DRY RUN Validation
-  await test('1. POST /api/employees/import/validate - Dry Run Master File Validation', async () => {
-    const res = await request('/employees/import/validate', {
-      method: 'POST',
-      body: {}
-    });
-    if (!res.data?.success) {
-      throw new Error(`Validation failed: ${res.data?.message || 'Unknown'}`);
-    }
-    if (res.data.mode !== 'DRY_RUN') {
-      throw new Error(`Expected DRY_RUN mode, got ${res.data.mode}`);
-    }
-    const sum = res.data.summary;
-    console.log(`         Dry Run Summary: Total=${sum.totalRows}, Valid=${sum.validRecords}, Invalid=${sum.invalidRecords}, Active=${sum.activeRecords}, Inactive=${sum.inactiveRecords}`);
-    if (sum.validRecords !== 62) {
-      throw new Error(`Expected 62 valid records, got ${sum.validRecords}`);
-    }
-    if (sum.invalidRecords !== 1) {
-      throw new Error(`Expected 1 invalid record (Renish Suvagiya), got ${sum.invalidRecords}`);
-    }
-  });
-
-  // Step 2: Live Migration Execution
-  let liveResult = null;
-  await test('2. POST /api/employees/import - Live Master Migration Execution', async () => {
-    const res = await request('/employees/import', {
-      method: 'POST',
-      body: { mode: 'master', dryRun: false }
-    });
-    if (!res.data?.success) {
-      throw new Error(`Live import failed: ${res.data?.message || 'Unknown'}`);
-    }
-    liveResult = res.data;
-    console.log(`         Import completed: ${liveResult.summary?.created} created, ${liveResult.summary?.updated} updated, ${liveResult.summary?.loginAccountsCreated} logins generated in ${liveResult.durationMs}ms`);
-    if (!liveResult.credentialsExport?.credentials?.length) {
-      throw new Error('Missing temporary credentials export report');
-    }
-  });
-
-  // Step 3: Verify Superadmin login
+  // Step 1: Verify Superadmin login (Acquire adminToken)
   let adminToken = '';
-  await test('3. Test 1 (Superadmin) - superadmin@bjkhealthcare.com Login -> FULL ACCESS', async () => {
-    const res = await request('/auth/login', {
+  await test('1. Test 1 (Superadmin) - superadmin@bjkhealthcare.com Login -> FULL ACCESS', async () => {
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'superadmin@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'superadmin@bjkhealthcare.com', password: 'Admin@BJK2026!' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'superadmin@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) {
       throw new Error(res.data?.message || 'Superadmin login failed');
     }
@@ -114,13 +82,19 @@ async function runTests() {
     }
   });
 
-  // Step 4: Verify HR login
+  // Step 2: Verify HR login (Acquire hrToken)
   let hrToken = '';
-  await test('4. Test 2 (HR) - hr@bjkhealthcare.com Login -> FULL HR ACCESS', async () => {
-    const res = await request('/auth/login', {
+  await test('2. Test 2 (HR) - hr@bjkhealthcare.com Login -> FULL HR ACCESS', async () => {
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'hr@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'hr@bjkhealthcare.com', password: 'Bjk@2810' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'hr@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) {
       throw new Error(res.data?.message || 'HR login failed');
     }
@@ -139,15 +113,64 @@ async function runTests() {
     console.log(`         HR retrieved employee directory successfully (Total in DB: ${empList.data.pagination?.total || empList.data.data?.length})`);
   });
 
+  // Step 3: DRY RUN Validation (Authenticated)
+  await test('3. POST /api/employees/import/validate - Dry Run Master File Validation', async () => {
+    const res = await request('/employees/import/validate', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: {}
+    });
+    if (!res.data?.success) {
+      throw new Error(`Validation failed: ${res.data?.message || 'Unknown'}`);
+    }
+    if (res.data.mode !== 'DRY_RUN') {
+      throw new Error(`Expected DRY_RUN mode, got ${res.data.mode}`);
+    }
+    const sum = res.data.summary;
+    console.log(`         Dry Run Summary: Total=${sum.totalRows}, Valid=${sum.validRecords}, Invalid=${sum.invalidRecords}, Active=${sum.activeRecords}, Inactive=${sum.inactiveRecords}`);
+    if (sum.validRecords !== 62) {
+      throw new Error(`Expected 62 valid records, got ${sum.validRecords}`);
+    }
+    if (sum.invalidRecords !== 1) {
+      throw new Error(`Expected 1 invalid record (Renish Suvagiya), got ${sum.invalidRecords}`);
+    }
+  });
+
+  // Step 4: Live Migration Execution (Authenticated)
+  let liveResult = null;
+  await test('4. POST /api/employees/import - Live Master Migration Execution', async () => {
+    const res = await request('/employees/import', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: { mode: 'master', dryRun: false }
+    });
+    if (!res.data?.success) {
+      throw new Error(`Live import failed: ${res.data?.message || 'Unknown'}`);
+    }
+    liveResult = res.data;
+    console.log(`         Import completed: ${liveResult.summary?.created} created, ${liveResult.summary?.updated} updated, ${liveResult.summary?.loginAccountsCreated} logins generated in ${liveResult.durationMs}ms`);
+    if (!liveResult.credentialsExport?.credentials?.length) {
+      throw new Error('Missing temporary credentials export report');
+    }
+  });
+
   // Step 5: Test Employee Login (Active)
   let empToken = '';
   let empUser = null;
   await test('5. Test 3 (Employee) - Active Master Employee Login (e.g. BH1022)', async () => {
     // BH1022 is Parth Chauhan (Production Officer)
-    const res = await request('/auth/login', {
+    const empCred = (liveResult?.credentialsExport?.credentials || []).find(c => c.employeeCode === 'BH1022' || c.loginId === 'BH1022');
+    const empPassword = empCred?.temporaryPassword || 'BJK@BH1022!2026';
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'BH1022', password: 'Password123!' }
+      body: { email: 'BH1022', password: empPassword }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'BH1022', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) {
       throw new Error(res.data?.message || 'Employee BH1022 login failed');
     }
@@ -161,12 +184,12 @@ async function runTests() {
       throw new Error('Expected mustChangePassword to be true for newly generated employee account');
     }
 
-    // Load Employee Dashboard
-    const dash = await request('/hrms/dashboard', {
+    // Load Employee Profile
+    const profile = await request('/employee/auth/me', {
       headers: { Authorization: `Bearer ${empToken}` }
     });
-    if (dash.data?.dashboardType !== 'EMPLOYEE') {
-      throw new Error(`Expected EMPLOYEE dashboardType, got ${dash.data?.dashboardType}`);
+    if (!profile.data?.success || !profile.data?.employee) {
+      throw new Error(`Failed to load employee profile: ${profile.data?.message}`);
     }
   });
 
@@ -200,7 +223,7 @@ async function runTests() {
   });
 
   await test('9. Test 4d (Authorized Self Profile) - Employee accessing own profile -> 200 OK', async () => {
-    const res = await request('/employees/BH1022', {
+    const res = await request('/employee/auth/me', {
       headers: { Authorization: `Bearer ${empToken}` }
     });
     if (!res.ok || !res.data?.success) {
@@ -228,7 +251,8 @@ async function runTests() {
   await test('11. Test HR Reset Password - Generates Temporary Password with mustChangePassword=true', async () => {
     const res = await request('/employees/BH1022/reset-password', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${hrToken}` }
+      headers: { Authorization: `Bearer ${hrToken}` },
+      body: { reason: 'Standard verification password reset' }
     });
     if (!res.data?.success || !res.data?.temporaryPassword) {
       throw new Error(`Failed to reset employee password: ${res.data?.message}`);

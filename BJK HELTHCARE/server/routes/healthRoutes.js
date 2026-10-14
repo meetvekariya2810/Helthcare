@@ -8,15 +8,17 @@ const { isDBConnected: isPgConnected } = require('../config/postgres');
 router.get('/health', async (req, res) => {
   const mongoStatus = getDBStatus();
   const pgStatus = await isPgConnected();
+  const isHealthy = Boolean(pgStatus || mongoStatus === 'connected');
   res.json({
     success: true,
     service: 'BJK Healthcare API',
-    database: {
+    database: isHealthy ? 'connected' : 'disconnected',
+    databases: {
       postgres: pgStatus ? 'connected' : 'disconnected',
       mongo: mongoStatus
     },
     engine: 'PostgreSQL 16 (Relational Staging / Production Ready)',
-    status: (pgStatus || mongoStatus === 'connected') ? 'healthy' : 'degraded',
+    status: isHealthy ? 'healthy' : 'degraded',
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString()
   });

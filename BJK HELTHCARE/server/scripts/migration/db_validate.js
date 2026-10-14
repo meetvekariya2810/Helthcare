@@ -163,7 +163,8 @@ async function runValidation() {
   // TEST SUITE 4: WORKFORCE & LEADING ZERO BUSINESS IDENTIFIERS
   console.log('\n--- TEST SUITE 4: Workforce & Business IDs Integrity ---');
   const empRes = await pool.query(`SELECT COUNT(*)::int AS count FROM employees;`);
-  assert('Workforce headcount parity', empRes.rows[0].count === 135, `Employees: ${empRes.rows[0].count}`);
+  const atlasEmpCount = await mDb.collection('employees').countDocuments();
+  assert('Workforce headcount parity', empRes.rows[0].count === atlasEmpCount && empRes.rows[0].count >= 135, `Employees: ${empRes.rows[0].count}`);
 
   const leadingZeroSample = await pool.query(`SELECT employee_id, full_name, email FROM employees WHERE employee_id LIKE '%-001' OR employee_id LIKE '%-002' OR employee_id LIKE '%-000' LIMIT 5;`);
   assert(

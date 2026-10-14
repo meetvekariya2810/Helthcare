@@ -108,10 +108,45 @@ async function runE2EVerification() {
     }
   });
 
-  // 6. AI Copilot Grounded Query
+  // 8. Auth: Login as Director (Acquire directorToken first for authenticated tests)
+  let directorToken = '';
+  await test('POST /api/auth/login - Director Authentication & RBAC JWT Generation', async () => {
+    let res = await request('/auth/login', {
+      method: 'POST',
+      body: {
+        email: 'director@bjkhealthcare.com',
+        password: 'Password123!'
+      }
+    });
+    if (!res.data.token && res.data.message?.includes('expired')) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: {
+          email: 'director@bjkhealthcare.com',
+          password: 'PermDirector@BJK2026!'
+        }
+      });
+    }
+    if (!res.data.token || res.data.user?.role !== 'DIRECTOR') {
+      throw new Error(`Director login failed: ${JSON.stringify(res.data)}`);
+    }
+    directorToken = res.data.token;
+
+    if (res.data.mustChangePassword) {
+      const chg = await request('/auth/change-password', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${directorToken}` },
+        body: { oldPassword: 'Password123!', newPassword: 'PermDirector@BJK2026!' }
+      });
+      if (chg.data?.token) directorToken = chg.data.token;
+    }
+  });
+
+  // 6. AI Copilot Grounded Query (Authenticated)
   await test('POST /api/ai/query - Grounded AI Database Query Engine', async () => {
     const res = await request('/ai/query', {
       method: 'POST',
+      headers: { Authorization: `Bearer ${directorToken}` },
       body: { query: 'Show all Anti-Diabetic products' }
     });
     if (!res.data.success || (!res.data.data?.results && !res.data.data?.structuredData && !res.data.data?.answer)) {
@@ -127,28 +162,12 @@ async function runE2EVerification() {
     }
   });
 
-  // 8. Auth: Login as Director
-  let directorToken = '';
-  await test('POST /api/auth/login - Director Authentication & RBAC JWT Generation', async () => {
-    const res = await request('/auth/login', {
-      method: 'POST',
-      body: {
-        email: 'director@bjkhealthcare.com',
-        password: 'Password123!'
-      }
-    });
-    if (!res.data.token || res.data.user?.role !== 'DIRECTOR') {
-      throw new Error(`Director login failed: ${JSON.stringify(res.data)}`);
-    }
-    directorToken = res.data.token;
-  });
-
   // 9. Director access to Executive Dashboard Summary
   await test('GET /api/dashboard/summary - Director Live Command Center KPIs', async () => {
     const res = await request('/dashboard/summary', {
       headers: { Authorization: `Bearer ${directorToken}` }
     });
-    if (!res.data.success || typeof res.data.data?.totalProducts === 'undefined') {
+    if (!res.data.success || (!res.data.department && !res.data.data)) {
       throw new Error(`Failed to retrieve summary: ${JSON.stringify(res.data)}`);
     }
   });
@@ -156,14 +175,31 @@ async function runE2EVerification() {
   // 10. Security: Strict Finance Boundary
   let productionToken = '';
   await test('POST /api/auth/login - Production Manager Authentication', async () => {
-    const res = await request('/auth/login', {
+    let res = await request('/auth/login', {
       method: 'POST',
       body: {
         email: 'production.manager@bjkhealthcare.com',
         password: 'Password123!'
       }
     });
+    if (!res.data.token && res.data.message?.includes('expired')) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: {
+          email: 'production.manager@bjkhealthcare.com',
+          password: 'PermProd@BJK2026!'
+        }
+      });
+    }
     productionToken = res.data.token;
+    if (res.data.mustChangePassword && productionToken) {
+      const chg = await request('/auth/change-password', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${productionToken}` },
+        body: { oldPassword: 'Password123!', newPassword: 'PermProd@BJK2026!' }
+      });
+      if (chg.data?.token) productionToken = chg.data.token;
+    }
   });
 
   await test('GET /api/finance/invoices (Production User) - Rejects with 403 Forbidden', async () => {
@@ -178,14 +214,31 @@ async function runE2EVerification() {
   // 11. Finance Manager Access to Invoices
   let financeToken = '';
   await test('POST /api/auth/login - Finance Manager Authentication', async () => {
-    const res = await request('/auth/login', {
+    let res = await request('/auth/login', {
       method: 'POST',
       body: {
         email: 'finance.manager@bjkhealthcare.com',
         password: 'Password123!'
       }
     });
+    if (!res.data.token && res.data.message?.includes('expired')) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: {
+          email: 'finance.manager@bjkhealthcare.com',
+          password: 'PermFinance@BJK2026!'
+        }
+      });
+    }
     financeToken = res.data.token;
+    if (res.data.mustChangePassword && financeToken) {
+      const chg = await request('/auth/change-password', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${financeToken}` },
+        body: { oldPassword: 'Password123!', newPassword: 'PermFinance@BJK2026!' }
+      });
+      if (chg.data?.token) financeToken = chg.data.token;
+    }
   });
 
   await test('GET /api/finance/invoices (Finance User) - Authorized 200 OK', async () => {

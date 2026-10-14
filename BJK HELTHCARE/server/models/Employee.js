@@ -720,6 +720,20 @@ const EmployeeSchema = new mongoose.Schema({
   timestamps: true
 });
 
+EmployeeSchema.pre('validate', function(next) {
+  // Normalize employee category before enum validation
+  if (this.employeeCategory === 'NON_TECHNICAL' || this.staffCategory === 'NON_TECHNICAL' || this.isNonTechnical === true) {
+    this.employeeCategory = 'NON_TECHNICAL';
+    this.staffCategory = 'NON_TECHNICAL';
+    this.isNonTechnical = true;
+  } else {
+    this.employeeCategory = 'TECHNICAL';
+    this.staffCategory = 'TECHNICAL';
+    this.isNonTechnical = false;
+  }
+  next();
+});
+
 // Pre-save Middleware: Calculations, ID generation, Full Name, Sync
 EmployeeSchema.pre('save', function(next) {
   // 1. Full name
