@@ -74,7 +74,11 @@ async function inspectDatabases() {
   const sortedAtlas = atlasColls.filter(c => c.count > 0).sort((a, b) => b.count - a.count);
   sortedAtlas.slice(0, 20).forEach((c, idx) => {
     // Find matching pg table
-    const matchingPg = pgTables.find(t => t.name === c.name || t.name === c.name.replace(/_/g, '') || t.name + 's' === c.name);
+    const cleanMongo = c.name.replace(/_/g, '').toLowerCase();
+    const matchingPg = pgTables.find(t => {
+      const cleanPg = t.name.replace(/_/g, '').toLowerCase();
+      return cleanPg === cleanMongo || cleanPg + 's' === cleanMongo || cleanMongo + 's' === cleanPg;
+    });
     const pgCount = matchingPg ? matchingPg.count : 'N/A';
     console.log(` ${(idx + 1).toString().padStart(2)}. Atlas: ${c.name.padEnd(30)} (${String(c.count).padStart(6)}) -> PG Table: ${(matchingPg ? matchingPg.name : 'none').padEnd(30)} (${String(pgCount).padStart(6)})`);
   });
