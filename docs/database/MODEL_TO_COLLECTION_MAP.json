@@ -1,0 +1,821 @@
+[
+  {
+    "file": "BJK HELTHCARE/server/models/AIConversation.js",
+    "modelName": "AIConversation",
+    "customColl": null,
+    "matchedColl": "aiconversations",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/AIMessage.js",
+    "modelName": "AIMessage",
+    "customColl": null,
+    "matchedColl": "aimessages",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Alert.js",
+    "modelName": "Alert",
+    "customColl": null,
+    "matchedColl": "alerts",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/AttendanceAuditLog.js",
+    "modelName": "AttendanceAuditLog",
+    "customColl": null,
+    "matchedColl": "attendanceauditlogs",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/AttendancePolicy.js",
+    "modelName": "AttendancePolicy",
+    "customColl": null,
+    "matchedColl": "attendancepolicies",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Audit.js",
+    "modelName": "Audit",
+    "customColl": null,
+    "matchedColl": "audits",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/AuditLog.js",
+    "modelName": "AuditLog",
+    "customColl": null,
+    "matchedColl": "auditlogs",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Batch.js",
+    "modelName": "Batch",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/CAPA.js",
+    "modelName": "CAPA",
+    "customColl": null,
+    "matchedColl": "capas",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ChangeControl.js",
+    "modelName": "ChangeControl",
+    "customColl": null,
+    "matchedColl": "changecontrols",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Company.js",
+    "modelName": "Company",
+    "customColl": null,
+    "matchedColl": "companies",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/CountryCompliance.js",
+    "modelName": "CountryCompliance",
+    "customColl": null,
+    "matchedColl": "countrycompliances",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Customer.js",
+    "modelName": "Customer",
+    "customColl": null,
+    "matchedColl": "customers",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Deviation.js",
+    "modelName": "Deviation",
+    "customColl": null,
+    "matchedColl": "deviations",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Document.js",
+    "modelName": "Document",
+    "customColl": null,
+    "matchedColl": "documents",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/DossierSubmission.js",
+    "modelName": "DossierSubmission",
+    "customColl": null,
+    "matchedColl": "dossiersubmissions",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Employee.js",
+    "modelName": "Employee",
+    "customColl": null,
+    "matchedColl": "employees",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/EmployeeBankDetails.js",
+    "modelName": "EmployeeBankDetails",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/EmployeeFaceAttendance.js",
+    "modelName": "EmployeeFaceAttendance",
+    "customColl": null,
+    "matchedColl": "employeefaceattendances",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/EmployeeLoginHistory.js",
+    "modelName": "EmployeeLoginHistory",
+    "customColl": null,
+    "matchedColl": "employeeloginhistories",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/EmployeeSupportRequest.js",
+    "modelName": "EmployeeSupportRequest",
+    "customColl": null,
+    "matchedColl": "employeesupportrequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/EmployeeTask.js",
+    "modelName": "EmployeeTask",
+    "customColl": null,
+    "matchedColl": "employeetasks",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Enquiry.js",
+    "modelName": "Enquiry",
+    "customColl": null,
+    "matchedColl": "enquiries",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ExportShipment.js",
+    "modelName": "ExportShipment",
+    "customColl": null,
+    "matchedColl": "exportshipments",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Facility.js",
+    "modelName": "Facility",
+    "customColl": null,
+    "matchedColl": "facilities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Finance.js",
+    "modelName": "Invoice",
+    "customColl": null,
+    "matchedColl": "invoices",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Finance.js",
+    "modelName": "OperationalExpense",
+    "customColl": null,
+    "matchedColl": "operationalexpenses",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Finance.js",
+    "modelName": "BudgetPlan",
+    "customColl": null,
+    "matchedColl": "budgetplans",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Finance.js",
+    "modelName": "LoanLiability",
+    "customColl": null,
+    "matchedColl": "loanliabilities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Asset.js",
+    "modelName": "Asset",
+    "customColl": null,
+    "matchedColl": "assets",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Attendance.js",
+    "modelName": "Attendance",
+    "customColl": null,
+    "matchedColl": "attendances",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+    "modelName": "ShiftHandoverLog",
+    "customColl": null,
+    "matchedColl": "shifthandoverlogs",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+    "modelName": "OvertimeRequest",
+    "customColl": null,
+    "matchedColl": "overtimerequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+    "modelName": "MissedPunch",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+    "modelName": "RemoteWorkRequest",
+    "customColl": null,
+    "matchedColl": "remoteworkrequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+    "modelName": "ProbationReview",
+    "customColl": null,
+    "matchedColl": "probationreviews",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceImportBatch.js",
+    "modelName": "AttendanceImportBatch",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceImportSnapshot.js",
+    "modelName": "AttendanceImportSnapshot",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceMonthlySummary.js",
+    "modelName": "AttendanceMonthlySummary",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceRegularization.js",
+    "modelName": "AttendanceRegularization",
+    "customColl": null,
+    "matchedColl": "attendanceregularizations",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/AttendanceReportHistory.js",
+    "modelName": "AttendanceReportHistory",
+    "customColl": null,
+    "matchedColl": "attendancereporthistories",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/CalendarException.js",
+    "modelName": "CalendarException",
+    "customColl": null,
+    "matchedColl": "calendarexceptions",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/CalendarSpecialDay.js",
+    "modelName": "CalendarSpecialDay",
+    "customColl": null,
+    "matchedColl": "calendarspecialdays",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/CanteenLunchRecord.js",
+    "modelName": "CanteenLunchRecord",
+    "customColl": null,
+    "matchedColl": "canteenlunchrecords",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/CanteenSetting.js",
+    "modelName": "CanteenSetting",
+    "customColl": null,
+    "matchedColl": "canteensettings",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/CompanyCalendarEvent.js",
+    "modelName": "CompanyCalendarEvent",
+    "customColl": null,
+    "matchedColl": "companycalendarevents",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Credential.js",
+    "modelName": "Credential",
+    "customColl": null,
+    "matchedColl": "credentials",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Department.js",
+    "modelName": "Department",
+    "customColl": null,
+    "matchedColl": "departments",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Designation.js",
+    "modelName": "Designation",
+    "customColl": null,
+    "matchedColl": "designations",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/DisciplinaryCase.js",
+    "modelName": "DisciplinaryCase",
+    "customColl": null,
+    "matchedColl": "disciplinarycases",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/DisciplinaryCase.js",
+    "modelName": "WhistleblowerCase",
+    "customColl": null,
+    "matchedColl": "whistleblowercases",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/DiversityMetric.js",
+    "modelName": "DiversityMetric",
+    "customColl": null,
+    "matchedColl": "diversitymetrics",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/DiversityMetric.js",
+    "modelName": "AccommodationRequest",
+    "customColl": null,
+    "matchedColl": "accommodationrequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Document.js",
+    "modelName": "Document",
+    "customColl": null,
+    "matchedColl": "documents",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Employee.js",
+    "modelName": "Employee",
+    "customColl": null,
+    "matchedColl": "employees",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Expense.js",
+    "modelName": "Expense",
+    "customColl": null,
+    "matchedColl": "expenses",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/HRAutomationRule.js",
+    "modelName": "HRAutomationRule",
+    "customColl": null,
+    "matchedColl": "hrautomationrules",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/HRCompliance.js",
+    "modelName": "HRCompliance",
+    "customColl": null,
+    "matchedColl": "hrcompliances",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/HRNotification.js",
+    "modelName": "HRNotification",
+    "customColl": null,
+    "matchedColl": "hrnotifications",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Leave.js",
+    "modelName": "LeaveType",
+    "customColl": null,
+    "matchedColl": "leavetypes",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Leave.js",
+    "modelName": "LeaveBalance",
+    "customColl": null,
+    "matchedColl": "leavebalances",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Leave.js",
+    "modelName": "LeaveActivity",
+    "customColl": null,
+    "matchedColl": "leaveactivities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeaveLedger.js",
+    "modelName": "LeaveLedger",
+    "customColl": null,
+    "matchedColl": "leaveledgers",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "LeavePolicy",
+    "customColl": null,
+    "matchedColl": "leavepolicies",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "CompOffCredit",
+    "customColl": null,
+    "matchedColl": "compoffcredits",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "DepartmentStaffingThreshold",
+    "customColl": null,
+    "matchedColl": "departmentstaffingthresholds",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "MedicalFitnessRecord",
+    "customColl": null,
+    "matchedColl": "medicalfitnessrecords",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "LeaveRegularizationRequest",
+    "customColl": null,
+    "matchedColl": "leaveregularizationrequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+    "modelName": "PolicyClarification",
+    "customColl": null,
+    "matchedColl": "policyclarifications",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/MaternityCase.js",
+    "modelName": "MaternityCase",
+    "customColl": null,
+    "matchedColl": "maternitycases",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Onboarding.js",
+    "modelName": "Onboarding",
+    "customColl": null,
+    "matchedColl": "onboardings",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/OnboardingApplication.js",
+    "modelName": "OnboardingApplication",
+    "customColl": null,
+    "matchedColl": "onboardingapplications",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Payroll.js",
+    "modelName": "Payroll",
+    "customColl": null,
+    "matchedColl": "payrolls",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Performance.js",
+    "modelName": "PerformanceCycle",
+    "customColl": null,
+    "matchedColl": "performancecycles",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PolicyMaster.js",
+    "modelName": "Policy",
+    "customColl": null,
+    "matchedColl": "policies",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PolicyMaster.js",
+    "modelName": "PolicyRule",
+    "customColl": null,
+    "matchedColl": "policyrules",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PolicyMaster.js",
+    "modelName": "PolicyAcknowledgment",
+    "customColl": null,
+    "matchedColl": "policyacknowledgments",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/POSHCase.js",
+    "modelName": "ICCCommittee",
+    "customColl": null,
+    "matchedColl": "icccommittees",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/POSHCase.js",
+    "modelName": "POSHCase",
+    "customColl": null,
+    "matchedColl": "poshcases",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PrivacySecurity.js",
+    "modelName": "PrivacyRequest",
+    "customColl": null,
+    "matchedColl": "privacyrequests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PrivacySecurity.js",
+    "modelName": "DataBreach",
+    "customColl": null,
+    "matchedColl": null,
+    "foundInAtlas": false
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/PrivacySecurity.js",
+    "modelName": "SecurityIncident",
+    "customColl": null,
+    "matchedColl": "securityincidents",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Recruitment.js",
+    "modelName": "JobRequisition",
+    "customColl": null,
+    "matchedColl": "jobrequisitions",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Roster.js",
+    "modelName": "Roster",
+    "customColl": null,
+    "matchedColl": "rosters",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/SafetyManagement.js",
+    "modelName": "SafetyIncident",
+    "customColl": null,
+    "matchedColl": "safetyincidents",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/SafetyManagement.js",
+    "modelName": "SafetyCommittee",
+    "customColl": null,
+    "matchedColl": "safetycommittees",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/SafetyManagement.js",
+    "modelName": "EmergencyDrill",
+    "customColl": null,
+    "matchedColl": "emergencydrills",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/SavedReportTemplate.js",
+    "modelName": "SavedReportTemplate",
+    "customColl": null,
+    "matchedColl": "savedreporttemplates",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/SeparationCase.js",
+    "modelName": "SeparationCase",
+    "customColl": null,
+    "matchedColl": "separationcases",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Shift.js",
+    "modelName": "Shift",
+    "customColl": null,
+    "matchedColl": "shifts",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/Training.js",
+    "modelName": "TrainingProgram",
+    "customColl": null,
+    "matchedColl": "trainingprograms",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/WorkforceHoliday.js",
+    "modelName": "WorkforceHoliday",
+    "customColl": null,
+    "matchedColl": "workforceholidays",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/WorkforceRoster.js",
+    "modelName": "WorkforceRoster",
+    "customColl": null,
+    "matchedColl": "workforcerosters",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/hrms/WorkSchedule.js",
+    "modelName": "WorkSchedule",
+    "customColl": null,
+    "matchedColl": "workschedules",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/InventoryItem.js",
+    "modelName": "InventoryItem",
+    "customColl": null,
+    "matchedColl": "inventoryitems",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/InventoryTransaction.js",
+    "modelName": "InventoryTransaction",
+    "customColl": null,
+    "matchedColl": "inventorytransactions",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/KnowledgeChunk.js",
+    "modelName": "KnowledgeChunk",
+    "customColl": null,
+    "matchedColl": "knowledgechunks",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/KnowledgeEntity.js",
+    "modelName": "KnowledgeEntity",
+    "customColl": null,
+    "matchedColl": "knowledgeentities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Lead.js",
+    "modelName": "Lead",
+    "customColl": null,
+    "matchedColl": "leads",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/LoginActivity.js",
+    "modelName": "LoginActivity",
+    "customColl": null,
+    "matchedColl": "loginactivities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Machine.js",
+    "modelName": "Machine",
+    "customColl": null,
+    "matchedColl": "machines",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ManufacturingCapability.js",
+    "modelName": "ManufacturingCapability",
+    "customColl": null,
+    "matchedColl": "manufacturingcapabilities",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Product.js",
+    "modelName": "Product",
+    "customColl": null,
+    "matchedColl": "products",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ProductCategory.js",
+    "modelName": "ProductCategory",
+    "customColl": null,
+    "matchedColl": "productcategories",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ProductionLine.js",
+    "modelName": "ProductionLine",
+    "customColl": null,
+    "matchedColl": "productionlines",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/ProductionOrder.js",
+    "modelName": "ProductionOrder",
+    "customColl": null,
+    "matchedColl": "productionorders",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/QCResult.js",
+    "modelName": "QCResult",
+    "customColl": null,
+    "matchedColl": "qcresults",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/QCSample.js",
+    "modelName": "QCSample",
+    "customColl": null,
+    "matchedColl": "qcsamples",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/QCTest.js",
+    "modelName": "QCTest",
+    "customColl": null,
+    "matchedColl": "qctests",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/RegulatoryRecord.js",
+    "modelName": "RegulatoryRecord",
+    "customColl": null,
+    "matchedColl": "regulatoryrecords",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Role.js",
+    "modelName": "Role",
+    "customColl": null,
+    "matchedColl": "roles",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/SalesOrder.js",
+    "modelName": "SalesOrder",
+    "customColl": null,
+    "matchedColl": "salesorders",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/SOP.js",
+    "modelName": "SOP",
+    "customColl": null,
+    "matchedColl": "sops",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Task.js",
+    "modelName": "Task",
+    "customColl": null,
+    "matchedColl": "tasks",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/User.js",
+    "modelName": "User",
+    "customColl": null,
+    "matchedColl": "users",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/UserSession.js",
+    "modelName": "UserSession",
+    "customColl": null,
+    "matchedColl": "usersessions",
+    "foundInAtlas": true
+  },
+  {
+    "file": "BJK HELTHCARE/server/models/Warehouse.js",
+    "modelName": "Warehouse",
+    "customColl": null,
+    "matchedColl": "warehouses",
+    "foundInAtlas": true
+  }
+]

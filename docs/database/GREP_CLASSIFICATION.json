@@ -1,0 +1,993 @@
+{
+  "mongoose": {
+    "total": 960,
+    "runtime": {
+      "count": 786,
+      "files": [
+        "BJK HELTHCARE/server/config/db.js",
+        "BJK HELTHCARE/server/config/safetyGuards.js",
+        "BJK HELTHCARE/server/controllers/EmployeeAttendanceController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeAuthController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeDocumentController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeLeaveController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeNotificationController.js",
+        "BJK HELTHCARE/server/controllers/EmployeePayrollController.js",
+        "BJK HELTHCARE/server/controllers/EmployeePolicyController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeProfileController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeSettingsController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeShiftController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeSupportController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeTaskController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeTeamController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeTrainingController.js",
+        "BJK HELTHCARE/server/controllers/adminAttendanceController.js",
+        "BJK HELTHCARE/server/controllers/adminDatabaseController.js",
+        "BJK HELTHCARE/server/controllers/authController.js",
+        "BJK HELTHCARE/server/controllers/departmentDashboardController.js",
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/financeController.js",
+        "BJK HELTHCARE/server/controllers/hr/onboardingController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/canteenController.js",
+        "BJK HELTHCARE/server/controllers/hrms/coreHrmsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/dashboardController.js",
+        "BJK HELTHCARE/server/controllers/hrms/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrms/payrollController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js",
+        "BJK HELTHCARE/server/controllers/leavePolicyController.js",
+        "BJK HELTHCARE/server/controllers/loginCredentialsController.js",
+        "BJK HELTHCARE/server/middleware/auth.js",
+        "BJK HELTHCARE/server/middleware/employeeAuth.js",
+        "BJK HELTHCARE/server/models/AIConversation.js",
+        "BJK HELTHCARE/server/models/AIMessage.js",
+        "BJK HELTHCARE/server/models/Alert.js",
+        "BJK HELTHCARE/server/models/AttendanceAuditLog.js",
+        "BJK HELTHCARE/server/models/AttendancePolicy.js",
+        "BJK HELTHCARE/server/models/Audit.js",
+        "BJK HELTHCARE/server/models/AuditLog.js",
+        "BJK HELTHCARE/server/models/Batch.js",
+        "BJK HELTHCARE/server/models/CAPA.js",
+        "BJK HELTHCARE/server/models/ChangeControl.js",
+        "BJK HELTHCARE/server/models/Company.js",
+        "BJK HELTHCARE/server/models/CountryCompliance.js",
+        "BJK HELTHCARE/server/models/Customer.js",
+        "BJK HELTHCARE/server/models/Deviation.js",
+        "BJK HELTHCARE/server/models/Document.js",
+        "BJK HELTHCARE/server/models/DossierSubmission.js",
+        "BJK HELTHCARE/server/models/Employee.js",
+        "BJK HELTHCARE/server/models/EmployeeBankDetails.js",
+        "BJK HELTHCARE/server/models/EmployeeFaceAttendance.js",
+        "BJK HELTHCARE/server/models/EmployeeLoginHistory.js",
+        "BJK HELTHCARE/server/models/EmployeeSupportRequest.js",
+        "BJK HELTHCARE/server/models/EmployeeTask.js",
+        "BJK HELTHCARE/server/models/Enquiry.js",
+        "BJK HELTHCARE/server/models/ExportShipment.js",
+        "BJK HELTHCARE/server/models/Facility.js",
+        "BJK HELTHCARE/server/models/Finance.js",
+        "BJK HELTHCARE/server/models/InventoryItem.js",
+        "BJK HELTHCARE/server/models/InventoryTransaction.js",
+        "BJK HELTHCARE/server/models/KnowledgeChunk.js",
+        "BJK HELTHCARE/server/models/KnowledgeEntity.js",
+        "BJK HELTHCARE/server/models/Lead.js",
+        "BJK HELTHCARE/server/models/LoginActivity.js",
+        "BJK HELTHCARE/server/models/Machine.js",
+        "BJK HELTHCARE/server/models/ManufacturingCapability.js",
+        "BJK HELTHCARE/server/models/Product.js",
+        "BJK HELTHCARE/server/models/ProductCategory.js",
+        "BJK HELTHCARE/server/models/ProductionLine.js",
+        "BJK HELTHCARE/server/models/ProductionOrder.js",
+        "BJK HELTHCARE/server/models/QCResult.js",
+        "BJK HELTHCARE/server/models/QCSample.js",
+        "BJK HELTHCARE/server/models/QCTest.js",
+        "BJK HELTHCARE/server/models/RegulatoryRecord.js",
+        "BJK HELTHCARE/server/models/Role.js",
+        "BJK HELTHCARE/server/models/SOP.js",
+        "BJK HELTHCARE/server/models/SalesOrder.js",
+        "BJK HELTHCARE/server/models/Task.js",
+        "BJK HELTHCARE/server/models/User.js",
+        "BJK HELTHCARE/server/models/UserSession.js",
+        "BJK HELTHCARE/server/models/Warehouse.js",
+        "BJK HELTHCARE/server/models/hrms/Asset.js",
+        "BJK HELTHCARE/server/models/hrms/Attendance.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceImportBatch.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceImportSnapshot.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceMonthlySummary.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceRegularization.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceReportHistory.js",
+        "BJK HELTHCARE/server/models/hrms/CalendarException.js",
+        "BJK HELTHCARE/server/models/hrms/CalendarSpecialDay.js",
+        "BJK HELTHCARE/server/models/hrms/CanteenLunchRecord.js",
+        "BJK HELTHCARE/server/models/hrms/CanteenSetting.js",
+        "BJK HELTHCARE/server/models/hrms/CompanyCalendarEvent.js",
+        "BJK HELTHCARE/server/models/hrms/Credential.js",
+        "BJK HELTHCARE/server/models/hrms/Department.js",
+        "BJK HELTHCARE/server/models/hrms/Designation.js",
+        "BJK HELTHCARE/server/models/hrms/DisciplinaryCase.js",
+        "BJK HELTHCARE/server/models/hrms/DiversityMetric.js",
+        "BJK HELTHCARE/server/models/hrms/Document.js",
+        "BJK HELTHCARE/server/models/hrms/Employee.js",
+        "BJK HELTHCARE/server/models/hrms/Expense.js",
+        "BJK HELTHCARE/server/models/hrms/HRAutomationRule.js",
+        "BJK HELTHCARE/server/models/hrms/HRCompliance.js",
+        "BJK HELTHCARE/server/models/hrms/HRNotification.js",
+        "BJK HELTHCARE/server/models/hrms/Leave.js",
+        "BJK HELTHCARE/server/models/hrms/LeaveLedger.js",
+        "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+        "BJK HELTHCARE/server/models/hrms/MaternityCase.js",
+        "BJK HELTHCARE/server/models/hrms/Onboarding.js",
+        "BJK HELTHCARE/server/models/hrms/OnboardingApplication.js",
+        "BJK HELTHCARE/server/models/hrms/POSHCase.js",
+        "BJK HELTHCARE/server/models/hrms/Payroll.js",
+        "BJK HELTHCARE/server/models/hrms/Performance.js",
+        "BJK HELTHCARE/server/models/hrms/PolicyMaster.js",
+        "BJK HELTHCARE/server/models/hrms/PrivacySecurity.js",
+        "BJK HELTHCARE/server/models/hrms/Recruitment.js",
+        "BJK HELTHCARE/server/models/hrms/Roster.js",
+        "BJK HELTHCARE/server/models/hrms/SafetyManagement.js",
+        "BJK HELTHCARE/server/models/hrms/SavedReportTemplate.js",
+        "BJK HELTHCARE/server/models/hrms/SeparationCase.js",
+        "BJK HELTHCARE/server/models/hrms/Shift.js",
+        "BJK HELTHCARE/server/models/hrms/Training.js",
+        "BJK HELTHCARE/server/models/hrms/WorkSchedule.js",
+        "BJK HELTHCARE/server/models/hrms/WorkforceHoliday.js",
+        "BJK HELTHCARE/server/models/hrms/WorkforceRoster.js",
+        "BJK HELTHCARE/server/package-lock.json",
+        "BJK HELTHCARE/server/package.json",
+        "BJK HELTHCARE/server/routes/healthRoutes.js",
+        "BJK HELTHCARE/server/routes/hrms/canteenRoutes.js",
+        "BJK HELTHCARE/server/server.js",
+        "BJK HELTHCARE/server/services/geofenceService.js",
+        "BJK HELTHCARE/server/services/hrms/attendanceImportService.js",
+        "BJK HELTHCARE/server/services/hrms/bankDetailsService.js",
+        "BJK HELTHCARE/server/services/hrms/employeeMasterMigrationService.js",
+        "BJK HELTHCARE/server/services/hrms/employeeMasterSyncService.js",
+        "BJK HELTHCARE/server/services/hrms/leaveLedgerService.js",
+        "BJK HELTHCARE/server/services/hrms/leavePolicyService.js",
+        "BJK HELTHCARE/server/services/hrms/leaveService.js",
+        "BJK HELTHCARE/server/services/hrms/workforceCalendarService.js",
+        "package.json"
+      ]
+    },
+    "test": {
+      "count": 81,
+      "files": [
+        "BJK HELTHCARE/server/scripts/test_attendance_import_lifecycle.js",
+        "BJK HELTHCARE/server/scripts/test_attendance_query.js",
+        "BJK HELTHCARE/server/scripts/test_attendance_report_fixes.js",
+        "BJK HELTHCARE/server/scripts/test_complete_bank_flow.js",
+        "BJK HELTHCARE/server/scripts/test_live_api.js",
+        "BJK HELTHCARE/server/scripts/test_master_enrichment.js",
+        "BJK HELTHCARE/server/scripts/test_master_profile_verification.js",
+        "BJK HELTHCARE/server/scripts/test_master_sync_service.js",
+        "BJK HELTHCARE/server/scripts/test_matching.js",
+        "BJK HELTHCARE/server/scripts/test_parse_all_months.js",
+        "BJK HELTHCARE/server/testHRGuidedOnboarding.js",
+        "BJK HELTHCARE/server/test_12_document_flow.js",
+        "BJK HELTHCARE/server/test_leave_2026_integration.js",
+        "BJK HELTHCARE/server/test_leave_policy_bjk001.js",
+        "BJK HELTHCARE/server/tests/employeeSecurityTest.js",
+        "BJK HELTHCARE/server/tests/hr/hrmsMasterTestSuite.js",
+        "BJK HELTHCARE/server/tests/test_first_time_password_change.js",
+        "BJK HELTHCARE/server/tests/test_workforce_calendar_e2e.js",
+        "BJK HELTHCARE/server/tests/unit_anonymize_staging.test.js",
+        "BJK HELTHCARE/server/tests/unit_bank_payroll_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_group_a_behaviour.test.js",
+        "BJK HELTHCARE/server/tests/unit_r2_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_route_level_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_rplus_real_db.test.js",
+        "BJK HELTHCARE/server/tests/verifyAttendanceReportEngine.js",
+        "BJK HELTHCARE/server/tests/verify_additive_employee_geofence.js"
+      ]
+    },
+    "seed": {
+      "count": 14,
+      "files": [
+        "BJK HELTHCARE/server/seed/attendanceSeed.js",
+        "BJK HELTHCARE/server/seed/authSeed.js",
+        "BJK HELTHCARE/server/seed/departmentTestAccountsSeed.js",
+        "BJK HELTHCARE/server/seed/employeePortalSeed.js",
+        "BJK HELTHCARE/server/seed/hrmsSeed.js",
+        "BJK HELTHCARE/server/seed/policySeed.js",
+        "BJK HELTHCARE/server/seed/seed.js"
+      ]
+    },
+    "migration": {
+      "count": 75,
+      "files": [
+        "BJK HELTHCARE/server/scripts/anonymizeStaging.js",
+        "BJK HELTHCARE/server/scripts/check_current_db.js",
+        "BJK HELTHCARE/server/scripts/check_dixita_leave.js",
+        "BJK HELTHCARE/server/scripts/check_september_matching.js",
+        "BJK HELTHCARE/server/scripts/compare_master_db.js",
+        "BJK HELTHCARE/server/scripts/create_director_admins.js",
+        "BJK HELTHCARE/server/scripts/ensure_all_employees_first_login.js",
+        "BJK HELTHCARE/server/scripts/fix_temporary_passwords.js",
+        "BJK HELTHCARE/server/scripts/get_baseline_counts.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_attendance.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/import_september_attendance.js",
+        "BJK HELTHCARE/server/scripts/inspect_attendance_db.js",
+        "BJK HELTHCARE/server/scripts/inspect_attendances_detail.js",
+        "BJK HELTHCARE/server/scripts/inspect_db_temp.js",
+        "BJK HELTHCARE/server/scripts/migrateUsersToHR.js",
+        "BJK HELTHCARE/server/scripts/ownerRunPasswordReset.js",
+        "BJK HELTHCARE/server/scripts/seedNonTechnicalStaff.js",
+        "BJK HELTHCARE/server/scripts/sync_hr_and_superadmin.js",
+        "BJK HELTHCARE/server/scripts/verifyDatabase.js",
+        "BJK HELTHCARE/server/scripts/verifyHRSystem.js",
+        "BJK HELTHCARE/server/scripts/verifyLeaveWorkflow.js",
+        "BJK HELTHCARE/server/scripts/verify_all_9_months.js",
+        "BJK HELTHCARE/server/scripts/verify_all_months_complete.js",
+        "BJK HELTHCARE/server/scripts/verify_attendance_full_flow.js",
+        "BJK HELTHCARE/server/scripts/verify_september_complete.js"
+      ]
+    },
+    "docs": {
+      "count": 4,
+      "files": [
+        "docs/migration/phase-2/INIT_SCRIPTS_ARCHITECTURE.md",
+        "docs/migration/phase-2/NEXTJS_ARCHITECTURE.md"
+      ]
+    }
+  },
+  "MongoClient": {
+    "total": 0,
+    "runtime": {
+      "count": 0,
+      "files": []
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "mongodb": {
+    "total": 84,
+    "runtime": {
+      "count": 44,
+      "files": [
+        ".env.example",
+        "BJK HELTHCARE/server/.env.example",
+        "BJK HELTHCARE/server/config/db.js",
+        "BJK HELTHCARE/server/config/safetyGuards.js",
+        "BJK HELTHCARE/server/package-lock.json",
+        "BJK HELTHCARE/server/package.json"
+      ]
+    },
+    "test": {
+      "count": 22,
+      "files": [
+        "BJK HELTHCARE/server/tests/unit_anonymize_staging.test.js",
+        "BJK HELTHCARE/server/tests/unit_bank_payroll_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_group_a_behaviour.test.js",
+        "BJK HELTHCARE/server/tests/unit_route_level_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_rplus_real_db.test.js",
+        "BJK HELTHCARE/server/tests/unit_safety_guards.test.js"
+      ]
+    },
+    "seed": {
+      "count": 2,
+      "files": [
+        "BJK HELTHCARE/server/seed/authSeed.js",
+        "BJK HELTHCARE/server/seed/employeePortalSeed.js"
+      ]
+    },
+    "migration": {
+      "count": 1,
+      "files": [
+        "BJK HELTHCARE/server/scripts/check_dixita_leave.js"
+      ]
+    },
+    "docs": {
+      "count": 15,
+      "files": [
+        "README.md",
+        "docs/AUTOMATED_AUDIT_REPORT.md",
+        "docs/migration/CURRENT_STATE_RECONCILIATION.md",
+        "docs/migration/G1-A_OWNER_REVIEW.md",
+        "docs/migration/G2_RESOLUTION_PLAN.md",
+        "docs/migration/HOTFIX_DEPLOY_CHECKLIST.md",
+        "docs/migration/SECURITY_CHECKPOINT_REPORT.md",
+        "docs/migration/TEST_EVIDENCE.md",
+        "docs/migration/phase-0/PHASE_0_SAFETY_REPORT.md"
+      ]
+    }
+  },
+  "MONGODB_URI": {
+    "total": 63,
+    "runtime": {
+      "count": 7,
+      "files": [
+        ".env.example",
+        "BJK HELTHCARE/server/.env.example",
+        "BJK HELTHCARE/server/config/db.js",
+        "BJK HELTHCARE/server/config/requiredEnv.js",
+        "BJK HELTHCARE/server/config/safetyGuards.js"
+      ]
+    },
+    "test": {
+      "count": 24,
+      "files": [
+        "BJK HELTHCARE/server/tests/unit_anonymize_staging.test.js",
+        "BJK HELTHCARE/server/tests/unit_group_a_behaviour.test.js",
+        "BJK HELTHCARE/server/tests/unit_route_level_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_safety_guards.test.js"
+      ]
+    },
+    "seed": {
+      "count": 2,
+      "files": [
+        "BJK HELTHCARE/server/seed/authSeed.js",
+        "BJK HELTHCARE/server/seed/employeePortalSeed.js"
+      ]
+    },
+    "migration": {
+      "count": 9,
+      "files": [
+        "BJK HELTHCARE/server/scripts/anonymizeStaging.js",
+        "BJK HELTHCARE/server/scripts/check_dixita_leave.js",
+        "BJK HELTHCARE/server/scripts/create_director_admins.js",
+        "BJK HELTHCARE/server/scripts/ensure_all_employees_first_login.js",
+        "BJK HELTHCARE/server/scripts/fix_temporary_passwords.js",
+        "BJK HELTHCARE/server/scripts/preflightCheck.js",
+        "BJK HELTHCARE/server/scripts/sync_hr_and_superadmin.js"
+      ]
+    },
+    "docs": {
+      "count": 21,
+      "files": [
+        "README.md",
+        "docs/AUTOMATED_AUDIT_REPORT.md",
+        "docs/migration/CHANGELOG_MIGRATION.md",
+        "docs/migration/CURRENT_STATE_RECONCILIATION.md",
+        "docs/migration/G1-A_OWNER_REVIEW.md",
+        "docs/migration/G2_RESOLUTION_PLAN.md",
+        "docs/migration/HOTFIX_DEPLOY_CHECKLIST.md",
+        "docs/migration/SECURITY_CHECKPOINT_REPORT.md",
+        "docs/migration/TEST_EVIDENCE.md",
+        "docs/migration/phase-0/PHASE_0_SAFETY_REPORT.md",
+        "docs/migration/phase-1/VERCEL_DEPLOYMENT_AUDIT.md"
+      ]
+    }
+  },
+  "populate(": {
+    "total": 60,
+    "runtime": {
+      "count": 60,
+      "files": [
+        "BJK HELTHCARE/server/controllers/aiCopilotController.js",
+        "BJK HELTHCARE/server/controllers/commercialController.js",
+        "BJK HELTHCARE/server/controllers/departmentDashboardController.js",
+        "BJK HELTHCARE/server/controllers/enterpriseController.js",
+        "BJK HELTHCARE/server/controllers/financeController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/policyController.js",
+        "BJK HELTHCARE/server/controllers/inventoryController.js",
+        "BJK HELTHCARE/server/controllers/productionController.js",
+        "BJK HELTHCARE/server/controllers/qualityController.js",
+        "BJK HELTHCARE/server/controllers/regulatoryController.js",
+        "BJK HELTHCARE/server/controllers/userController.js"
+      ]
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "aggregate(": {
+    "total": 25,
+    "runtime": {
+      "count": 18,
+      "files": [
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/analyticsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/coreHrmsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/dashboardController.js",
+        "BJK HELTHCARE/server/controllers/hrms/orgController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js"
+      ]
+    },
+    "test": {
+      "count": 1,
+      "files": [
+        "BJK HELTHCARE/server/scripts/test_september_endpoints.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 6,
+      "files": [
+        "BJK HELTHCARE/server/scripts/check_current_db.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/inspect_attendances_detail.js",
+        "BJK HELTHCARE/server/scripts/verify_september_complete.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "$lookup": {
+    "total": 0,
+    "runtime": {
+      "count": 0,
+      "files": []
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "$group": {
+    "total": 24,
+    "runtime": {
+      "count": 17,
+      "files": [
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/analyticsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/coreHrmsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/dashboardController.js",
+        "BJK HELTHCARE/server/controllers/hrms/orgController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js"
+      ]
+    },
+    "test": {
+      "count": 1,
+      "files": [
+        "BJK HELTHCARE/server/scripts/test_september_endpoints.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 6,
+      "files": [
+        "BJK HELTHCARE/server/scripts/check_current_db.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/inspect_attendances_detail.js",
+        "BJK HELTHCARE/server/scripts/verify_september_complete.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "$regex": {
+    "total": 118,
+    "runtime": {
+      "count": 98,
+      "files": [
+        "BJK HELTHCARE/server/controllers/adminDatabaseController.js",
+        "BJK HELTHCARE/server/controllers/authController.js",
+        "BJK HELTHCARE/server/controllers/departmentDashboardController.js",
+        "BJK HELTHCARE/server/controllers/documentController.js",
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/enterpriseController.js",
+        "BJK HELTHCARE/server/controllers/hr/onboardingController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/attendanceImportController.js",
+        "BJK HELTHCARE/server/controllers/hrms/attendanceReportController.js",
+        "BJK HELTHCARE/server/controllers/hrms/automationController.js",
+        "BJK HELTHCARE/server/controllers/hrms/canteenController.js",
+        "BJK HELTHCARE/server/controllers/hrms/dashboardController.js",
+        "BJK HELTHCARE/server/controllers/hrms/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrms/payrollController.js",
+        "BJK HELTHCARE/server/controllers/inventoryController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js",
+        "BJK HELTHCARE/server/controllers/productController.js",
+        "BJK HELTHCARE/server/controllers/productionController.js",
+        "BJK HELTHCARE/server/controllers/userController.js",
+        "BJK HELTHCARE/server/services/hrms/attendanceImportService.js",
+        "BJK HELTHCARE/server/services/hrms/dataScopeService.js"
+      ]
+    },
+    "test": {
+      "count": 5,
+      "files": [
+        "BJK HELTHCARE/server/scripts/test_attendance_query.js",
+        "BJK HELTHCARE/server/scripts/test_matching.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 15,
+      "files": [
+        "BJK HELTHCARE/server/scripts/import_all_months_attendance.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/import_september_attendance.js",
+        "BJK HELTHCARE/server/scripts/inspect_attendances_detail.js",
+        "BJK HELTHCARE/server/scripts/verifyLeaveWorkflow.js",
+        "BJK HELTHCARE/server/scripts/verify_all_9_months.js",
+        "BJK HELTHCARE/server/scripts/verify_all_months_complete.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "$text": {
+    "total": 0,
+    "runtime": {
+      "count": 0,
+      "files": []
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "ObjectId": {
+    "total": 299,
+    "runtime": {
+      "count": 276,
+      "files": [
+        "BJK HELTHCARE/server/controllers/EmployeeAttendanceController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeAuthController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeLeaveController.js",
+        "BJK HELTHCARE/server/controllers/EmployeePayrollController.js",
+        "BJK HELTHCARE/server/controllers/EmployeePolicyController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeShiftController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeSupportController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeTaskController.js",
+        "BJK HELTHCARE/server/controllers/adminDatabaseController.js",
+        "BJK HELTHCARE/server/controllers/authController.js",
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/financeController.js",
+        "BJK HELTHCARE/server/controllers/hr/onboardingController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/canteenController.js",
+        "BJK HELTHCARE/server/controllers/hrms/coreHrmsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/documentController.js",
+        "BJK HELTHCARE/server/controllers/hrms/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrms/payrollController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js",
+        "BJK HELTHCARE/server/controllers/loginCredentialsController.js",
+        "BJK HELTHCARE/server/middleware/auth.js",
+        "BJK HELTHCARE/server/middleware/employeeAuth.js",
+        "BJK HELTHCARE/server/middleware/errorHandler.js",
+        "BJK HELTHCARE/server/models/AIConversation.js",
+        "BJK HELTHCARE/server/models/AIMessage.js",
+        "BJK HELTHCARE/server/models/Alert.js",
+        "BJK HELTHCARE/server/models/AuditLog.js",
+        "BJK HELTHCARE/server/models/Batch.js",
+        "BJK HELTHCARE/server/models/CAPA.js",
+        "BJK HELTHCARE/server/models/ChangeControl.js",
+        "BJK HELTHCARE/server/models/Deviation.js",
+        "BJK HELTHCARE/server/models/Document.js",
+        "BJK HELTHCARE/server/models/DossierSubmission.js",
+        "BJK HELTHCARE/server/models/Employee.js",
+        "BJK HELTHCARE/server/models/EmployeeBankDetails.js",
+        "BJK HELTHCARE/server/models/EmployeeFaceAttendance.js",
+        "BJK HELTHCARE/server/models/EmployeeLoginHistory.js",
+        "BJK HELTHCARE/server/models/EmployeeSupportRequest.js",
+        "BJK HELTHCARE/server/models/EmployeeTask.js",
+        "BJK HELTHCARE/server/models/Enquiry.js",
+        "BJK HELTHCARE/server/models/ExportShipment.js",
+        "BJK HELTHCARE/server/models/Finance.js",
+        "BJK HELTHCARE/server/models/InventoryItem.js",
+        "BJK HELTHCARE/server/models/InventoryTransaction.js",
+        "BJK HELTHCARE/server/models/KnowledgeChunk.js",
+        "BJK HELTHCARE/server/models/Lead.js",
+        "BJK HELTHCARE/server/models/LoginActivity.js",
+        "BJK HELTHCARE/server/models/Machine.js",
+        "BJK HELTHCARE/server/models/ManufacturingCapability.js",
+        "BJK HELTHCARE/server/models/ProductionLine.js",
+        "BJK HELTHCARE/server/models/ProductionOrder.js",
+        "BJK HELTHCARE/server/models/QCResult.js",
+        "BJK HELTHCARE/server/models/QCSample.js",
+        "BJK HELTHCARE/server/models/RegulatoryRecord.js",
+        "BJK HELTHCARE/server/models/SOP.js",
+        "BJK HELTHCARE/server/models/SalesOrder.js",
+        "BJK HELTHCARE/server/models/Task.js",
+        "BJK HELTHCARE/server/models/User.js",
+        "BJK HELTHCARE/server/models/UserSession.js",
+        "BJK HELTHCARE/server/models/Warehouse.js",
+        "BJK HELTHCARE/server/models/hrms/Asset.js",
+        "BJK HELTHCARE/server/models/hrms/Attendance.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceExtension.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceImportBatch.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceImportSnapshot.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceMonthlySummary.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceRegularization.js",
+        "BJK HELTHCARE/server/models/hrms/AttendanceReportHistory.js",
+        "BJK HELTHCARE/server/models/hrms/CalendarException.js",
+        "BJK HELTHCARE/server/models/hrms/CalendarSpecialDay.js",
+        "BJK HELTHCARE/server/models/hrms/CanteenLunchRecord.js",
+        "BJK HELTHCARE/server/models/hrms/CompanyCalendarEvent.js",
+        "BJK HELTHCARE/server/models/hrms/Credential.js",
+        "BJK HELTHCARE/server/models/hrms/Department.js",
+        "BJK HELTHCARE/server/models/hrms/Designation.js",
+        "BJK HELTHCARE/server/models/hrms/DisciplinaryCase.js",
+        "BJK HELTHCARE/server/models/hrms/DiversityMetric.js",
+        "BJK HELTHCARE/server/models/hrms/Document.js",
+        "BJK HELTHCARE/server/models/hrms/Employee.js",
+        "BJK HELTHCARE/server/models/hrms/Expense.js",
+        "BJK HELTHCARE/server/models/hrms/HRNotification.js",
+        "BJK HELTHCARE/server/models/hrms/Leave.js",
+        "BJK HELTHCARE/server/models/hrms/LeavePolicyModels.js",
+        "BJK HELTHCARE/server/models/hrms/MaternityCase.js",
+        "BJK HELTHCARE/server/models/hrms/Onboarding.js",
+        "BJK HELTHCARE/server/models/hrms/OnboardingApplication.js",
+        "BJK HELTHCARE/server/models/hrms/POSHCase.js",
+        "BJK HELTHCARE/server/models/hrms/Payroll.js",
+        "BJK HELTHCARE/server/models/hrms/Performance.js",
+        "BJK HELTHCARE/server/models/hrms/PolicyMaster.js",
+        "BJK HELTHCARE/server/models/hrms/Recruitment.js",
+        "BJK HELTHCARE/server/models/hrms/Roster.js",
+        "BJK HELTHCARE/server/models/hrms/SavedReportTemplate.js",
+        "BJK HELTHCARE/server/models/hrms/SeparationCase.js",
+        "BJK HELTHCARE/server/models/hrms/Training.js",
+        "BJK HELTHCARE/server/models/hrms/WorkSchedule.js",
+        "BJK HELTHCARE/server/models/hrms/WorkforceHoliday.js",
+        "BJK HELTHCARE/server/models/hrms/WorkforceRoster.js",
+        "BJK HELTHCARE/server/routes/hrms/canteenRoutes.js",
+        "BJK HELTHCARE/server/services/hrms/attendanceImportService.js",
+        "BJK HELTHCARE/server/services/hrms/bankDetailsService.js",
+        "BJK HELTHCARE/server/services/hrms/leaveService.js"
+      ]
+    },
+    "test": {
+      "count": 17,
+      "files": [
+        "BJK HELTHCARE/server/testHRGuidedOnboarding.js",
+        "BJK HELTHCARE/server/test_leave_policy_bjk001.js",
+        "BJK HELTHCARE/server/tests/hr/hrmsMasterTestSuite.js",
+        "BJK HELTHCARE/server/tests/test_workforce_calendar_e2e.js",
+        "BJK HELTHCARE/server/tests/unit_bank_payroll_security.test.js",
+        "BJK HELTHCARE/server/tests/unit_rplus_real_db.test.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 6,
+      "files": [
+        "BJK HELTHCARE/server/scripts/import_all_months_attendance.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/import_september_attendance.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "findOneAndUpdate": {
+    "total": 66,
+    "runtime": {
+      "count": 36,
+      "files": [
+        "BJK HELTHCARE/server/controllers/EmployeeAuthController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeLeaveController.js",
+        "BJK HELTHCARE/server/controllers/EmployeePolicyController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeProfileController.js",
+        "BJK HELTHCARE/server/controllers/adminDatabaseController.js",
+        "BJK HELTHCARE/server/controllers/authController.js",
+        "BJK HELTHCARE/server/controllers/hrms/payrollController.js",
+        "BJK HELTHCARE/server/controllers/hrms/policyController.js",
+        "BJK HELTHCARE/server/controllers/hrms/rosterController.js",
+        "BJK HELTHCARE/server/controllers/hrms/workforceCalendarController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js",
+        "BJK HELTHCARE/server/controllers/leavePolicyController.js",
+        "BJK HELTHCARE/server/controllers/loginCredentialsController.js",
+        "BJK HELTHCARE/server/services/hrms/credentialExcelService.js",
+        "BJK HELTHCARE/server/services/hrms/leavePolicyService.js",
+        "BJK HELTHCARE/server/services/hrms/leaveService.js",
+        "BJK HELTHCARE/server/services/hrms/workforceCalendarService.js"
+      ]
+    },
+    "test": {
+      "count": 8,
+      "files": [
+        "BJK HELTHCARE/server/test_leave_policy_bjk001.js",
+        "BJK HELTHCARE/server/tests/test_first_time_password_change.js",
+        "BJK HELTHCARE/server/tests/test_workforce_calendar_e2e.js"
+      ]
+    },
+    "seed": {
+      "count": 17,
+      "files": [
+        "BJK HELTHCARE/server/seed/employeePortalSeed.js",
+        "BJK HELTHCARE/server/seed/policySeed.js",
+        "BJK HELTHCARE/server/seed/seed.js"
+      ]
+    },
+    "migration": {
+      "count": 5,
+      "files": [
+        "BJK HELTHCARE/server/scripts/verifyHRSystem.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "updateMany": {
+    "total": 33,
+    "runtime": {
+      "count": 19,
+      "files": [
+        "BJK HELTHCARE/server/controllers/EmployeeNotificationController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeSettingsController.js",
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/canteenController.js",
+        "BJK HELTHCARE/server/controllers/hrms/notificationController.js",
+        "BJK HELTHCARE/server/controllers/loginCredentialsController.js",
+        "BJK HELTHCARE/server/controllers/taskNotificationController.js",
+        "BJK HELTHCARE/server/services/hrms/credentialExcelService.js"
+      ]
+    },
+    "test": {
+      "count": 3,
+      "files": [
+        "BJK HELTHCARE/server/tests/unit_controller_security.test.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 10,
+      "files": [
+        "BJK HELTHCARE/server/scripts/anonymizeStaging.js",
+        "BJK HELTHCARE/server/scripts/ensure_all_employees_first_login.js",
+        "BJK HELTHCARE/server/scripts/ownerRunPasswordReset.js",
+        "BJK HELTHCARE/server/scripts/resetAllEmployeeDocuments.js",
+        "BJK HELTHCARE/server/scripts/unlockAndFixCredentials.js"
+      ]
+    },
+    "docs": {
+      "count": 1,
+      "files": [
+        "docs/migration/SECURITY_CHECKPOINT_REPORT.md"
+      ]
+    }
+  },
+  "bulkWrite": {
+    "total": 2,
+    "runtime": {
+      "count": 2,
+      "files": [
+        "BJK HELTHCARE/server/services/hrms/employeeMasterSyncService.js"
+      ]
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "startSession": {
+    "total": 0,
+    "runtime": {
+      "count": 0,
+      "files": []
+    },
+    "test": {
+      "count": 0,
+      "files": []
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "lean(": {
+    "total": 351,
+    "runtime": {
+      "count": 281,
+      "files": [
+        "BJK HELTHCARE/client/src/components/employee/AttendanceGeofenceWidget.jsx",
+        "BJK HELTHCARE/client/src/components/employee/EmployeeProtectedRoute.jsx",
+        "BJK HELTHCARE/client/src/context/AuthContext.jsx",
+        "BJK HELTHCARE/client/src/context/EmployeeAuthContext.jsx",
+        "BJK HELTHCARE/client/src/pages/employee/EmployeeDashboard.jsx",
+        "BJK HELTHCARE/client/src/pages/employee/EmployeeLeavePage.jsx",
+        "BJK HELTHCARE/client/src/pages/hrms/EmployeeProfile.jsx",
+        "BJK HELTHCARE/client/src/pages/hrms/HRLoginCredentials.jsx",
+        "BJK HELTHCARE/client/src/pages/hrms/LeaveManagement.jsx",
+        "BJK HELTHCARE/client/src/pages/hrms/SetupDepartments.jsx",
+        "BJK HELTHCARE/client/src/pages/hrms/SetupSubDepartments.jsx",
+        "BJK HELTHCARE/server/config/db.js",
+        "BJK HELTHCARE/server/controllers/EmployeeAuthController.js",
+        "BJK HELTHCARE/server/controllers/EmployeeLeaveController.js",
+        "BJK HELTHCARE/server/controllers/adminDatabaseController.js",
+        "BJK HELTHCARE/server/controllers/aiCopilotController.js",
+        "BJK HELTHCARE/server/controllers/authController.js",
+        "BJK HELTHCARE/server/controllers/commercialController.js",
+        "BJK HELTHCARE/server/controllers/departmentDashboardController.js",
+        "BJK HELTHCARE/server/controllers/documentController.js",
+        "BJK HELTHCARE/server/controllers/employeeController.js",
+        "BJK HELTHCARE/server/controllers/enterpriseController.js",
+        "BJK HELTHCARE/server/controllers/financeController.js",
+        "BJK HELTHCARE/server/controllers/hrController.js",
+        "BJK HELTHCARE/server/controllers/hrms/attendanceImportController.js",
+        "BJK HELTHCARE/server/controllers/hrms/attendanceReportController.js",
+        "BJK HELTHCARE/server/controllers/hrms/canteenController.js",
+        "BJK HELTHCARE/server/controllers/hrms/coreHrmsController.js",
+        "BJK HELTHCARE/server/controllers/hrms/dashboardController.js",
+        "BJK HELTHCARE/server/controllers/hrms/documentController.js",
+        "BJK HELTHCARE/server/controllers/hrms/workforceCalendarController.js",
+        "BJK HELTHCARE/server/controllers/inventoryController.js",
+        "BJK HELTHCARE/server/controllers/leaveController.js",
+        "BJK HELTHCARE/server/controllers/loginCredentialsController.js",
+        "BJK HELTHCARE/server/controllers/productController.js",
+        "BJK HELTHCARE/server/controllers/productionController.js",
+        "BJK HELTHCARE/server/controllers/qualityController.js",
+        "BJK HELTHCARE/server/controllers/regulatoryController.js",
+        "BJK HELTHCARE/server/controllers/taskNotificationController.js",
+        "BJK HELTHCARE/server/controllers/userController.js",
+        "BJK HELTHCARE/server/middleware/auth.js",
+        "BJK HELTHCARE/server/middleware/employeeAuth.js",
+        "BJK HELTHCARE/server/models/User.js",
+        "BJK HELTHCARE/server/server.js",
+        "BJK HELTHCARE/server/services/hrms/attendanceImportService.js",
+        "BJK HELTHCARE/server/services/hrms/bankDetailsService.js",
+        "BJK HELTHCARE/server/services/hrms/credentialExcelService.js",
+        "BJK HELTHCARE/server/services/hrms/dataScopeService.js",
+        "BJK HELTHCARE/server/services/hrms/documentChecklistService.js",
+        "BJK HELTHCARE/server/services/hrms/employeeMasterMigrationService.js",
+        "BJK HELTHCARE/server/services/hrms/employeeMasterSyncService.js",
+        "BJK HELTHCARE/server/services/hrms/leavePolicyService.js"
+      ]
+    },
+    "test": {
+      "count": 25,
+      "files": [
+        "BJK HELTHCARE/server/scripts/test_attendance_import_lifecycle.js",
+        "BJK HELTHCARE/server/scripts/test_master_enrichment.js",
+        "BJK HELTHCARE/server/scripts/test_master_profile_verification.js",
+        "BJK HELTHCARE/server/scripts/test_master_sync_service.js",
+        "BJK HELTHCARE/server/scripts/test_matching.js",
+        "BJK HELTHCARE/server/scripts/test_parse_all_months.js",
+        "BJK HELTHCARE/server/scripts/test_september_endpoints.js",
+        "BJK HELTHCARE/server/tests/verifyAttendanceReportEngine.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 45,
+      "files": [
+        "BJK HELTHCARE/server/scripts/anonymizeStaging.js",
+        "BJK HELTHCARE/server/scripts/check_september_matching.js",
+        "BJK HELTHCARE/server/scripts/compare_master_db.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_attendance.js",
+        "BJK HELTHCARE/server/scripts/import_all_months_clean.js",
+        "BJK HELTHCARE/server/scripts/import_september_attendance.js",
+        "BJK HELTHCARE/server/scripts/inspect_db_temp.js",
+        "BJK HELTHCARE/server/scripts/verify_all_9_months.js",
+        "BJK HELTHCARE/server/scripts/verify_all_months_complete.js",
+        "BJK HELTHCARE/server/scripts/verify_september_complete.js"
+      ]
+    },
+    "docs": {
+      "count": 0,
+      "files": []
+    }
+  },
+  "mongodb-memory-server": {
+    "total": 23,
+    "runtime": {
+      "count": 15,
+      "files": [
+        "BJK HELTHCARE/server/config/db.js",
+        "BJK HELTHCARE/server/package-lock.json",
+        "BJK HELTHCARE/server/package.json"
+      ]
+    },
+    "test": {
+      "count": 2,
+      "files": [
+        "BJK HELTHCARE/server/tests/unit_anonymize_staging.test.js",
+        "BJK HELTHCARE/server/tests/unit_rplus_real_db.test.js"
+      ]
+    },
+    "seed": {
+      "count": 0,
+      "files": []
+    },
+    "migration": {
+      "count": 0,
+      "files": []
+    },
+    "docs": {
+      "count": 6,
+      "files": [
+        "docs/AUTOMATED_AUDIT_REPORT.md",
+        "docs/migration/CURRENT_STATE_RECONCILIATION.md",
+        "docs/migration/SECURITY_CHECKPOINT_REPORT.md",
+        "docs/migration/TEST_EVIDENCE.md",
+        "docs/migration/phase-0/PHASE_0_SAFETY_REPORT.md"
+      ]
+    }
+  }
+}
