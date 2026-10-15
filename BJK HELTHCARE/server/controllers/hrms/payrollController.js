@@ -40,6 +40,35 @@ const getPayrollRuns = async (req, res) => {
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
+    // PostgreSQL Payroll Listing
+    try {
+      const { payrollRepo } = require('../../repositories');
+      const sqlPayrolls = await payrollRepo.query(`
+        SELECT p.*, e.first_name, e.last_name, e.department_name, e.designation_title, e.employee_id AS emp_code
+        FROM payrolls p
+        LEFT JOIN employees e ON e.id = p.employee_id
+        ORDER BY p.created_at DESC
+        LIMIT $1 OFFSET $2;
+      `, [limitNum || 20, ((pageNum || 1) - 1) * (limitNum || 20)]);
+
+      const countRes = await payrollRepo.query(`SELECT COUNT(*)::int AS total FROM payrolls;`);
+      const total = countRes.rows[0]?.total || 0;
+
+      if (sqlPayrolls && sqlPayrolls.rows && sqlPayrolls.rows.length > 0) {
+        return res.json({
+          success: true,
+          records: sqlPayrolls.rows,
+          summary: { totalGross: 0, totalNet: 0, totalDeductions: 0, totalCompanyCost: 0, count: total },
+          pagination: {
+            total,
+            page: pageNum || 1,
+            limit: limitNum || 20,
+            pages: Math.ceil(total / (limitNum || 20)) || 1
+          }
+        });
+      }
+    } catch (_) {}
+
     const total = await Payroll.countDocuments(query);
     const records = await Payroll.find(query)
       .sort({ createdAt: -1 })

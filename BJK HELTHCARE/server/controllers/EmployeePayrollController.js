@@ -11,6 +11,19 @@ const { logEmployeeAudit } = require('../middleware/employeeAuth');
 const getCurrentPayroll = async (req, res) => {
   try {
     const employeeId = req.employeeId;
+
+    // PostgreSQL Current Payroll Query
+    try {
+      const { payrollRepo } = require('../repositories');
+      const sqlPayroll = await payrollRepo.getEmployeePayslip(employeeId, 'October', 2026);
+      if (sqlPayroll) {
+        return res.status(200).json({
+          success: true,
+          payroll: sqlPayroll
+        });
+      }
+    } catch (_) {}
+
     const employee = await Employee.findOne({
       $or: [
         { employeeId: employeeId },
