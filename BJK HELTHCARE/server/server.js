@@ -45,20 +45,34 @@ const PORT = Number(process.env.PORT || 5000);
 // Ensure database connection for both long-running and serverless environments
 let dbInitPromise = null;
 const ensureDatabaseConnection = async () => {
-  const mongoose = require('mongoose');
-  if (mongoose.connection.readyState === 1) return mongoose.connection;
-  if (mongoose.connection.readyState === 2 && dbInitPromise) return dbInitPromise;
-  if (!dbInitPromise) {
-    dbInitPromise = (async () => {
-      let conn = await connectDB();
-      return conn || mongoose.connection;
-    })().catch(err => {
-      dbInitPromise = null;
-      console.error('[Database Connect Error]', err.message);
-      return null;
-    });
+  // 1. Primary PostgreSQL Engine
+  try {
+    const { getPool } = require('./config/postgres');
+    const pool = getPool();
+    if (pool) return pool;
+  } catch (pgErr) {
+    if (process.env.NODE_ENV === 'production') {
+      throw pgErr;
+    }
   }
-  return dbInitPromise;
+
+  // 2. Transitional MongoDB only when DATABASE_PROVIDER is not postgres
+  if (process.env.DATABASE_PROVIDER !== 'postgres' && process.env.MONGODB_URI) {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) return mongoose.connection;
+    if (mongoose.connection.readyState === 2 && dbInitPromise) return dbInitPromise;
+    if (!dbInitPromise) {
+      dbInitPromise = (async () => {
+        let conn = await connectDB();
+        return conn || mongoose.connection;
+      })().catch(err => {
+        dbInitPromise = null;
+        return null;
+      });
+    }
+    return dbInitPromise;
+  }
+  return null;
 };
 
 // Auto-init for standalone server mode (DISABLED in production; requires ENABLE_AUTO_INIT=true in non-production)
