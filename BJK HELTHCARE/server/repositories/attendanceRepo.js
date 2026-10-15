@@ -53,17 +53,23 @@ class AttendanceRepository extends BaseRepository {
   }
 
   async getAttendanceKPIs(date) {
-    const totalRes = await this.query(`SELECT COUNT(*)::int AS total FROM employees WHERE employment_status = 'ACTIVE';`);
-    const presentRes = await this.query(`SELECT COUNT(*)::int AS present FROM attendances WHERE date = $1 AND status = 'PRESENT';`, [date]);
-    const absentRes = await this.query(`SELECT COUNT(*)::int AS absent FROM attendances WHERE date = $1 AND status = 'ABSENT';`, [date]);
-    const onLeaveRes = await this.query(`SELECT COUNT(*)::int AS on_leave FROM attendances WHERE date = $1 AND status = 'ON_LEAVE';`, [date]);
+    const totalRes = await this.query(`SELECT COUNT(*)::int AS total FROM employees WHERE employment_status ILIKE 'ACTIVE';`);
+    const dateParam = date || new Date().toISOString().split('T')[0];
+    const presentRes = await this.query(`SELECT COUNT(*)::int AS present FROM attendances WHERE date = $1 AND status IN ('P', 'PRESENT', 'M', 'P1/2');`, [dateParam]);
+    const absentRes = await this.query(`SELECT COUNT(*)::int AS absent FROM attendances WHERE date = $1 AND status IN ('AB', 'ABSENT', 'A');`, [dateParam]);
+    const onLeaveRes = await this.query(`SELECT COUNT(*)::int AS on_leave FROM attendances WHERE date = $1 AND status IN ('CL', 'SL', 'CO', 'ON_LEAVE', 'LEAVE', 'E');`, [dateParam]);
+
+    const total = totalRes.rows[0]?.total || 0;
+    const present = presentRes.rows[0]?.present || 0;
+    const absent = absentRes.rows[0]?.absent || 0;
+    const onLeave = onLeaveRes.rows[0]?.on_leave || 0;
 
     return {
-      totalEmployees: totalRes.rows[0].total,
-      present: presentRes.rows[0].present,
-      absent: absentRes.rows[0].absent,
-      onLeave: onLeaveRes.rows[0].on_leave,
-      attendanceRate: totalRes.rows[0].total > 0 ? ((presentRes.rows[0].present / totalRes.rows[0].total) * 100).toFixed(1) : '0.0'
+      totalEmployees: total,
+      present,
+      absent,
+      onLeave,
+      attendanceRate: total > 0 ? ((present / total) * 100).toFixed(1) : '0.0'
     };
   }
 

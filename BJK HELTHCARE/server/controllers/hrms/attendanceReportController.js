@@ -222,6 +222,35 @@ function buildAttendanceFilter(filters = {}, user = {}) {
 async function getAttendanceDashboard(req, res) {
   try {
     const { date, dateFrom, dateTo, branch, department } = req.query;
+
+    // PostgreSQL Attendance Dashboard KPIs
+    try {
+      const { attendanceRepo } = require('../../repositories');
+      const kpis = await attendanceRepo.getAttendanceKPIs(date || dateFrom || dateTo);
+      if (kpis) {
+        return res.json({
+          success: true,
+          kpis: {
+            totalStaff: kpis.totalEmployees,
+            total: kpis.totalEmployees,
+            present: kpis.present,
+            absent: kpis.absent,
+            lateIn: 0,
+            halfDay: 0,
+            onLeave: kpis.onLeave,
+            weekOff: 0,
+            holiday: 0,
+            wfh: 0,
+            fieldDuty: 0,
+            missingPunch: 0,
+            overtimeCount: 0,
+            pendingRegularization: 0,
+            attendancePercentage: kpis.attendanceRate
+          }
+        });
+      }
+    } catch (_) {}
+
     const baseQuery = buildAttendanceFilter({
       date,
       dateFrom,

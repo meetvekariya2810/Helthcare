@@ -47,6 +47,28 @@ const getTodayAttendance = async (req, res) => {
     const employeeId = req.employeeId;
     const todayStr = getTodayDateString();
 
+    // PostgreSQL Today Attendance
+    try {
+      const { attendanceRepo } = require('../repositories');
+      const sqlRecord = await attendanceRepo.findByEmployeeAndDate(employeeId.toUpperCase(), todayStr);
+      if (sqlRecord) {
+        return res.status(200).json({
+          success: true,
+          attendance: {
+            dateString: todayStr,
+            date: sqlRecord.date,
+            shiftName: sqlRecord.shift_code || 'General Shift',
+            status: sqlRecord.status,
+            checkIn: sqlRecord.first_punch || sqlRecord.punch_in,
+            checkOut: sqlRecord.last_punch || sqlRecord.punch_out,
+            workingHours: Number(sqlRecord.total_hours) || 0,
+            scheduledIn: '09:00',
+            scheduledOut: '18:00'
+          }
+        });
+      }
+    } catch (_) {}
+
     let record = await Attendance.findOne({
       employeeId: employeeId.toUpperCase(),
       dateString: todayStr
