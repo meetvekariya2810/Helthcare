@@ -44,6 +44,28 @@ const createOrSaveDraft = async (req, res) => {
   try {
     const { applicationId, currentStep = 1, formData = {} } = req.body;
 
+    // PostgreSQL Onboarding Draft Auto-Save
+    try {
+      const { onboardingRepo } = require('../../repositories');
+      const sqlApp = await onboardingRepo.createDraft({
+        applicationId: applicationId || `APP-${Date.now()}`,
+        email: formData.email || formData.personalEmail || `applicant-${Date.now()}@bjkhealthcare.com`,
+        fullName: formData.fullName || `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'New Applicant',
+        department: formData.department || 'General',
+        designation: formData.designation || 'Staff',
+        stepData: formData,
+        status: 'DRAFT'
+      });
+      if (sqlApp) {
+        return res.json({
+          success: true,
+          message: 'Onboarding draft auto-saved successfully.',
+          data: sqlApp,
+          application: sqlApp
+        });
+      }
+    } catch (_) {}
+
     let appDoc = null;
     if (applicationId) {
       appDoc = await OnboardingApplication.findOne({ applicationId });

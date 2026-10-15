@@ -80,6 +80,49 @@ class OnboardingRepository extends BaseRepository {
       allowlist: ['created_at', 'status', 'full_name', 'department']
     });
   }
+
+  async convertToEmployee(applicationId) {
+    return this.transaction(async (client) => {
+      const appRes = await client.query(
+        `SELECT * FROM onboarding_applications WHERE application_id = $1 OR id::text = $1 FOR UPDATE;`,
+        [applicationId]
+      );
+      if (appRes.rows.length === 0) {
+        throw new Error(`Onboarding application [${applicationId}] not found.`);
+      }
+      const app = appRes.rows[0];
+
+      const empRes = await client.query(
+        `INSERT INTO employees (
+           employee_id, first_name, last_name, full_name, email,
+           department_name, designation_title, employment_status, date_of_joining
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', CURRENT_DATE)
+         RETURNING *;`,
+        [
+          app.application_id || `EMP-${Date.now()}`,
+          app.full_name ? app.full_name.split(' ')[0] : 'Employee',
+          app.full_name ? (app.full_name.split(' ').slice(1).join(' ') || 'Staff') : 'Staff',
+          app.full_name || 'Staff Employee',
+          app.email,
+          app.department || 'General',
+          app.designation || 'Staff'
+        ]
+      );
+      const newEmployee = empRes.rows[0];
+
+      await client.query(
+        `UPDATE onboarding_applications
+         SET status = 'CONVERTED', employee_id = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1;`,
+        [app.id, newEmployee.id]
+      );
+
+      return {
+        application: app,
+        employee: newEmployee
+      };
+    });
+  }
 }
 
 module.exports = new OnboardingRepository();
