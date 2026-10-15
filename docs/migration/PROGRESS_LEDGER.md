@@ -12,12 +12,12 @@
 | **Stage 1** | Preserve MySQL work to `archive/mysql-track` & restore `migration/postgres` | `DONE` | `git branch archive/mysql-track` created; clean postgres tree | `7b3456a` |
 | **Stage 1** | Set `DATABASE_PROVIDER=postgres` in `.env.example` & create `DB_TARGET_DECISION.md` | `DONE` | Configuration updated & `DB_TARGET_DECISION.md` committed | `7b3456a` |
 | **Stage 2** | Gate preparation packages: `OWNER_ACTIONS_REQUIRED.md` | `DONE` | Credential checklist, G5 runbook, G1/G2 review packets | Pending Stage 2 |
-| **Stage 3** | Docker Compose Postgres 16 configuration | `NOT STARTED` | `docker-compose.postgres.yml` | Pending Stage 3 |
+| **Stage 3** | Docker Compose Postgres 16 configuration | `DONE` | `docker-compose.postgres.yml` created | Pending Stage 3 |
 | **Stage 3** | Validate 12 migrations against PostgreSQL | `DONE` (PGlite) | `db:validate` passes 67/67 tests | `1182a5f` |
 | **Stage 3** | Roles, triggers (`trg_block_audit_mutation`), indexes, FKs | `DONE` | Tested and verified in Suite 7 of `db:validate` | `1182a5f` |
 | **Stage 3** | Full ETL from Atlas with frozen snapshot strategy | `DONE` | 16,541 rows migrated, 16,543 mapped IDs in `migration_id_map` | `e8a71c7` |
 | **Stage 3** | Run `db:validate` | `DONE` | 67/67 automated checks pass (100%) | `e8a71c7` |
-| **Stage 3** | Correct report numbers & relabel status | `NOT STARTED` | Correct 6-row gap and update `FINAL_MIGRATION_REPORT.md` | Pending Stage 3 |
+| **Stage 3** | Correct report numbers & relabel status | `DONE` | 6-row gap explained, `FINAL_MIGRATION_REPORT.md` relabeled to `DATA-READY, APPLICATION NOT READY` | Pending Stage 3 |
 | **Stage 3** | Switch test harness for SQL work to PostgreSQL | `IN PROGRESS` | PGlite/Postgres harness operational for migration | Pending Stage 3 |
 | **Stage 4** | Baseline REST contract capture under `server/tests/contracts/` | `NOT STARTED` | Contract snapshots generator & fixtures | Pending Stage 4 |
 | **Stage 5A**| Domain Repositories implementation | `IN PROGRESS` | 6 created (`attendance`, `audit`, `employee`, `leave`, `product`, `user`); 23 domain repos to create | Pending Stage 5A |

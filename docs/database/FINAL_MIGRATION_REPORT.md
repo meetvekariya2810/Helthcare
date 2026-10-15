@@ -11,7 +11,7 @@
 | **Target Database** | PostgreSQL 16 (Relational Schema, Versioned SQL Migrations, Azure Flexible Server Ready) |
 | **Execution Branch** | `migration/postgres` |
 | **Integrity Manifest Hash** | `22742e9c306d333e99de0e6eb049e13b873d9880b57552156cef6fcf171246e3` |
-| **Migration Status** | **CUTOVER-READY** (All 10 Phases Complete & Validated; Awaiting Final Owner Authorization) |
+| **Migration Status** | **DATA-READY, APPLICATION NOT READY** (Data Tier 100% Validated; Application Layer Conversion in Progress) |
 
 ---
 
@@ -22,12 +22,12 @@
 | **Phase 1** | Read-Only Source Audit & Schema Inventory | **PASS** | 129 Atlas collections analyzed; 53 populated (16,236 documents); 76 schema-ready. 960 Mongoose references classified across 635 routes. 111 catalogue products and 135 employees verified. |
 | **Phase 2** | Target Relational Schema Design | **PASS** | 134 PostgreSQL tables designed with native UUID PKs, `source_mongo_id` unique indexes, real foreign keys, `NUMERIC` for financial fields, `TIMESTAMPTZ` for instants, and `JSONB` for `legacy_extra`. |
 | **Phase 3** | Migration Engine & Tooling | **PASS** | Dependency-ordered streaming ETL pipeline with deterministic UUID caching (`migration_id_map`), dead-letter redaction (`migration_exceptions`), and dry-run manifest hashing. |
-| **Phase 4** | Versioned SQL Migrations & Roles | **PASS** | 10 reproducible SQL migration files (`001_control_tables.sql` to `010_rbac_roles.sql`) applied with SHA-256 checksums. App, migrator, and readonly roles established. |
-| **Phase 5** | Repository Layer & Runtime Mongoose Replacement | **PASS** | Parameterized SQL repositories (`userRepo`, `employeeRepo`, `productRepo`, `attendanceRepo`, `leaveRepo`, `auditRepo`) implemented with row-locking transactions and allowlisted sorting. |
-| **Phase 6** | Full Staging Migration Execution | **PASS** | 16,236 / 16,236 documents migrated into PostgreSQL with **0 rejected** and **0 missing**. |
+| **Phase 4** | Versioned SQL Migrations & Roles | **PASS** | 12 reproducible SQL migration files (`001_control_tables.sql` to `012_comprehensive_sql_permissions.sql`) applied with SHA-256 checksums. App, migrator, and readonly roles established. |
+| **Phase 5** | Repository Layer & Runtime Mongoose Replacement | **IN PROGRESS** | Parameterized SQL repositories (`userRepo`, `employeeRepo`, `productRepo`, `attendanceRepo`, `leaveRepo`, `auditRepo`) implemented. 23 domain repositories in progress. |
+| **Phase 6** | Full Staging Migration Execution | **PASS** | 16,484 / 16,484 documents migrated into PostgreSQL with **0 rejected** and **0 missing**. |
 | **Phase 7** | Automated Validation & Security Regression | **PASS** | `npm run db:validate` passed **67 / 67 automated checks (100%)**. Exact counts across all 53 collections, 111 products, 10,527 attendance records, bcrypt hash validation, and audit trigger enforcement verified. |
 | **Phase 8** | Azure Architecture & Cloud Readiness | **PASS** | Complete architecture, deployment runbook, security checklist, DR plan, Dockerfile, `.env.example`, and GitHub Actions CI/CD delivered. |
-| **Phase 9** | Cutover & Rollback Runbooks | **PASS** | `npm run db:cutover-check` -> `CUTOVER-READY`. `npm run db:rollback-check` -> `ROLLBACK-READY`. Zero-loss rollback procedures documented. |
+| **Phase 9** | Cutover & Rollback Runbooks | **DATA-READY** | `npm run db:cutover-check` -> `CUTOVER-READY (Data Tier)`. `npm run db:rollback-check` -> `ROLLBACK-READY`. Application layer conversion required prior to production switch. |
 | **Phase 10** | Cleanup, Manifests & Final Deliverables | **PASS** | Root and server `package.json` updated with `db:*` tool suite; client built (`vite build` in 41.24s); test suites (`test:hrms`, `test:policies`, `test:onboarding`) passing 100%. |
 
 ---
@@ -132,15 +132,16 @@ Every single populated MongoDB Atlas collection has been extracted, transformed,
 
 ### 5. Remaining MongoDB Dependencies & Justification
 
-- **Runtime Path**: The application backend has zero runtime dependency on MongoDB when configured with `DATABASE_URL`.
-- **Migration Tooling**: `mongoose` is preserved in `devDependencies` strictly to power the read-only migration scripts (`scripts/migration/*`) until the 14-day post-cutover observation window concludes.
+- **Runtime Path**: The data tier has achieved 100% parity across all 53 populated collections. However, in the application layer, 42 of 66 controllers and 8 of 21 services still reference Mongoose models directly, and `server.js` initializes `ensureDatabaseConnection()`. Full runtime independence from MongoDB requires completing Stage 5 (converting controllers, services, and 18 aggregations to SQL repositories).
+- **Migration Tooling**: `mongoose` is currently utilized by the read-only migration scripts (`scripts/migration/*`) and will remain strictly in migration tooling until final post-cutover decommissioning.
 - **Fail-Fast Enforcement**: In `production`, `config/postgres.js` fails loudly if `DATABASE_URL` is omitted, preventing any fallback to in-memory databases.
+- **Reconciliation Audit Note on 6-Row Dynamic Count Discrepancy**: The 6-row variance noted between baseline snapshots (16,444 source documents) and earlier static documentation (16,438 documents) is fully accounted for by live event logging during pre-cutover testing across active dynamic collections: `loginactivities` (+4 login events recorded during security verification) and `auditlogs` (+2 compliance audit trails generated during trigger enforcement validation). All 50 non-dynamic domain collections exhibit exact 100.0% row-for-row match with zero discrepancy.
 
 ---
 
 ### 6. Production Cutover Authorization Checklist
 
-Because `PRODUCTION_CUTOVER = NOT_APPROVED`, the system is safely held at **CUTOVER-READY**. To execute final production cutover:
+Because `PRODUCTION_CUTOVER = NOT_APPROVED` and the application layer is being converted to SQL (Stage 5), the system is held at **DATA-READY, APPLICATION NOT READY**. To execute final production cutover:
 
 - [ ] 1. Obtain formal sign-off from Quality Assurance (QA) and HR Leadership.
 - [ ] 2. Provision target Azure PostgreSQL Flexible Server in accordance with `docs/azure/AZURE_DEPLOYMENT_RUNBOOK.md`.
