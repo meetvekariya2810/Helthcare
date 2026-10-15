@@ -1,0 +1,22 @@
+{
+  "domain": "auth",
+  "endpoint": "/api/auth/login",
+  "method": "POST",
+  "description": "Login validation and credential failure contracts",
+  "contracts": {
+    "missing_body": {
+      "statusCode": 400,
+      "expectedKeys": [
+        "success",
+        "message"
+      ]
+    },
+    "unauthorized_invalid_creds": {
+      "statusCode": 401,
+      "expectedKeys": [
+        "success",
+        "message"
+      ]
+    }
+  }
+}

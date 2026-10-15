@@ -1,0 +1,23 @@
+{
+  "domain": "audit_logs",
+  "endpoint": "/api/audit",
+  "method": "GET",
+  "description": "GxP 21 CFR Part 11 immutable audit trails contract",
+  "contracts": {
+    "success_shape": {
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "data",
+        "pagination"
+      ],
+      "itemKeys": [
+        "id",
+        "action",
+        "user",
+        "entity",
+        "timestamp"
+      ]
+    }
+  }
+}

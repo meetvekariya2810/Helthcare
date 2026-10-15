@@ -1,0 +1,26 @@
+{
+  "domain": "products",
+  "endpoint": "/api/products",
+  "method": "GET",
+  "description": "111-Product pharmaceutical catalogue contract",
+  "contracts": {
+    "success_shape": {
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "count",
+        "data"
+      ],
+      "itemKeys": [
+        "id",
+        "name",
+        "code",
+        "category",
+        "strength",
+        "dosageForm",
+        "status"
+      ],
+      "pagination": false
+    }
+  }
+}

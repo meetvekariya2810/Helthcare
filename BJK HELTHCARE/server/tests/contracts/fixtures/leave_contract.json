@@ -1,0 +1,24 @@
+{
+  "domain": "leave",
+  "endpoint": "/api/leave",
+  "method": "GET",
+  "description": "Leave application and balance contract",
+  "contracts": {
+    "success_shape": {
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "balances",
+        "history"
+      ]
+    },
+    "policy_violation_shape": {
+      "statusCode": 400,
+      "expectedKeys": [
+        "success",
+        "message",
+        "policyCitation"
+      ]
+    }
+  }
+}

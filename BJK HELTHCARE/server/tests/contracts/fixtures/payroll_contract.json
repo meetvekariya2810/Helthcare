@@ -1,0 +1,25 @@
+{
+  "domain": "payroll",
+  "endpoint": "/api/hrms/payroll",
+  "method": "GET",
+  "description": "Statutory payroll processing and access control contract",
+  "contracts": {
+    "hr_manager_access": {
+      "role": "HR_MANAGER",
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "records",
+        "summary"
+      ]
+    },
+    "unauthorized_employee_access": {
+      "role": "EMPLOYEE",
+      "statusCode": 403,
+      "expectedKeys": [
+        "success",
+        "message"
+      ]
+    }
+  }
+}

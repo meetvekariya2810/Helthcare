@@ -24,7 +24,8 @@
     "db:report": "npm run db:report --prefix \"BJK HELTHCARE/server\"",
     "db:cutover-check": "npm run db:cutover-check --prefix \"BJK HELTHCARE/server\"",
     "db:rollback-check": "npm run db:rollback-check --prefix \"BJK HELTHCARE/server\"",
-    "db:permissions": "npm run db:permissions --prefix \"BJK HELTHCARE/server\""
+    "db:permissions": "npm run db:permissions --prefix \"BJK HELTHCARE/server\"",
+    "test:contracts": "npm run test:contracts --prefix \"BJK HELTHCARE/server\""
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

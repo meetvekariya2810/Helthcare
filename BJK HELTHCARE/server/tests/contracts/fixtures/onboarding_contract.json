@@ -1,0 +1,25 @@
+{
+  "domain": "onboarding",
+  "endpoint": "/api/hrms/onboarding",
+  "method": "POST",
+  "description": "11-Step Onboarding state machine contract",
+  "contracts": {
+    "draft_creation": {
+      "statusCode": 201,
+      "expectedKeys": [
+        "success",
+        "applicationId",
+        "status",
+        "step"
+      ]
+    },
+    "validation_error": {
+      "statusCode": 400,
+      "expectedKeys": [
+        "success",
+        "message",
+        "errors"
+      ]
+    }
+  }
+}

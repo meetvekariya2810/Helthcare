@@ -1,0 +1,35 @@
+{
+  "domain": "employees",
+  "endpoint": "/api/employees",
+  "method": "GET",
+  "description": "Employee directory and sensitive PII masking contract",
+  "contracts": {
+    "admin_access": {
+      "role": "SUPER_ADMIN",
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "count",
+        "data"
+      ],
+      "itemKeys": [
+        "employeeId",
+        "fullName",
+        "email",
+        "department",
+        "designation",
+        "status"
+      ],
+      "sensitivePiiMasked": false
+    },
+    "employee_self_access": {
+      "role": "EMPLOYEE",
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "data"
+      ],
+      "sensitivePiiMasked": true
+    }
+  }
+}

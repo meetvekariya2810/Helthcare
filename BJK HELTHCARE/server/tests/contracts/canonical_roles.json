@@ -1,0 +1,43 @@
+{
+  "roles": [
+    "SUPER_ADMIN",
+    "DIRECTOR",
+    "OPERATIONS_MANAGER",
+    "PRODUCTION_MANAGER",
+    "QC_MANAGER",
+    "QA_MANAGER",
+    "REGULATORY_MANAGER",
+    "WAREHOUSE_MANAGER",
+    "SALES_MANAGER",
+    "CRM_MANAGER",
+    "EXPORT_MANAGER",
+    "FINANCE_MANAGER",
+    "DOCUMENT_CONTROLLER",
+    "HR_ADMIN",
+    "HR_MANAGER",
+    "HR_EXECUTIVE",
+    "DEPARTMENT_MANAGER",
+    "MANAGER",
+    "TEAM_LEAD",
+    "SENIOR_EMPLOYEE",
+    "EMPLOYEE",
+    "AUDITOR",
+    "REGULATORY_VIEWER",
+    "EXECUTIVE_VIEWER",
+    "SYSTEM_ADMINISTRATOR",
+    "IT_ADMIN",
+    "RECRUITER",
+    "PAYROLL_ADMIN",
+    "SUPPLY_CHAIN_MANAGER",
+    "CANTEEN_ADMIN"
+  ],
+  "test_personas": {
+    "SUPER_ADMIN": { "email": "test-superadmin@bjk.internal", "role": "SUPER_ADMIN", "department": "Executive" },
+    "HR_MANAGER": { "email": "test-hrmanager@bjk.internal", "role": "HR_MANAGER", "department": "Human Resources" },
+    "HR_ADMIN": { "email": "test-hradmin@bjk.internal", "role": "HR_ADMIN", "department": "Human Resources" },
+    "FINANCE_MANAGER": { "email": "test-financemanager@bjk.internal", "role": "FINANCE_MANAGER", "department": "Finance" },
+    "PAYROLL_ADMIN": { "email": "test-payrolladmin@bjk.internal", "role": "PAYROLL_ADMIN", "department": "Finance" },
+    "QA_MANAGER": { "email": "test-qamanager@bjk.internal", "role": "QA_MANAGER", "department": "Quality Assurance" },
+    "EMPLOYEE": { "email": "test-employee@bjk.internal", "role": "EMPLOYEE", "department": "Production" }
+  }
+}

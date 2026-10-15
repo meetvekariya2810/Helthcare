@@ -19,7 +19,7 @@
 | **Stage 3** | Run `db:validate` | `DONE` | 67/67 automated checks pass (100%) | `e8a71c7` |
 | **Stage 3** | Correct report numbers & relabel status | `DONE` | 6-row gap explained, `FINAL_MIGRATION_REPORT.md` relabeled to `DATA-READY, APPLICATION NOT READY` | Pending Stage 3 |
 | **Stage 3** | Switch test harness for SQL work to PostgreSQL | `IN PROGRESS` | PGlite/Postgres harness operational for migration | Pending Stage 3 |
-| **Stage 4** | Baseline REST contract capture under `server/tests/contracts/` | `NOT STARTED` | Contract snapshots generator & fixtures | Pending Stage 4 |
+| **Stage 4** | Baseline REST contract capture under `server/tests/contracts/` | `DONE` | 8 domain contract fixtures captured, `verify_contracts.js` 8/8 PASS | Pending Stage 4 |
 | **Stage 5A**| Domain Repositories implementation | `IN PROGRESS` | 6 created (`attendance`, `audit`, `employee`, `leave`, `product`, `user`); 23 domain repos to create | Pending Stage 5A |
 | **Stage 5B**| Controller & Service conversion to SQL | `IN PROGRESS` | 1 pure SQL, 19 mixed, 42 Mongoose; convert in strict order | Pending Stage 5B |
 | **Stage 5C**| 18 Aggregation pipelines converted to SQL | `IN PROGRESS` | 6 bridged with fallback; parity proof table `AGGREGATION_PARITY.md` | Pending Stage 5C |

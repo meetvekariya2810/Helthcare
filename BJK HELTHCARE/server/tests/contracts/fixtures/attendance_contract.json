@@ -1,0 +1,22 @@
+{
+  "domain": "attendance",
+  "endpoint": "/api/attendance",
+  "method": "GET",
+  "description": "Biometric timekeeping daily logs and punch record contract",
+  "contracts": {
+    "success_shape": {
+      "statusCode": 200,
+      "expectedKeys": [
+        "success",
+        "data",
+        "pagination"
+      ],
+      "paginationKeys": [
+        "page",
+        "limit",
+        "total",
+        "totalPages"
+      ]
+    }
+  }
+}
