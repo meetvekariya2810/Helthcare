@@ -38,6 +38,47 @@ const getLoginCredentials = async (req, res) => {
       limit = 25
     } = req.query;
 
+    // PostgreSQL Credentials Listing
+    try {
+      const { userRepo } = require('../repositories');
+      const creds = await userRepo.listCredentials({
+        search,
+        department,
+        role,
+        status,
+        loginStatus,
+        sortBy,
+        sortOrder,
+        page: parseInt(page, 10) || 1,
+        limit: parseInt(limit, 10) || 25
+      });
+      if (creds && creds.data && creds.data.length > 0) {
+        return res.status(200).json({
+          success: true,
+          count: creds.data.length,
+          total: creds.pagination.total,
+          totalPages: creds.pagination.totalPages,
+          currentPage: creds.pagination.page,
+          data: creds.data.map(u => ({
+            id: u.id,
+            _id: u.id,
+            name: u.full_name || u.username || u.email,
+            email: u.email,
+            username: u.username,
+            employeeId: u.employee_id || '',
+            department: u.department_name || '',
+            designation: u.designation_title || '',
+            role: u.role,
+            isActive: u.is_active,
+            isLocked: u.is_locked,
+            failedLoginAttempts: u.failed_login_attempts || 0,
+            lastLogin: u.last_login_at,
+            createdAt: u.created_at
+          }))
+        });
+      }
+    } catch (_) {}
+
     const query = {};
 
     // Text Search
@@ -186,6 +227,35 @@ const getLoginCredentials = async (req, res) => {
  */
 const getLoginStats = async (req, res) => {
   try {
+    try {
+      const { userRepo } = require('../repositories');
+      const stats = await userRepo.query(`
+        SELECT 
+          COUNT(*)::int AS "totalEmployees",
+          COUNT(*) FILTER (WHERE is_active = true AND is_locked = false)::int AS "activeLogins",
+          COUNT(*) FILTER (WHERE is_active = false)::int AS "inactiveLogins",
+          COUNT(*) FILTER (WHERE is_locked = true)::int AS "lockedAccounts"
+        FROM users;
+      `);
+      if (stats.rows.length > 0) {
+        const s = stats.rows[0];
+        return res.status(200).json({
+          success: true,
+          stats: {
+            totalEmployees: s.totalEmployees,
+            activeLogins: s.activeLogins,
+            inactiveLogins: s.inactiveLogins,
+            pendingLogins: 0,
+            lockedAccounts: s.lockedAccounts,
+            teamHeads: 0,
+            deptHeads: 0,
+            managers: 0,
+            employees: s.totalEmployees
+          }
+        });
+      }
+    } catch (_) {}
+
     const [
       totalEmployees,
       activeLogins,
