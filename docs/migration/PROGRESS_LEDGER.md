@@ -8,10 +8,10 @@
 | Stage | Item | Status | Evidence | Commit |
 |---|---|:---:|---|---|
 | **Stage 0** | Re-verify status of every pending item | `DONE` | Quantitative census & `docs/migration/STATUS_BASELINE.md` created | `4815c20` |
-| **Stage 1** | Decide target and park MySQL: Confirm `DB_TARGET = POSTGRESQL` | `DONE` | Documented in `DB_TARGET_DECISION.md` & baseline | Pending Stage 1 |
-| **Stage 1** | Preserve MySQL work to `archive/mysql-track` & restore `migration/postgres` | `NOT STARTED` | Git branch creation & working tree restore | Pending Stage 1 |
-| **Stage 1** | Set `DATABASE_PROVIDER=postgres` in `.env.example` & create `DB_TARGET_DECISION.md` | `NOT STARTED` | Configuration updates | Pending Stage 1 |
-| **Stage 2** | Gate preparation packages: `OWNER_ACTIONS_REQUIRED.md` | `NOT STARTED` | Credential checklist, G5 runbook, G1/G2 review packets | Pending Stage 2 |
+| **Stage 1** | Decide target and park MySQL: Confirm `DB_TARGET = POSTGRESQL` | `DONE` | Documented in `DB_TARGET_DECISION.md` & baseline | `7b3456a` |
+| **Stage 1** | Preserve MySQL work to `archive/mysql-track` & restore `migration/postgres` | `DONE` | `git branch archive/mysql-track` created; clean postgres tree | `7b3456a` |
+| **Stage 1** | Set `DATABASE_PROVIDER=postgres` in `.env.example` & create `DB_TARGET_DECISION.md` | `DONE` | Configuration updated & `DB_TARGET_DECISION.md` committed | `7b3456a` |
+| **Stage 2** | Gate preparation packages: `OWNER_ACTIONS_REQUIRED.md` | `DONE` | Credential checklist, G5 runbook, G1/G2 review packets | Pending Stage 2 |
 | **Stage 3** | Docker Compose Postgres 16 configuration | `NOT STARTED` | `docker-compose.postgres.yml` | Pending Stage 3 |
 | **Stage 3** | Validate 12 migrations against PostgreSQL | `DONE` (PGlite) | `db:validate` passes 67/67 tests | `1182a5f` |
 | **Stage 3** | Roles, triggers (`trg_block_audit_mutation`), indexes, FKs | `DONE` | Tested and verified in Suite 7 of `db:validate` | `1182a5f` |
