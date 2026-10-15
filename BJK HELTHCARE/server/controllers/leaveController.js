@@ -24,6 +24,14 @@ const { getScopeQuery, resolveDataScope } = require('../services/hrms/dataScopeS
 // GET /api/leave/types
 const getLeaveTypes = async (req, res) => {
   try {
+    try {
+      const { leaveRepo } = require('../repositories');
+      const sqlTypes = await leaveRepo.getLeaveTypes();
+      if (sqlTypes && sqlTypes.length > 0) {
+        return res.json({ success: true, count: sqlTypes.length, types: sqlTypes });
+      }
+    } catch (_) {}
+
     const { includeInactive } = req.query;
     const filter = includeInactive === 'true' ? {} : { isActive: true };
     const types = await LeaveType.find(filter).sort({ name: 1 });
@@ -124,6 +132,14 @@ const updateLeaveType = async (req, res) => {
 // GET /api/leave/policies
 const getLeavePolicies = async (req, res) => {
   try {
+    try {
+      const { policyRepo } = require('../repositories');
+      const sqlPolicies = await policyRepo.listPolicies();
+      if (sqlPolicies && sqlPolicies.length > 0) {
+        return res.json({ success: true, count: sqlPolicies.length, policies: sqlPolicies });
+      }
+    } catch (_) {}
+
     const policies = await LeavePolicy.find({ isActive: true });
     res.json({ success: true, policies });
   } catch (error) {
@@ -161,6 +177,14 @@ const createOrUpdateLeavePolicy = async (req, res) => {
 const getHolidays = async (req, res) => {
   try {
     const { year = 2026 } = req.query;
+    try {
+      const { leaveRepo } = require('../repositories');
+      const sqlHolidays = await leaveRepo.getHolidays(Number(year));
+      if (sqlHolidays && sqlHolidays.length > 0) {
+        return res.json({ success: true, count: sqlHolidays.length, holidays: sqlHolidays });
+      }
+    } catch (_) {}
+
     const holidays = await HolidayCalendar.find({ year: Number(year), isActive: true }).sort({ date: 1 });
     res.json({ success: true, count: holidays.length, holidays });
   } catch (error) {

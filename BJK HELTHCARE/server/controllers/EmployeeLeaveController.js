@@ -139,10 +139,38 @@ const { getEmployeeLedger } = require('../services/hrms/leaveLedgerService');
 const getLeaveBalances = async (req, res) => {
   try {
     // Authoritative employee identity strictly from authenticated session
-    const employeeId = req.employeeId || req.user.employeeId;
+    const employeeId = req.employeeId || req.user?.employeeId;
     if (!employeeId) {
       return res.status(401).json({ success: false, message: 'Authenticated employee identity missing.' });
     }
+
+    // PostgreSQL Leave Balances Query
+    try {
+      const { leaveRepo } = require('../repositories');
+      const sqlBalances = await leaveRepo.getBalancesByEmployee(employeeId, 2026);
+      if (sqlBalances && sqlBalances.length > 0) {
+        const totalAvailable = sqlBalances.reduce((sum, b) => sum + (parseFloat(b.closing_balance) || 0), 0);
+        const totalUsed = sqlBalances.reduce((sum, b) => sum + (parseFloat(b.taken) || 0), 0);
+        return res.status(200).json({
+          success: true,
+          leaveYear: 2026,
+          employeeId,
+          summary: {
+            totalAvailable,
+            totalUsed,
+            totalPending: 0
+          },
+          balances: sqlBalances.map(b => ({
+            code: b.leave_type_code,
+            name: b.leave_type_name || b.leave_type_code,
+            available: parseFloat(b.closing_balance) || 0,
+            used: parseFloat(b.taken) || 0,
+            opening: parseFloat(b.opening_balance) || 0,
+            accrued: parseFloat(b.accrued) || 0
+          }))
+        });
+      }
+    } catch (_) {}
 
     const { employee, balanceDoc } = await getOrInitLeaveBalance(employeeId, 2026);
     const ledger = await getEmployeeLedger(employeeId, 2026);
