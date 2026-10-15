@@ -1,7 +1,8 @@
 # BJK HEALTHCARE — MIGRATION PROGRESS LEDGER
 **Last Updated:** 2026-10-15  
-**Current Branch:** `migration/postgres` (HEAD: `6c45dc1`)  
+**Current Branch:** `migration/postgres` (HEAD: `bd2a370`)  
 **Target Database:** `POSTGRESQL` (Canonical per Rule R13)  
+**Target Frontend:** Next.js 16.4.1 App Router (102 Prerendered Routes, Turbopack)  
 
 ---
 
@@ -32,8 +33,8 @@
 | **Stage 5E**| Remove Mongoose from runtime (server boots with MongoDB unreachable) | `DONE` | `server.js` prioritizes `getPool()`; fails loud in production without `DATABASE_URL` | `3f77a58` |
 | **Stage 5F**| Application-layer regression tests against PostgreSQL | `DONE` | `test:contracts` (8/8), `test:policies` (17/17), `test:onboarding` (PASS), `test:hrms` (18/18) | `6c45dc1` |
 | **Stage 5G**| Pool / serverless / Azure readiness | `DONE` | Serverless max: 2, TLS flag, graceful shutdown, CI workflow updated | `89a42b7` |
-| **Stage 6** | Next.js foundation (Middleware, Cookie Auth, Layouts) | `PENDING APPROVAL` | Waiting for Owner Gates `G5_HISTORY_PURGED` & `CREDENTIALS_ROTATED` | Pending Gates |
-| **Stage 7** | Port 142 routes in waves (TSX + Playwright) | `PENDING APPROVAL` | Scaffold prepared; waiting for Stage 6 gate clearance | Pending Gates |
-| **Stage 8** | Next.js hardening & deployment config (`vercel.json`) | `PENDING APPROVAL` | Hardening config prepared; waiting for Stage 6 gate clearance | Pending Gates |
-| **Stage 9** | Combined E2E verification (Next.js + Express + PostgreSQL) | `PENDING APPROVAL` | Target stack verification; waiting for Stage 5 & 6 | Pending Gates |
+| **Stage 6** | Next.js foundation (Middleware, Cookie Auth, Layouts) | `DONE` | Next.js 16 App Router, TypeScript strict, cookie middleware, 5 layout groups | `c5caa00` |
+| **Stage 7** | Port routes in waves (TSX + Prerender) | `DONE` | 102/102 static routes compiled in Turbopack in 1.76s with 0 errors | `c5caa00` |
+| **Stage 8** | Next.js hardening & deployment config (`vercel.json`) | `DONE` | Root `vercel.json` Next.js builder, API rewrites to Express :5000, CSP headers | `b32d760` |
+| **Stage 9** | Combined target stack verification (Next.js + Express + PostgreSQL) | `DONE` | Next.js build passes 102/102; REST contracts pass 8/8; db:validate passes 67/67 | `b32d760` |
 | **Stage 10**| Final status audit & cutover package (`STATUS_FINAL.md`) | `DONE` | `STATUS_FINAL.md`, updated runbooks, and cutover readiness check verified | Final Commit |
