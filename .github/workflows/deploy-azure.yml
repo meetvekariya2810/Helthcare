@@ -42,7 +42,7 @@ jobs:
           npm install --prefix "BJK HELTHCARE/server"
           npm install --prefix "BJK HELTHCARE/client"
 
-      - name: Execute PostgreSQL Migrations (10/10)
+      - name: Execute PostgreSQL Migrations (001 to 012)
         env:
           DATABASE_URL: postgresql://bjk_migrator:TestPassword123!@localhost:5432/bjk_healthcare
           DATABASE_SSL: false
