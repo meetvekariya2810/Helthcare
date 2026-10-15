@@ -33,13 +33,19 @@ class EmployeeRepository extends BaseRepository {
   }
 
   async findByEmployeeId(empId, userRole = 'EMPLOYEE') {
+    if (!empId) return null;
+    const clean = empId.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
     const res = await this.query(
       `SELECT e.*, d.name as department_name, des.title as designation_title
        FROM employees e
        LEFT JOIN departments d ON d.id = e.department_id
        LEFT JOIN designations des ON des.id = e.designation_id
-       WHERE e.employee_id = $1;`,
-      [empId]
+       WHERE UPPER(e.employee_id) = UPPER($1)
+          OR LOWER(e.email) = LOWER($1)
+          OR e.source_mongo_id = $1
+          OR (CASE WHEN $2 THEN e.id = $1::uuid ELSE false END);`,
+      [clean, isUuid]
     );
     return this.maskPii(res.rows[0] || null, userRole);
   }
@@ -48,14 +54,14 @@ class EmployeeRepository extends BaseRepository {
     const conditions = [];
     const params = [];
 
-    if (status) {
+    if (status && status !== 'ALL') {
       params.push(status);
-      conditions.push(`employment_status = $${params.length}`);
+      conditions.push(`employment_status ILIKE $${params.length}`);
     }
 
-    if (department) {
+    if (department && department !== 'ALL') {
       params.push(department);
-      conditions.push(`department_name = $${params.length}`);
+      conditions.push(`department_name ILIKE $${params.length}`);
     }
 
     if (search) {

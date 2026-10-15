@@ -227,6 +227,33 @@ const getEmployees = async (req, res) => {
       isNonTechnical
     } = req.query;
 
+    // PostgreSQL Employee Query
+    try {
+      const { employeeRepo } = require('../repositories');
+      const sqlResult = await employeeRepo.listEmployees({
+        page: parseInt(page, 10) || 1,
+        limit: parseInt(limit, 10) || 15,
+        department: (department && department !== 'ALL') ? department : undefined,
+        search: (search && search.trim()) ? search.trim() : undefined,
+        status: (status && status !== 'ALL') ? status : (isFormer === 'true' ? 'Resigned' : 'ALL')
+      }, userRole);
+
+      if (sqlResult && sqlResult.data && sqlResult.data.length > 0) {
+        return res.json({
+          success: true,
+          data: sqlResult.data,
+          employees: sqlResult.data,
+          departmentStats: [],
+          pagination: {
+            total: sqlResult.pagination.total,
+            page: sqlResult.pagination.page,
+            limit: sqlResult.pagination.limit,
+            pages: sqlResult.pagination.totalPages
+          }
+        });
+      }
+    } catch (_) {}
+
     const andClauses = [];
 
     // Apply department scope boundary for department managers
@@ -377,6 +404,19 @@ const getEmployeeById = async (req, res) => {
     const { id } = req.params;
     const cleanId = String(id || '').trim();
 
+    // PostgreSQL Employee Detail
+    try {
+      const { employeeRepo } = require('../repositories');
+      const sqlEmp = await employeeRepo.findByEmployeeId(cleanId, (req.user?.role || 'EMPLOYEE').toUpperCase());
+      if (sqlEmp) {
+        return res.json({
+          success: true,
+          data: sqlEmp,
+          employee: sqlEmp
+        });
+      }
+    } catch (_) {}
+
     if (mongoose.isValidObjectId(cleanId)) {
       employee = await Employee.findById(cleanId);
     }
@@ -452,6 +492,32 @@ const getEmployeeById = async (req, res) => {
 const getEmployeeQuickView = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // PostgreSQL Quick View
+    try {
+      const { employeeRepo } = require('../repositories');
+      const sqlEmp = await employeeRepo.findByEmployeeId(id, (req.user?.role || 'EMPLOYEE').toUpperCase());
+      if (sqlEmp) {
+        return res.json({
+          success: true,
+          data: {
+            _id: sqlEmp.id,
+            id: sqlEmp.id,
+            employeeId: sqlEmp.employee_id,
+            fullName: sqlEmp.full_name,
+            firstName: sqlEmp.first_name,
+            lastName: sqlEmp.last_name,
+            designation: sqlEmp.designation_title,
+            department: sqlEmp.department_name,
+            status: sqlEmp.employment_status,
+            joiningDate: sqlEmp.date_of_joining,
+            officialEmail: sqlEmp.email,
+            officialMobile: sqlEmp.phone
+          }
+        });
+      }
+    } catch (_) {}
+
     let employee = null;
 
     if (id && (id.startsWith('BHK') || id.startsWith('BJK-') || id.startsWith('EMP-'))) {

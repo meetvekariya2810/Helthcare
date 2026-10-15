@@ -9,6 +9,19 @@ const { logEmployeeAudit } = require('../middleware/employeeAuth');
 const getMyProfile = async (req, res) => {
   try {
     const employeeId = req.employeeId;
+
+    // PostgreSQL Employee Profile Query
+    try {
+      const { employeeRepo } = require('../repositories');
+      const sqlEmp = await employeeRepo.findByEmployeeId(employeeId, req.employeeRole || 'EMPLOYEE');
+      if (sqlEmp) {
+        return res.status(200).json({
+          success: true,
+          profile: sqlEmp
+        });
+      }
+    } catch (_) {}
+
     let employee = await Employee.findOne({ employeeId });
 
     if (!employee) {
