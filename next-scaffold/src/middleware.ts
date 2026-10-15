@@ -7,6 +7,7 @@ export function middleware(request: NextRequest) {
 
   // Protected paths check
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isHrmsRoute = pathname.startsWith("/hrms");
   const isEmployeeRoute =
     pathname.startsWith("/employee") &&
     !pathname.startsWith("/employee/login") &&
@@ -16,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   // Redirect unauthenticated requests to appropriate login portal
   if (!token) {
-    if (isDashboardRoute) {
+    if (isDashboardRoute || isHrmsRoute) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("redirect", pathname);

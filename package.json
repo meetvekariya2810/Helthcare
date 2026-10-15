@@ -8,6 +8,8 @@
     "dev:serve": "npm run dev:server --prefix \"BJK HELTHCARE\"",
     "dev:client": "npm run dev:client --prefix \"BJK HELTHCARE\"",
     "build": "npm --prefix \"BJK HELTHCARE/client\" install --include=dev && npm --prefix \"BJK HELTHCARE/client\" run build",
+    "build:next": "npm --prefix next-scaffold run build",
+    "dev:next": "npm --prefix next-scaffold run dev",
     "start": "node \"BJK HELTHCARE/server/server.js\"",
     "seed": "npm run seed --prefix \"BJK HELTHCARE/server\"",
     "seed:auth": "npm run seed:auth --prefix \"BJK HELTHCARE/server\"",
