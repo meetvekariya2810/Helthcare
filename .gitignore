@@ -56,3 +56,7 @@ BJK_Employee_Login_Credentials.xlsx
 migration_dumps/
 */migration_dumps/
 
+
+.next/
+*/.next/
+next-scaffold/

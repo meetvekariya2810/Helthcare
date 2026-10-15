@@ -1,4 +1,10 @@
-const { Product, ProductCategory, AuditLog } = require('../models');
+/**
+ * BJK HEALTHCARE — PRODUCT CONTROLLER (PURE SQL)
+ * 100% Parameterized PostgreSQL operations via productRepo and auditRepo.
+ * Zero Mongoose / MongoDB runtime dependency.
+ */
+
+const { productRepo, auditRepo } = require('../repositories');
 
 // @desc    Get all products with search, pagination, category & dosage filtering
 // @route   GET /api/products
@@ -7,72 +13,25 @@ const getProducts = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 20));
-    const skip = (page - 1) * limit;
+    const { search, category, sortBy, order, isActive } = req.query;
 
-    const { search, category, dosageForm, verificationStatus, isActive, sortBy, order } = req.query;
-
-    const query = {};
-
-    // Category filter
-    if (category) {
-      query.category = { $regex: new RegExp(`^${category.trim()}$`, 'i') };
-    }
-
-    // Dosage Form filter
-    if (dosageForm) {
-      query.dosageForm = { $regex: new RegExp(dosageForm.trim(), 'i') };
-    }
-
-    // Verification Status filter
-    if (verificationStatus) {
-      query.verificationStatus = verificationStatus;
-    }
-
-    // Active status filter
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
-    }
-
-    // Search term in productName, genericName, composition, description, srNo
-    if (search && search.trim()) {
-      const searchTerm = search.trim();
-      const numSearch = parseInt(searchTerm);
-      
-      const searchConditions = [
-        { productName: { $regex: searchTerm, $options: 'i' } },
-        { genericName: { $regex: searchTerm, $options: 'i' } },
-        { composition: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } }
-      ];
-
-      if (!isNaN(numSearch)) {
-        searchConditions.push({ srNo: numSearch });
-      }
-
-      query.$or = searchConditions;
-    }
-
-    // Sorting options
-    let sortOption = { srNo: 1 };
-    if (sortBy) {
-      const sortOrder = order === 'desc' ? -1 : 1;
-      sortOption = { [sortBy]: sortOrder };
-    }
-
-    const total = await Product.countDocuments(query);
-    const products = await Product.find(query)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const result = await productRepo.listProducts({
+      page,
+      limit,
+      category,
+      search,
+      activeOnly: isActive !== 'false',
+      sortBy,
+      order
+    });
 
     res.json({
       success: true,
-      count: products.length,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      data: products
+      count: result.data.length,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      pages: result.pagination.totalPages,
+      data: result.data
     });
   } catch (error) {
     next(error);
@@ -84,23 +43,11 @@ const getProducts = async (req, res, next) => {
 // @access  Public / Authenticated
 const getProductCategories = async (req, res, next) => {
   try {
-    const categories = await ProductCategory.find({ isActive: true }).sort({ code: 1 }).lean();
-    
-    // Update live counts dynamically
-    const categoriesWithLiveCount = await Promise.all(
-      categories.map(async (cat) => {
-        const liveCount = await Product.countDocuments({ category: cat.name });
-        return {
-          ...cat,
-          productCount: liveCount
-        };
-      })
-    );
-
+    const categories = await productRepo.getProductCategories();
     res.json({
       success: true,
-      count: categoriesWithLiveCount.length,
-      data: categoriesWithLiveCount
+      count: categories.length,
+      data: categories
     });
   } catch (error) {
     next(error);
@@ -113,15 +60,7 @@ const getProductCategories = async (req, res, next) => {
 const getProductById = async (req, res, next) => {
   try {
     const param = req.params.id;
-    let product = null;
-
-    if (param.match(/^[0-9a-fA-F]{24}$/)) {
-      product = await Product.findById(param);
-    }
-
-    if (!product && !isNaN(parseInt(param))) {
-      product = await Product.findOne({ srNo: parseInt(param) });
-    }
+    const product = await productRepo.findBySrNoOrId(param);
 
     if (!product) {
       return res.status(404).json({
@@ -139,38 +78,33 @@ const getProductById = async (req, res, next) => {
   }
 };
 
-// @desc    Create new Product (Prevent Duplicate srNo)
+// @desc    Create new Product
 // @route   POST /api/products
 // @access  Protected (RBAC: PRODUCT_CREATE / SUPER_ADMIN)
 const createProduct = async (req, res, next) => {
   try {
-    const { srNo, productName, genericName, dosageForm, category } = req.body;
+    const { productCode, productName, genericName, dosageForm, category } = req.body;
 
-    // Check duplicate srNo
-    if (srNo) {
-      const existingSrNo = await Product.findOne({ srNo });
-      if (existingSrNo) {
+    if (productCode) {
+      const existing = await productRepo.findByProductCode(productCode);
+      if (existing) {
         return res.status(409).json({
           success: false,
-          message: `Product with Serial Number [${srNo}] already exists (${existingSrNo.productName}). Duplicate srNo is prevented.`
+          message: `Product with code [${productCode}] already exists. Duplicate code prevented.`
         });
       }
-    } else {
-      // Auto-assign next srNo if missing
-      const lastProduct = await Product.findOne().sort({ srNo: -1 });
-      req.body.srNo = lastProduct ? lastProduct.srNo + 1 : 1;
     }
 
-    const product = await Product.create(req.body);
+    const product = await productRepo.createProduct(req.body);
 
-    await AuditLog.logAction({
-      user: req.user,
+    await auditRepo.log({
+      actorId: req.user?.id,
+      actorName: req.user?.name || 'Authorized Operator',
+      actorRole: req.user?.role || 'OPERATOR',
       action: 'CREATE',
-      module: 'PRODUCT',
-      resource: 'Product',
-      resourceId: product._id,
-      newData: product,
-      details: `Created new product SR #${product.srNo}: ${product.productName}`
+      entityType: 'PRODUCT',
+      entityId: product.id,
+      newState: product
     });
 
     res.status(201).json({
@@ -189,38 +123,32 @@ const createProduct = async (req, res, next) => {
 const updateProduct = async (req, res, next) => {
   try {
     const param = req.params.id;
-    let product = await Product.findById(param);
+    const oldProduct = await productRepo.findBySrNoOrId(param);
 
-    if (!product && !isNaN(parseInt(param))) {
-      product = await Product.findOne({ srNo: parseInt(param) });
-    }
-
-    if (!product) {
+    if (!oldProduct) {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
       });
     }
 
-    const oldData = product.toObject();
-    Object.assign(product, req.body);
-    await product.save();
+    const updated = await productRepo.updateProduct(oldProduct.id, req.body);
 
-    await AuditLog.logAction({
-      user: req.user,
+    await auditRepo.log({
+      actorId: req.user?.id,
+      actorName: req.user?.name || 'Authorized Operator',
+      actorRole: req.user?.role || 'OPERATOR',
       action: 'UPDATE',
-      module: 'PRODUCT',
-      resource: 'Product',
-      resourceId: product._id,
-      oldData,
-      newData: product,
-      details: `Updated product SR #${product.srNo}: ${product.productName}`
+      entityType: 'PRODUCT',
+      entityId: oldProduct.id,
+      previousState: oldProduct,
+      newState: updated
     });
 
     res.json({
       success: true,
       message: 'Product updated successfully',
-      data: product
+      data: updated
     });
   } catch (error) {
     next(error);
@@ -233,11 +161,7 @@ const updateProduct = async (req, res, next) => {
 const deleteProduct = async (req, res, next) => {
   try {
     const param = req.params.id;
-    let product = await Product.findById(param);
-
-    if (!product && !isNaN(parseInt(param))) {
-      product = await Product.findOne({ srNo: parseInt(param) });
-    }
+    const product = await productRepo.findBySrNoOrId(param);
 
     if (!product) {
       return res.status(404).json({
@@ -246,22 +170,23 @@ const deleteProduct = async (req, res, next) => {
       });
     }
 
-    product.isActive = false;
-    await product.save();
+    const deactivated = await productRepo.updateProduct(product.id, { isActive: false });
 
-    await AuditLog.logAction({
-      user: req.user,
+    await auditRepo.log({
+      actorId: req.user?.id,
+      actorName: req.user?.name || 'Authorized Operator',
+      actorRole: req.user?.role || 'OPERATOR',
       action: 'DELETE',
-      module: 'PRODUCT',
-      resource: 'Product',
-      resourceId: product._id,
-      details: `Deactivated product SR #${product.srNo}: ${product.productName}`
+      entityType: 'PRODUCT',
+      entityId: product.id,
+      previousState: product,
+      newState: deactivated
     });
 
     res.json({
       success: true,
-      message: `Product SR #${product.srNo} deactivated successfully`,
-      data: product
+      message: `Product [${product.product_code || product.name}] deactivated successfully`,
+      data: deactivated
     });
   } catch (error) {
     next(error);

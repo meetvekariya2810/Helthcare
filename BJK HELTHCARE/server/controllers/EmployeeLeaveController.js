@@ -38,6 +38,18 @@ const { logEmployeeAudit } = require('../middleware/employeeAuth');
  */
 const getLeaveTypes = async (req, res) => {
   try {
+    try {
+      const { leaveRepo } = require('../repositories');
+      const sqlTypes = await leaveRepo.getLeaveTypes();
+      if (sqlTypes && sqlTypes.length > 0) {
+        return res.status(200).json({
+          success: true,
+          count: sqlTypes.length,
+          types: sqlTypes
+        });
+      }
+    } catch (_) {}
+
     let types = await LeaveType.find({ isActive: true }).sort({ name: 1 });
     if (!types || types.length === 0) {
       await initLeaveMaster();
@@ -61,6 +73,18 @@ const getLeaveTypes = async (req, res) => {
 const getHolidays = async (req, res) => {
   try {
     const { year = 2026 } = req.query;
+    try {
+      const { leaveRepo } = require('../repositories');
+      const sqlHolidays = await leaveRepo.getHolidays(Number(year));
+      if (sqlHolidays && sqlHolidays.length > 0) {
+        return res.status(200).json({
+          success: true,
+          count: sqlHolidays.length,
+          holidays: sqlHolidays
+        });
+      }
+    } catch (_) {}
+
     const holidays = await HolidayCalendar.find({ year: Number(year), isActive: true }).sort({ date: 1 });
     return res.status(200).json({
       success: true,
