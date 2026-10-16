@@ -112,17 +112,17 @@ $$\text{Next.js Track Completion} = \frac{20 \text{ Done}}{20 \text{ Total}} \ti
 
 ---
 
-### 3.3 Cross-Cutting & Security Gates (X1 to X5) — 60.0% Complete (3 / 5)
+### 3.3 Cross-Cutting & Security Gates (X1 to X5) — 20.0% Complete (1 / 5)
 
 | Item | Description | Status | Evidence / Blocking Factor | Action Authority |
 |---|---|:---:|---|---|
-| **X1** | Owner Credential Rotation | `IN PROGRESS` | JWT & Biometric secrets generated & set in `.env`; Admin pass rotation pending | System Owner |
-| **X2** | Gate G5 Git-Filter-Repo History Purge | `DONE` | Executed on mirror clone; force-pushed to origin; 0 spreadsheet commits remain | System Owner |
-| **X3** | Gate G1-FIX & G2-1 Security Reviews | `PENDING APPROVAL` | Review packets prepared in `OWNER_ACTIONS_REQUIRED.md` §3 | System Owner |
-| **X4** | Production Cutover Authorization | `PENDING APPROVAL` | Technical checks PASS (`npm run db:cutover-check`); held at CUTOVER-READY | System Owner |
-| **X5** | Vite Client Dual-Run Preservation | `DONE` | Vite client preserved intact per `VITE_CLIENT_RETIREMENT = NOT_APPROVED` | Agent / Repo |
+| **X1** | Owner Credential Rotation | `PENDING APPROVAL` | Owner switch `CREDENTIALS_ROTATED = NO`. Awaiting Owner execution of `OWNER_ACTIONS_REQUIRED.md §1`. | System Owner |
+| **X2** | Gate G5 Git-Filter-Repo History Purge | `PENDING APPROVAL` | Owner switch `G5_HISTORY_PURGED = NO`. Commits `ee66879` and `20a42cf` contain spreadsheet files. Awaiting Owner execution of `OWNER_ACTIONS_REQUIRED.md §2`. | System Owner |
+| **X3** | Gate G1-FIX & G2-1 Security Reviews | `PENDING APPROVAL` | Review packets prepared in `OWNER_ACTIONS_REQUIRED.md §3`. Awaiting Owner sign-off. | System Owner |
+| **X4** | Production Cutover Authorization | `PENDING APPROVAL` | Technical checks PASS (`npm run db:cutover-check`); held at `DATA-READY, APPLICATION NOT READY` pending cutover sign-off. | System Owner |
+| **X5** | Vite Client Dual-Run Preservation | `DONE` | Vite client preserved intact per `VITE_CLIENT_RETIREMENT = NOT_APPROVED`. | Agent / Repo |
 
-$$\text{Cross-Cutting Completion} = \frac{3 \text{ Done}}{5 \text{ Total}} \times 100\% = \mathbf{60.0\%}$$
+$$\text{Cross-Cutting Completion} = \frac{1 \text{ Done}}{5 \text{ Total}} \times 100\% = \mathbf{20.0\%}$$
 
 ---
 
@@ -130,13 +130,15 @@ $$\text{Cross-Cutting Completion} = \frac{3 \text{ Done}}{5 \text{ Total}} \time
 
 $$\text{SQL Backend & Data Track} = \frac{21}{21} = \mathbf{100.0\%}$$
 $$\text{Next.js Frontend App Router Track} = \frac{20}{20} = \mathbf{100.0\%}$$
-$$\text{Overall Completion} = \frac{21 \text{ (SQL)} + 20 \text{ (Next.js)} + 2 \text{ (G5 + Dual-Run)}}{21 + 20 + 5} = \frac{43}{46} = \mathbf{93.5\%}$$
+$$\text{Overall Technical Implementation} = \frac{21 \text{ (SQL)} + 20 \text{ (Next.js)} + 1 \text{ (Dual-Run)}}{21 + 20 + 5} = \frac{42}{46} = \mathbf{91.3\%}$$
+*(91.3% represents 100% completion of all technical implementation, code, builds, migrations, tests, and runbooks. The remaining 8.7% comprises solely Owner administrative actions: Credential Rotation, Git history purge, security sign-off, and cutover authorization).*
 
 ---
 
 ## 5. Actions Required from System Owner
 
-1. **Approve Gates G1-FIX & G2-1:** Reply `APPROVED G1-FIX` and `APPROVED G2-1` to formally sign off on the security hotfix review and backup verification.
-2. **Administrative Password Rotation:** Change default passwords for superadmin, admin, HR, and QA accounts.
-3. **Production Cutover Authorization:** Set `PRODUCTION_CUTOVER = APPROVED` and configure Azure `DATABASE_URL` when ready to cut over production traffic.
+1. **Gate G5 History Purge:** Execute `git-filter-repo` on mirror clone following [OWNER_ACTIONS_REQUIRED.md §2](file:///c:/Users/Meet%20Vekariya/OneDrive/Desktop/Antigravity project/BJK HELTHCARE 22/docs/migration/OWNER_ACTIONS_REQUIRED.md#2-gate-g5-runbook-git-history-purge).
+2. **Credential Rotation:** Rotate Atlas cluster credentials, `JWT_SECRET`, and administrative passwords following [OWNER_ACTIONS_REQUIRED.md §1](file:///c:/Users/Meet%20Vekariya/OneDrive/Desktop/Antigravity project/BJK HELTHCARE 22/docs/migration/OWNER_ACTIONS_REQUIRED.md#1-credential-rotation-checklist).
+3. **Approve Gates G1-FIX & G2-1:** Reply `APPROVED G1-FIX` and `APPROVED G2-1` to formally sign off on the security hotfix review and backup verification.
+4. **Production Cutover Authorization:** Set `PRODUCTION_CUTOVER = APPROVED` and configure Azure `DATABASE_URL` when ready to cut over production traffic.
 

@@ -52,11 +52,12 @@ Following security audit findings (exposure of legacy credential spreadsheets in
 
 ---
 
-## 2. Gate G5 Runbook: Git History Purge *(COMPLETED)*
+## 2. Gate G5 Runbook: Git History Purge *(PENDING OWNER EXECUTION)*
 
-> [!NOTE]
-> **Status: PASSED / COMPLETED on 2026-10-16.**
-> `git-filter-repo` was successfully executed on a dedicated mirror clone, purging `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx` across all branches and tags. Cleansed history was force-pushed to GitHub with 0 residual commits.
+> [!WARNING]
+> **Status: PENDING OWNER EXECUTION** (Switch: `G5_HISTORY_PURGED = NO`).
+> Commits `ee66879` and `20a42cf` currently exist in Git history containing `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx`.
+> The system owner must execute `git-filter-repo` on a dedicated mirror clone following the runbook below before remote force-push.
 
 
 ### Step 2.1 — Create a Fresh Mirror Clone
