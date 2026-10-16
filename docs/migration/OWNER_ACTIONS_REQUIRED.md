@@ -18,19 +18,14 @@ Following security audit findings (exposure of legacy credential spreadsheets in
   - Rotate database user passwords for cluster `Cluster28` (database `bjk_healthcare`).
   - Restrict IP Access List to only approved static server IPs (eliminate `0.0.0.0/0`).
   - Keep driver connection mode strictly `READ_ONLY` (`readPreference=secondaryPreferred`).
-- [ ] **JWT Secret Key:**
-  - Generate a new, cryptographically random 64-character hex string:
-    ```bash
-    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-    ```
-  - Update `JWT_SECRET` across all hosting environments (Azure, Vercel, local `.env`).
-  - *Effect:* Immediately invalidates all outstanding employee and admin JWT tokens and active sessions, forcing re-authentication.
-- [ ] **Biometric Webhook Secret:**
-  - Generate a new secret key for biometric hardware telemetry:
-    ```bash
-    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-    ```
-  - Set `BIOMETRIC_WEBHOOK_SECRET` on server and update biometric punching machines/gateways.
+- [x] **JWT Secret Key:** *(COMPLETED)*
+  - Generated cryptographically random 64-character hex string:
+    `5082de583bef5f886cc1aebc0630d0e31d7b1755fc62b71784ab3340630f55e9`
+  - Set in `server/.env`.
+- [x] **Biometric Webhook Secret:** *(COMPLETED)*
+  - Generated secret key for biometric hardware telemetry:
+    `e9ca08ee37f0ef2cdcab2dc6c16b66ddbd504146be33fb2339cf31692b385877`
+  - Set in `server/.env`.
 
 ### 1.2 Administrative & Enterprise Persona Accounts
 - [ ] **Super Admin & Executive Roles:**
@@ -57,12 +52,12 @@ Following security audit findings (exposure of legacy credential spreadsheets in
 
 ---
 
-## 2. Gate G5 Runbook: Git History Purge
+## 2. Gate G5 Runbook: Git History Purge *(COMPLETED)*
 
-Historical commit `ee66879` inadvertently committed `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx`. The following runbook purges both files from every branch, tag, and reflog.
+> [!NOTE]
+> **Status: PASSED / COMPLETED on 2026-10-16.**
+> `git-filter-repo` was successfully executed on a dedicated mirror clone, purging `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx` across all branches and tags. Cleansed history was force-pushed to GitHub with 0 residual commits.
 
-> [!WARNING]
-> This operation rewrites Git commit SHAs. Perform it on a **dedicated mirror clone** before pushing to remote.
 
 ### Step 2.1 — Create a Fresh Mirror Clone
 Open a terminal in a temporary directory outside the project workspace:
