@@ -71,10 +71,13 @@ const getEmployees = async (req, res) => {
       .skip(skip)
       .limit(limitNum);
 
+    const userRole = req.user?.role || 'EMPLOYEE';
+    const sanitized = employees.map(emp => (typeof emp.getSanitizedForRole === 'function' ? emp.getSanitizedForRole(userRole) : emp));
+
     res.json({
       success: true,
-      data: employees,
-      employees, // backward-compat with HRMS table
+      data: sanitized,
+      employees: sanitized, // backward-compat with HRMS table
       pagination: {
         total,
         page: pageNum,
@@ -114,10 +117,13 @@ const getEmployeeById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Employee not found' });
     }
 
+    const userRole = req.user?.role || 'EMPLOYEE';
+    const sanitized = typeof employee.getSanitizedForRole === 'function' ? employee.getSanitizedForRole(userRole) : employee;
+
     res.json({
       success: true,
-      data: employee,
-      employee
+      data: sanitized,
+      employee: sanitized
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

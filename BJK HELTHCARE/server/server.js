@@ -203,13 +203,57 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static Document Uploads
+// Global Security Guard: Block any direct requests for spreadsheets, configs, dumps, or credential files
+app.use((req, res, next) => {
+  const lower = (req.path || req.url || '').toLowerCase();
+  const blockedExtensions = ['.xlsx', '.xls', '.csv', '.env', '.dump', '.sql', '.gz', '.bak'];
+  if (blockedExtensions.some(ext => lower.endsWith(ext) || lower.includes(ext + '?') || lower.includes(ext + '/'))) {
+    return res.status(403).json({
+      success: false,
+      error: 'FORBIDDEN_FILE_TYPE',
+      message: 'Direct access to spreadsheet, data, or configuration files is strictly forbidden.'
+    });
+  }
+  next();
+});
+
+// Static Document Uploads (Strictly Isolated & Guarded)
+app.use('/uploads', (req, res, next) => {
+  const urlPath = req.path || req.url || '';
+  const lower = urlPath.toLowerCase();
+
+  const forbiddenPatterns = ['.xlsx', '.xls', '.csv', '.json', '.env', 'credential', 'password', 'master', 'secret', 'token'];
+  if (forbiddenPatterns.some(pat => lower.includes(pat))) {
+    return res.status(403).json({
+      success: false,
+      error: 'ACCESS_DENIED',
+      message: 'Access to restricted administrative or credential files is strictly prohibited.'
+    });
+  }
+
+  const isAllowedSubpath = lower.startsWith('/documents/') || lower.startsWith('/policies/') || lower.startsWith('/public/');
+  const isAllowedExt = lower.endsWith('.pdf') || lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp');
+
+  if (!isAllowedSubpath || !isAllowedExt) {
+    return res.status(403).json({
+      success: false,
+      error: 'ACCESS_DENIED',
+      message: 'Direct browsing of upload root directory is forbidden.'
+    });
+  }
+
+  next();
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  dotfiles: 'deny',
+  index: false,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.pdf')) {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'inline');
     }
+    res.setHeader('X-Content-Type-Options', 'nosniff');
   }
 }));
 

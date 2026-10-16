@@ -185,6 +185,8 @@ const processAICopilotQuery = async (req, res, next) => {
 
     res.json({
       success: true,
+      response: answerText,
+      answer: answerText,
       data: {
         query: userQuery,
         answer: answerText,

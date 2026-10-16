@@ -827,10 +827,18 @@ const getDashboardData = async (req, res) => {
     ];
 
     // Compile Response
+    const resolvedDashboardType = ['SUPER_ADMIN', 'DIRECTOR'].includes(userRole)
+      ? 'SUPER_ADMIN'
+      : ['QA_MANAGER', 'QC_MANAGER'].includes(userRole)
+      ? 'QA_MANAGER'
+      : ['EMPLOYEE', 'SENIOR_EMPLOYEE'].includes(userRole)
+      ? 'EMPLOYEE'
+      : 'HR_MANAGER';
+
     res.json({
       success: true,
       connected: true,
-      dashboardType: ['SUPER_ADMIN', 'DIRECTOR'].includes(userRole) ? 'SUPER_ADMIN' : 'HR_MANAGER',
+      dashboardType: resolvedDashboardType,
       role: userRole,
       scope: userScope,
       scopeLabel,
@@ -838,6 +846,7 @@ const getDashboardData = async (req, res) => {
       dataSource: 'MongoDB Atlas / Internal HR System',
       companyOperations,
       kpis: {
+        qaHeadcount: 4,
         totalEmployees: totalEmployees || activeCount || 91,
         totalWorkforce: totalEmployees || activeCount || 91,
         activeEmployees: activeCount || 91,

@@ -88,6 +88,20 @@ const requireHRRole = requireRole(
   'ADMIN'
 );
 
+const requireDashboardRole = requireRole(
+  ROLES.SUPER_ADMIN,
+  ROLES.DIRECTOR,
+  ROLES.HR_ADMIN,
+  ROLES.HR_MANAGER,
+  ROLES.HR_EXECUTIVE,
+  ROLES.HR,
+  'ADMIN',
+  ROLES.QA_MANAGER,
+  ROLES.QC_MANAGER,
+  ROLES.EMPLOYEE,
+  'SENIOR_EMPLOYEE'
+);
+
 // 0. Core HRMS (Non-Technical Staff & Daily Manual Attendance)
 router.get('/core/dashboard', requireHRRole, getCoreHRMSDashboard);
 router.get('/core/employees', requireHRRole, getNonTechnicalStaffList);
@@ -104,8 +118,8 @@ router.post('/attendance/mark', requirePermission(PERMISSIONS.ATTENDANCE_VIEW), 
 router.post('/attendance/bulk', requirePermission(PERMISSIONS.ATTENDANCE_VIEW), bulkMarkAttendance);
 router.get('/attendance/history', requirePermission(PERMISSIONS.ATTENDANCE_VIEW), getAttendanceHistory);
 
-// 1. Dashboard & Command Center Telemetry (Strictly HR Isolated)
-router.get('/dashboard', requireHRRole, getDashboardData);
+// 1. Dashboard & Command Center Telemetry
+router.get('/dashboard', requireDashboardRole, getDashboardData);
 router.get('/dashboard/workforce', requireHRRole, getWorkforceStatus);
 router.get('/dashboard/activity', requireHRRole, getActivityLogs);
 router.get('/dashboard/data-quality', requireHRRole, getDataQualityReport);

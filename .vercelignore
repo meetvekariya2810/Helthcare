@@ -1,0 +1,37 @@
+# Vercel Deployment Ignore Configuration
+# Prevent bundling of credential files, spreadsheets, uploads, and backups into serverless functions
+
+# 1. Credential Spreadsheets & Data Exports
+*.xlsx
+*.xls
+*.csv
+BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx
+BJK_Employee_Login_Credentials.xlsx
+*CREDENTIAL*
+*PASSWORD*
+
+# 2. Uploads Directory
+BJK HELTHCARE/server/uploads/**
+!BJK HELTHCARE/server/uploads/.gitkeep
+uploads/**
+
+# 3. Environment & Local Secrets
+.env
+.env.*
+!.env.example
+*.env.local
+
+# 4. Backups, Dumps & Staging Data
+backups/**
+.postgres_staging_data/**
+*.dump
+*.sql.gz
+migration_dumps/**
+scratch/**
+reports/**
+
+# 5. Git & IDE Artifacts
+.git
+.github
+.vscode
+.idea

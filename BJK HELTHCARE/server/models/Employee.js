@@ -873,44 +873,78 @@ EmployeeSchema.pre('save', function(next) {
 
 // Helper to mask sensitive numbers (Bank, PAN, Aadhaar, confidential notes) for unauthorized users
 EmployeeSchema.methods.getSanitizedForRole = function(userRole) {
-  const obj = this.toObject();
+  const obj = typeof this.toObject === 'function' ? this.toObject() : { ...this };
+  const canViewUnmaskedBank = ['PAYROLL_ADMIN', 'FINANCE_MANAGER'].includes(userRole);
   const isHR = ['SUPER_ADMIN', 'DIRECTOR', 'HR_ADMIN', 'HR_MANAGER', 'PAYROLL_ADMIN', 'FINANCE_MANAGER'].includes(userRole);
 
+  const maskBank = (acc) => {
+    if (!acc) return '';
+    const s = String(acc).trim();
+    return s.length > 4 ? 'XXXXXX' + s.slice(-4) : 'XXXXXX1234';
+  };
+
+  const maskAadhaar = (num) => {
+    if (!num) return '';
+    const s = String(num).replace(/[\s-]/g, '').trim();
+    return s.length > 4 ? 'XXXX-XXXX-' + s.slice(-4) : 'XXXX-XXXX-9012';
+  };
+
+  const maskPan = (pan) => {
+    if (!pan) return '';
+    const s = String(pan).trim();
+    if (s.length >= 10) return s.slice(0, 5) + '****' + s.slice(-1);
+    if (s.length > 5) return s.slice(0, 5) + '****F';
+    return 'ABCDE****F';
+  };
+
+  // Mask bank details for general directory and profile views unless authorized payroll/finance
+  if (!canViewUnmaskedBank) {
+    if (obj.bankAccountNumber) obj.bankAccountNumber = maskBank(obj.bankAccountNumber);
+    if (obj.bankDetails?.accountNumber) obj.bankDetails.accountNumber = maskBank(obj.bankDetails.accountNumber);
+    if (obj.sensitiveData?.bankDetails?.accountNumber) obj.sensitiveData.bankDetails.accountNumber = maskBank(obj.sensitiveData.bankDetails.accountNumber);
+  }
+
   if (!isHR) {
-    // Mask bank account
-    if (obj.bankDetails?.accountNumber) {
-      const len = obj.bankDetails.accountNumber.length;
-      obj.bankDetails.accountNumber = len > 4 ? 'X'.repeat(len - 4) + obj.bankDetails.accountNumber.slice(-4) : 'XXXX1234';
-    }
-    // Mask sensitiveData
-    if (obj.sensitiveData?.bankDetails?.accountNumber) {
-      const len = obj.sensitiveData.bankDetails.accountNumber.length;
-      obj.sensitiveData.bankDetails.accountNumber = len > 4 ? 'X'.repeat(len - 4) + obj.sensitiveData.bankDetails.accountNumber.slice(-4) : 'XXXX1234';
-    }
-    if (obj.sensitiveData?.aadhaarNumber || obj.aadhaarNumber) {
-      const aNum = obj.aadhaarNumber || obj.sensitiveData?.aadhaarNumber || '';
-      const masked = aNum.length > 4 ? 'XXXX XXXX ' + aNum.slice(-4) : 'XXXX XXXX 1234';
-      if (obj.sensitiveData) obj.sensitiveData.aadhaarNumber = masked;
-      obj.aadhaarNumber = masked;
-    }
-    if (obj.sensitiveData?.panNumber || obj.panNumber) {
-      const pNum = obj.panNumber || obj.sensitiveData?.panNumber || '';
-      const masked = pNum.length > 4 ? 'XXXXX' + pNum.slice(-4) : 'XXXXX1234F';
-      if (obj.sensitiveData) obj.sensitiveData.panNumber = masked;
-      obj.panNumber = masked;
-    }
-    // Mask identity document numbers
+    // Aadhaar masking
+    if (obj.aadhaarNumber) obj.aadhaarNumber = maskAadhaar(obj.aadhaarNumber);
+    if (obj.sensitiveData?.aadhaarNumber) obj.sensitiveData.aadhaarNumber = maskAadhaar(obj.sensitiveData.aadhaarNumber);
+
+    // PAN masking
+    if (obj.panNumber) obj.panNumber = maskPan(obj.panNumber);
+    if (obj.sensitiveData?.panNumber) obj.sensitiveData.panNumber = maskPan(obj.sensitiveData.panNumber);
+
+    // Identity Documents
     if (Array.isArray(obj.identityDocuments)) {
       obj.identityDocuments.forEach(doc => {
-        if (doc.documentNumber) {
-          const num = doc.documentNumber;
-          doc.documentNumber = num.length > 4 ? 'X'.repeat(num.length - 4) + num.slice(-4) : 'XXXX1234';
+        if (!doc.documentNumber) return;
+        const type = String(doc.documentType || '').toUpperCase();
+        if (type.includes('AADHAAR')) {
+          doc.documentNumber = maskAadhaar(doc.documentNumber);
+        } else if (type.includes('PAN')) {
+          doc.documentNumber = maskPan(doc.documentNumber);
+        } else {
+          doc.documentNumber = maskBank(doc.documentNumber);
         }
       });
     }
+
     // Filter confidential HR notes
     if (Array.isArray(obj.hrNotes)) {
       obj.hrNotes = obj.hrNotes.filter(n => !n.isConfidential && n.noteType !== 'Confidential');
+    }
+
+    // Protect salary information from non-HR roles
+    if (obj.basicSalary) obj.basicSalary = 0;
+    if (obj.sensitiveData?.salaryDetails) {
+      obj.sensitiveData.salaryDetails = {
+        basicPay: 0,
+        hra: 0,
+        specialAllowance: 0,
+        transportAllowance: 0,
+        medicalAllowance: 0,
+        grossSalary: 0,
+        ctc: 0
+      };
     }
   }
 

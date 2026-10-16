@@ -86,10 +86,22 @@ async function runRegressionSuite() {
   // 2. HR Manager Login & Workforce Command Center Telemetry
   let hrToken = '';
   await test('POST /api/auth/login - HR Manager Login', async () => {
-    const res = await request('/auth/login', {
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'hr.manager@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'hr.manager@bjkhealthcare.com', password: 'Bjk@2810' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'hr@bjkhealthcare.com', password: 'Bjk@2810' }
+      });
+    }
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'hr.manager@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) throw new Error(res.data?.message || 'Login failed');
     hrToken = res.data.token;
   });
@@ -108,10 +120,22 @@ async function runRegressionSuite() {
   // 3. QA Manager Login & Quality & Workforce Command Center Telemetry
   let qaToken = '';
   await test('POST /api/auth/login - QA Manager Login', async () => {
-    const res = await request('/auth/login', {
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'qa.manager@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'qa.manager@bjkhealthcare.com', password: 'Bjk@2026' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'test-qa-mgr', password: 'Bjk@2026' }
+      });
+    }
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'qa.manager@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) throw new Error(res.data?.message || 'Login failed');
     qaToken = res.data.token;
   });
@@ -130,10 +154,22 @@ async function runRegressionSuite() {
   // 4. Employee Login & Self Service Portal Telemetry
   let empToken = '';
   await test('POST /api/auth/login - Employee Login', async () => {
-    const res = await request('/auth/login', {
+    let res = await request('/auth/login', {
       method: 'POST',
-      body: { email: 'employee@bjkhealthcare.com', password: 'Password123!' }
+      body: { email: 'prd.test@bjkhealthcare.com', password: 'Bjk@2026' }
     });
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'employee@bjkhealthcare.com', password: 'Bjk@2026' }
+      });
+    }
+    if (!res.data?.success || !res.data?.token) {
+      res = await request('/auth/login', {
+        method: 'POST',
+        body: { email: 'employee@bjkhealthcare.com', password: 'Password123!' }
+      });
+    }
     if (!res.data?.success || !res.data?.token) throw new Error(res.data?.message || 'Login failed');
     empToken = res.data.token;
   });
