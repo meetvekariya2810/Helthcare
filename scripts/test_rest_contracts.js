@@ -63,10 +63,16 @@ async function runContractSuite() {
   });
   if (hrLogin.data?.token) hrToken = hrLogin.data.token;
 
-  const qaLogin = await req('/auth/login', {
+  let qaLogin = await req('/auth/login', {
     method: 'POST',
-    body: { email: 'test-qa-mgr', password: 'Bjk@2026' }
+    body: { email: 'qa.manager@bjkhealthcare.com', password: 'Bjk@2026' }
   });
+  if (!qaLogin.data?.token) {
+    qaLogin = await req('/auth/login', {
+      method: 'POST',
+      body: { email: 'test-qa-mgr', password: 'Bjk@2026' }
+    });
+  }
   if (qaLogin.data?.token) qaToken = qaLogin.data.token;
 
   const empLogin = await req('/auth/login', {
