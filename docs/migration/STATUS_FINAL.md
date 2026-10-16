@@ -33,12 +33,12 @@
 |---|:---:|---|
 | **PostgreSQL Staging Tables** | **134** | `npm run db:schema` / `db:validate` |
 | **Versioned Migrations Applied** | **12 / 12** (`001` to `012`) | Schema migration tracking table `schema_migrations` |
-| **Migrated Database Records** | **16,558** | `SELECT COUNT(*) FROM <all_tables>` |
-| **Deterministic UUID Mappings** | **16,557** | `SELECT COUNT(*) FROM migration_id_map` |
+| **Migrated Database Records** | **16,947** | `SELECT COUNT(*) FROM <all_tables>` |
+| **Deterministic UUID Mappings** | **16,944** | `SELECT COUNT(*) FROM migration_id_map` |
 | **Pharmaceutical Product Catalogue** | **111 / 111** | `SELECT COUNT(*) FROM products WHERE is_active = true` |
 | **Active Employee Headcount** | **146** | `SELECT COUNT(*) FROM employees` |
 | **Biometric Attendance Logs** | **10,527** | `SELECT COUNT(*) FROM attendances` |
-| **21 CFR Part 11 Audit Trail Records** | **1,545** | `SELECT COUNT(*) FROM audit_logs` |
+| **21 CFR Part 11 Audit Trail Records** | **1,703** | `SELECT COUNT(*) FROM audit_logs` |
 | **Domain Repositories (PostgreSQL)** | **31** | `(Get-ChildItem -Path "server\repositories").Count` |
 | **Next.js App Router Source Files** | **119** | Extensions scan in `next-scaffold/` |
 | **Next.js Prerendered Static Routes** | **102 / 102** | `npm run build:next` in Turbopack (0 errors) |

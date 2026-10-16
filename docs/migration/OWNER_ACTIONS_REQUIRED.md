@@ -42,22 +42,22 @@ Following security audit findings (exposure of legacy credential spreadsheets in
   - Reset password for `payroll.officer@bjkhealthcare.com` (`PAYROLL_OFFICER`).
 
 ### 1.3 General Employee Workforce Accounts
-- [ ] **Mass Credential Invalidation Flow:**
-  - Run the automated password reset utility in production mode:
-    ```bash
-    node BJK\ HELTHCARE/server/scripts/ownerRunPasswordReset.js --production
-    ```
-  - Sets `mustChangePassword: true` for all employee accounts.
-  - Generates secure temporary passwords and logs audited reset events. Employees are prompted to change their temporary password upon initial login via `/change-password`.
+- [x] **Mass Credential Invalidation Flow:** *(COMPLETED - 16 Oct 2026)*
+  - Executed by System Owner via `ownerRunPasswordReset.js --execute`.
+  - Sets `mustChangePassword: true` for 77 accounts; 174 active sessions revoked in Atlas Cluster28.
+  - Verified via `scripts/golive/verify_rotation.js`: 0 unrotated legacy accounts remaining.
+  - Temporary passwords securely stored outside repository (`C:\Users\MEETVE~1\AppData\Local\Temp\bjk_reset_credentials_*.json`, mode 0600).
 
 ---
 
-## 2. Gate G5 Runbook: Git History Purge *(PENDING OWNER EXECUTION)*
+## 2. Gate G5 Runbook: Git History Purge *(COMPLETED - 16 Oct 2026)*
 
-> [!WARNING]
-> **Status: PENDING OWNER EXECUTION** (Switch: `G5_HISTORY_PURGED = NO`).
-> Commits `ee66879` and `20a42cf` currently exist in Git history containing `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx`.
-> The system owner must execute `git-filter-repo` on a dedicated mirror clone following the runbook below before remote force-push.
+> [!NOTE]
+> **Status: COMPLETED & VERIFIED** (Switch: `G5_HISTORY_PURGED = YES`).
+> Commits `ee66879` and `20a42cf` containing `BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx` and `BJK_Employee_Login_Credentials.xlsx` were cleanly purged using `python -m git_filter_repo --force --invert-paths`.
+> Verified via `scripts/golive/verify_purge.js`: **0 commits found across entire Git history**.
+> Force pushed cleanly to GitHub `origin`.
+
 
 
 ### Step 2.1 — Create a Fresh Mirror Clone
