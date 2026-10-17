@@ -7,8 +7,18 @@
 *.csv
 BJK_ALL_LOGIN_CREDENTIALS_MASTER.xlsx
 BJK_Employee_Login_Credentials.xlsx
-*CREDENTIAL*
-*PASSWORD*
+*credential*.xlsx
+*credential*.xls
+*credential*.csv
+*password*.xlsx
+*password*.xls
+*password*.csv
+*CREDENTIAL*.xlsx
+*CREDENTIAL*.xls
+*CREDENTIAL*.csv
+*PASSWORD*.xlsx
+*PASSWORD*.xls
+*PASSWORD*.csv
 
 # 2. Uploads Directory
 BJK HELTHCARE/server/uploads/**
